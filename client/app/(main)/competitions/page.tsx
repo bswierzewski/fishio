@@ -19,7 +19,6 @@ const cardTextColorClass = 'text-foreground';
 const cardMutedTextColorClass = 'text-muted-foreground';
 
 export default function CompetitionsPage() {
-  const [searchTerm, setSearchTerm] = useState('');
   const [pageNumber, setPageNumber] = useState(1);
   const pageSize = 12; // Show more competitions per page
 
@@ -31,18 +30,12 @@ export default function CompetitionsPage() {
     refetch
   } = useGetOpenCompetitionsList({
     PageNumber: pageNumber,
-    PageSize: pageSize,
-    SearchTerm: searchTerm || undefined
+    PageSize: pageSize
   });
 
   const openCompetitions = competitionsResponse?.items || [];
   const hasNextPage = competitionsResponse?.hasNextPage || false;
   const hasPreviousPage = competitionsResponse?.hasPreviousPage || false;
-
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    setPageNumber(1); // Reset to first page when searching
-  };
 
   const handleNextPage = () => {
     if (hasNextPage) {
@@ -145,8 +138,6 @@ export default function CompetitionsPage() {
             type="search"
             placeholder="Szukaj zawodów..."
             className="w-full rounded-lg bg-card pl-9 border-border"
-            value={searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
           />
         </div>
         <Button variant="outline">
@@ -235,7 +226,8 @@ export default function CompetitionsPage() {
       ) : (
         <div className="mt-8 rounded-lg border border-dashed border-border bg-card p-8 text-center">
           <p className="text-muted-foreground">
-            {searchTerm ? 'Nie znaleziono zawodów pasujących do wyszukiwania.' : 'Nie znaleziono otwartych zawodów.'}
+            {/* {searchTerm ? 'Nie znaleziono zawodów pasujących do wyszukiwania.' : 'Nie znaleziono otwartych zawodów.'} */}
+            {'Nie znaleziono otwartych zawodów.'}
           </p>
           <Link href="/competitions/add" className="mt-4 inline-block">
             <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
