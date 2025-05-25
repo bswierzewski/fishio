@@ -59,7 +59,11 @@ public class CreateCompetitionCommandHandler : IRequestHandler<CreateCompetition
             // imagePublicId = imageResult.PublicId;
         }
 
-        var schedule = new DateTimeRange(request.StartTime, request.EndTime);
+        // Convert to UTC to avoid PostgreSQL timezone issues
+        var startTimeUtc = request.StartTime.ToUniversalTime();
+        var endTimeUtc = request.EndTime.ToUniversalTime();
+        var schedule = new DateTimeRange(startTimeUtc, endTimeUtc);
+
         var resultsToken = _tokenGenerator.GenerateUniqueToken(); // Używamy serwisu do generowania tokenu
 
         var competition = new Competition(

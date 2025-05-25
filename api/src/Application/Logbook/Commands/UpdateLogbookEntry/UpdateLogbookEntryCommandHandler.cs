@@ -86,10 +86,13 @@ public class UpdateLogbookEntryCommandHandler : IRequestHandler<UpdateLogbookEnt
         FishLength? length = request.LengthInCm.HasValue ? new FishLength(request.LengthInCm.Value) : null;
         FishWeight? weight = request.WeightInKg.HasValue ? new FishWeight(request.WeightInKg.Value) : null;
 
+        // Convert to UTC to avoid PostgreSQL timezone issues
+        var catchTimeUtc = request.CatchTime?.ToUniversalTime();
+
         // Użyj metody domenowej do aktualizacji (lub zaktualizuj pola bezpośrednio, jeśli nie ma metody)
         logbookEntry.UpdateDetails(
             imageUrl: newImageUrl, // Przekazujemy zaktualizowany URL
-            catchTime: request.CatchTime ?? logbookEntry.CatchTime, // Jeśli null, zostaw stare
+            catchTime: catchTimeUtc ?? logbookEntry.CatchTime, // Jeśli null, zostaw stare
             length: length, // Przekazujemy nowe lub null
             weight: weight, // Przekazujemy nowe lub null
             notes: request.Notes, // Może być null, aby wyczyścić

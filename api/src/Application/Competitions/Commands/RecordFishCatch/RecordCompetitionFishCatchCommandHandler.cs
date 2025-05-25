@@ -76,6 +76,9 @@ public class RecordCompetitionFishCatchCommandHandler : IRequestHandler<RecordCo
         FishLength? length = request.LengthInCm.HasValue ? new FishLength(request.LengthInCm.Value) : null;
         FishWeight? weight = request.WeightInKg.HasValue ? new FishWeight(request.WeightInKg.Value) : null;
 
+        // Convert to UTC to avoid PostgreSQL timezone issues
+        var catchTimeUtc = request.CatchTime.ToUniversalTime();
+
         // Używamy metody domenowej Competition.RecordFishCatch
         try
         {
@@ -85,7 +88,7 @@ public class RecordCompetitionFishCatchCommandHandler : IRequestHandler<RecordCo
                 fishSpecies: fishSpecies,
                 imageUrl: imageResult.Url,
                 // imagePublicId: imageResult.PublicId, // Jeśli przechowujemy
-                catchTime: request.CatchTime,
+                catchTime: catchTimeUtc,
                 length: length,
                 weight: weight
             );

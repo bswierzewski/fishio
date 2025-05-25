@@ -12,7 +12,14 @@ public enum MyCompetitionFilter
     Judged
 }
 
-public class GetMyCompetitionsQuery : IRequest<PaginatedList<CompetitionSummaryDto>>
+// New DTO that includes user role information
+public record MyCompetitionSummaryDto : CompetitionSummaryDto
+{
+    public ParticipantRole? UserRole { get; init; }
+    public bool IsOrganizer { get; init; }
+}
+
+public class GetMyCompetitionsQuery : IRequest<PaginatedList<MyCompetitionSummaryDto>>
 {
     public int PageNumber { get; set; } = 1;
     public int PageSize { get; set; } = 10;

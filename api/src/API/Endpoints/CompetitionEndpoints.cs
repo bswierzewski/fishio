@@ -40,7 +40,7 @@ public static class CompetitionsEndpoints
 
         competitionsGroup.MapGet("/my", GetUserCompetitionsList)
             .WithName(nameof(GetUserCompetitionsList))
-            .Produces<PaginatedList<CompetitionSummaryDto>>(StatusCodes.Status200OK)
+            .Produces<PaginatedList<MyCompetitionSummaryDto>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .RequireAuthorization();
 

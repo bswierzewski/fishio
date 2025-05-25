@@ -51,10 +51,13 @@ public class CreateLogbookEntryCommandHandler : IRequestHandler<CreateLogbookEnt
         FishLength? length = request.LengthInCm.HasValue ? new FishLength(request.LengthInCm.Value) : null;
         FishWeight? weight = request.WeightInKg.HasValue ? new FishWeight(request.WeightInKg.Value) : null;
 
+        // Convert to UTC to avoid PostgreSQL timezone issues
+        var catchTimeUtc = request.CatchTime?.ToUniversalTime();
+
         var logbookEntry = new LogbookEntry(
             userId: domainUserId.Value, // Używamy domainUserId.Value
             imageUrl: imageResult.Url,
-            catchTime: request.CatchTime,
+            catchTime: catchTimeUtc,
             length: length,
             weight: weight,
             notes: request.Notes,

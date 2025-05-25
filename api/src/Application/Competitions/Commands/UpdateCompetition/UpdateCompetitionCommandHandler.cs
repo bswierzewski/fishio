@@ -99,7 +99,10 @@ public class UpdateCompetitionCommandHandler : IRequestHandler<UpdateCompetition
             // competitionToUpdate.SetImagePublicId(imageResult.PublicId); // Metoda domenowa
         }
 
-        var newSchedule = new DateTimeRange(request.StartTime, request.EndTime);
+        // Convert to UTC to avoid PostgreSQL timezone issues
+        var startTimeUtc = request.StartTime.ToUniversalTime();
+        var endTimeUtc = request.EndTime.ToUniversalTime();
+        var newSchedule = new DateTimeRange(startTimeUtc, endTimeUtc);
 
         // Używamy metody domenowej do aktualizacji
         competitionToUpdate.UpdateDetails(

@@ -2,7 +2,7 @@
 
 namespace Fishio.Application.Competitions.Queries.GetMyCompetitions;
 
-public class GetMyCompetitionsQueryHandler : IRequestHandler<GetMyCompetitionsQuery, PaginatedList<CompetitionSummaryDto>>
+public class GetMyCompetitionsQueryHandler : IRequestHandler<GetMyCompetitionsQuery, PaginatedList<MyCompetitionSummaryDto>>
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
@@ -13,7 +13,7 @@ public class GetMyCompetitionsQueryHandler : IRequestHandler<GetMyCompetitionsQu
         _currentUserService = currentUserService;
     }
 
-    public async Task<PaginatedList<CompetitionSummaryDto>> Handle(GetMyCompetitionsQuery request, CancellationToken cancellationToken)
+    public async Task<PaginatedList<MyCompetitionSummaryDto>> Handle(GetMyCompetitionsQuery request, CancellationToken cancellationToken)
     {
         var currentUserId = _currentUserService.UserId;
         if (!currentUserId.HasValue || currentUserId.Value == 0)
@@ -60,7 +60,7 @@ public class GetMyCompetitionsQueryHandler : IRequestHandler<GetMyCompetitionsQu
 
         query = query.OrderByDescending(c => c.Schedule.Start);
 
-        var dtoListQuery = query.Select(c => new CompetitionSummaryDto
+        var dtoListQuery = query.Select(c => new MyCompetitionSummaryDto
         {
             Id = c.Id,
             Name = c.Name,
@@ -75,13 +75,15 @@ public class GetMyCompetitionsQueryHandler : IRequestHandler<GetMyCompetitionsQu
                                   .Where(cat => cat.IsPrimaryScoring && cat.IsEnabled)
                                   .Select(cat => (cat.CustomNameOverride ?? cat.CategoryDefinition.Name) +
                                                  (cat.CategoryDefinition.Metric != CategoryMetric.NotApplicable ? $" ({GetMetricAbbreviation(cat.CategoryDefinition.Metric)})" : ""))
-                                  .FirstOrDefault() ?? "Brak informacji"
+                                  .FirstOrDefault() ?? "Brak informacji",
+            UserRole = c.Participants.Where(p => p.UserId == currentUserId.Value).Select(p => p.Role).FirstOrDefault(),
+            IsOrganizer = c.OrganizerId == currentUserId.Value
         });
 
-        return await PaginatedList<CompetitionSummaryDto>.CreateAsync(dtoListQuery, request.PageNumber, request.PageSize);
+        return await PaginatedList<MyCompetitionSummaryDto>.CreateAsync(dtoListQuery, request.PageNumber, request.PageSize);
     }
 
-    private string GetMetricAbbreviation(CategoryMetric metric)
+    private static string GetMetricAbbreviation(CategoryMetric metric)
     {
         return metric switch
         {
