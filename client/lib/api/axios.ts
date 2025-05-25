@@ -5,6 +5,8 @@ import Axios, {
   type InternalAxiosRequestConfig
 } from 'axios';
 
+import { handleApiError } from '../error-utils';
+
 export const axiosInstance: AxiosInstance = Axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL
 });
@@ -52,34 +54,26 @@ export const setupClerkInterceptors = (
     (response) => response,
     async (error: AxiosError) => {
       if (Axios.isCancel(error)) {
-        // Jeśli chcesz, aby błąd anulowania był propagowany:
+        // If request was cancelled, propagate the error
         return Promise.reject(error);
-        // Jeśli chcesz go "połknąć" (niezalecane zazwyczaj):
-        // return new Promise(() => {}); // Tworzy "wiszącą" obietnicę
       }
 
       const axiosError = error as AxiosError;
 
-      if (!axiosError.response) {
-        console.error('ApiClient: Network error or no response:', axiosError.message);
-        // toast.error('Network error. Please check your connection.');
-      } else {
-        const { status } = axiosError.response;
-        // console.log('ApiClient: Response error status:', status);
-        if (status === 401) {
-          console.log('ApiClient: Unauthorized (401). Signing out...');
-          try {
-            // Użyj przekazanej funkcji signOut
-            await signOut({ redirectUrl: '/sign-in' }); // Możesz dostosować redirectUrl
-            // toast.error('Session expired. Please log in again.');
-          } catch (signOutError) {
-            console.error('ApiClient: Error during sign out:', signOutError);
-          }
-        } else if (status >= 500) {
-          console.error('ApiClient: Server error:', status, axiosError.response.data);
-          // toast.error('Something went wrong. Please try again later.');
+      // Handle 401 errors (unauthorized) - sign out user
+      if (axiosError.response?.status === 401) {
+        console.log('ApiClient: Unauthorized (401). Signing out...');
+        try {
+          await signOut({ redirectUrl: '/sign-in' });
+        } catch (signOutError) {
+          console.error('ApiClient: Error during sign out:', signOutError);
         }
+        return Promise.reject(axiosError);
       }
+
+      // Handle all other errors with user-friendly messages
+      handleApiError(axiosError);
+
       return Promise.reject(axiosError);
     }
   );

@@ -1,4 +1,3 @@
-// app/(main)/logbook/[catchId]/page.tsx
 'use client';
 
 // Required for using client-side hooks
@@ -26,15 +25,6 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 
-// app/(main)/logbook/[catchId]/page.tsx
-
-// app/(main)/logbook/[catchId]/page.tsx
-
-// For error state icon
-
-// Ikony
-
-// Style (dopasuj do reszty aplikacji)
 const cardBodyBgClass = 'bg-card';
 const cardTextColorClass = 'text-foreground';
 const cardMutedTextColorClass = 'text-muted-foreground';
@@ -153,15 +143,8 @@ export default function LogbookEntryDetailPage() {
           },
           onError: (error: HttpValidationProblemDetails | ProblemDetails) => {
             console.error('Error deleting logbook entry:', error);
-            let errorMessage = 'Nie udało się usunąć wpisu. Spróbuj ponownie.';
-            if ('title' in error && error.title) {
-              errorMessage = error.title;
-            } else if ('detail' in error && error.detail) {
-              errorMessage = error.detail;
-            } else if ('message' in error && typeof error.message === 'string') {
-              errorMessage = error.message;
-            }
-            toast.error(errorMessage);
+            // Don't show manual error toast - let the axios interceptor handle it
+            // The interceptor will show user-friendly validation errors automatically
           }
         }
       );

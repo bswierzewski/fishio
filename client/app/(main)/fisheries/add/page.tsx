@@ -34,17 +34,8 @@ export default function AddFisheryPage() {
       },
       onError: (error: unknown) => {
         console.error('Błąd podczas dodawania łowiska:', error);
-        let errorMsg = 'Nie udało się dodać łowiska. Spróbuj ponownie.';
-        if (error && typeof error === 'object' && 'response' in error) {
-          const response = error.response as { data?: { title?: string; errors?: Record<string, string[]> } };
-          if (response.data?.title) {
-            errorMsg = response.data.title;
-          }
-          // If there are specific field errors, you could potentially display them
-          // For example, by setting them in a local state or directly on the form if the library supports it.
-          // if (response.data?.errors) { /* ... */ }
-        }
-        toast.error(errorMsg);
+        // Don't show manual error toast - let the axios interceptor handle it
+        // The interceptor will show user-friendly validation errors automatically
       }
     }
   });

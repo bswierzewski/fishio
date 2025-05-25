@@ -131,15 +131,8 @@ export default function EditLogbookEntryPage() {
         },
         onError: (error: HttpValidationProblemDetails | ProblemDetails) => {
           console.error('Error updating logbook entry:', error);
-          let errorMessage = 'Nie udało się zaktualizować wpisu. Spróbuj ponownie.';
-          if ('title' in error && error.title) {
-            errorMessage = error.title;
-          } else if ('detail' in error && error.detail) {
-            errorMessage = error.detail;
-          } else if ('message' in error && typeof error.message === 'string') {
-            errorMessage = error.message;
-          }
-          toast.error(errorMessage);
+          // Don't show manual error toast - let the axios interceptor handle it
+          // The interceptor will show user-friendly validation errors automatically
         }
       }
     );

@@ -87,17 +87,8 @@ export default function AddLogbookEntryPage() {
         },
         onError: (error: HttpValidationProblemDetails | ProblemDetails | Error) => {
           console.error('Error creating new logbook entry:', error);
-          let errorMessage = 'Nie udało się dodać nowego połowu. Spróbuj ponownie.';
-          if (error instanceof Error) {
-            errorMessage = error.message;
-          } else if (error && typeof error === 'object') {
-            if ('title' in error && error.title) {
-              errorMessage = error.title as string;
-            } else if ('detail' in error && error.detail) {
-              errorMessage = error.detail as string;
-            }
-          }
-          toast.error(errorMessage);
+          // Don't show manual error toast - let the axios interceptor handle it
+          // The interceptor will show user-friendly validation errors automatically
         }
       }
     );

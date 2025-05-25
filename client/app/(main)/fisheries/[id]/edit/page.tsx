@@ -58,14 +58,8 @@ export default function EditFisheryPage() {
       },
       onError: (error: unknown) => {
         console.error('Błąd podczas aktualizacji łowiska:', error);
-        let errorMsg = 'Nie udało się zaktualizować łowiska. Spróbuj ponownie.';
-        if (error && typeof error === 'object' && 'response' in error) {
-          const response = error.response as { data?: { title?: string; errors?: Record<string, string[]> } };
-          if (response.data?.title) {
-            errorMsg = response.data.title;
-          }
-        }
-        toast.error(errorMsg);
+        // Don't show manual error toast - let the axios interceptor handle it
+        // The interceptor will show user-friendly validation errors automatically
       }
     }
   });
