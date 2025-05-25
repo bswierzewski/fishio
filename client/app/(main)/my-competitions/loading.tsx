@@ -5,12 +5,17 @@ export default function LoadingMyCompetitions() {
     <div>
       <h1 className="text-3xl font-bold mb-6">Moje Zawody</h1>
       <p className="text-muted-foreground mb-4">Ładowanie listy Twoich zawodów...</p>
-      {/* Szkielet listy */}
-      <div className="space-y-4">
-        {[1, 2].map((i) => (
-          <div key={i} className="p-4 border rounded bg-card animate-pulse">
-            <div className="h-6 bg-muted rounded w-1/2 mb-2"></div> {/* Nazwa */}
-            <div className="h-4 bg-muted rounded w-3/4"></div> {/* Info */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="animate-pulse">
+            <div className="rounded-lg border border-border bg-card shadow">
+              <div className="h-10 bg-slate-200 rounded-t-lg"></div>
+              <div className="p-3 space-y-2">
+                <div className="h-4 bg-slate-200 rounded w-3/4"></div>
+                <div className="h-3 bg-slate-200 rounded w-1/2"></div>
+                <div className="h-3 bg-slate-200 rounded w-2/3"></div>
+              </div>
+            </div>
           </div>
         ))}
       </div>

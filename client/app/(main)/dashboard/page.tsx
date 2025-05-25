@@ -223,7 +223,7 @@ export default function DashboardPage() {
             recentCatches.map((entry: DashboardLogbookSummaryDto) => (
               <Link href={`/logbook/${entry.id}`} className="w-40 flex-shrink-0 h-full" key={`log-${entry.id}`}>
                 <div className="h-full w-full overflow-hidden rounded-lg shadow border border-border flex flex-col bg-card hover:shadow-md transition-shadow">
-                  <div className="relative h-24 w-full bg-muted flex-shrink-0">
+                  <div className="relative h-34 w-full bg-muted flex-shrink-0">
                     <Image
                       src={entry.imageUrl || '/placeholder-fish.svg'}
                       alt={entry.fishSpeciesName || 'Złowiona ryba'}
@@ -231,11 +231,8 @@ export default function DashboardPage() {
                       objectFit="cover"
                     />
                   </div>
-                  <div className={`p-3 flex-grow flex flex-col justify-between ${cardBodyBgClass}`}>
+                  <div className={`p-2 px-3 flex-grow flex flex-col justify-between ${cardBodyBgClass}`}>
                     <div>
-                      <h3 className={`text-sm font-semibold ${cardTextColorClass} mb-1 truncate`}>
-                        {entry.fishSpeciesName || 'Nieznany gatunek'}
-                      </h3>
                       <p className={`text-xs ${cardMutedTextColorClass}`}>
                         {new Date(entry.catchTime ?? new Date()).toLocaleDateString('pl-PL')}
                       </p>
@@ -247,12 +244,7 @@ export default function DashboardPage() {
           ) : (
             <EmptySectionPlaceholder message="Brak zarejestrowanych połowów. Dodaj swój pierwszy połów!" icon={Fish} />
           )}
-          <ActionCard
-            href="/logbook/add"
-            text="Dodaj Nowy Połów"
-            icon={Plus}
-            src="/koi.svg"
-          />
+          <ActionCard href="/logbook/add" text="Dodaj Nowy Połów" icon={Plus} src="/koi.svg" />
         </div>
       </section>
 
@@ -296,12 +288,7 @@ export default function DashboardPage() {
               icon={Search}
             />
           )}
-          <ActionCard
-            href="/competitions"
-            text="Przeglądaj Zawody"
-            icon={ArrowRight}
-            src="/laurel_wreath_green.svg"
-          />
+          <ActionCard href="/competitions" text="Przeglądaj Zawody" icon={ArrowRight} src="/laurel_wreath_green.svg" />
         </div>
       </section>
 

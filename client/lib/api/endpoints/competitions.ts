@@ -30,6 +30,7 @@ import type {
   CreateCompetitionCommand,
   GetOpenCompetitionsListParams,
   GetUserCompetitionsListParams,
+  MyCompetitionSummaryDtoPaginatedList,
   ProblemDetails,
   RecordCompetitionFishCatchCommand,
   UpdateCompetitionCategoryCommand,
@@ -272,7 +273,7 @@ export const getUserCompetitionsList = (
   options?: SecondParameter<typeof customInstance>,
   signal?: AbortSignal
 ) => {
-  return customInstance<CompetitionSummaryDtoPaginatedList>(
+  return customInstance<MyCompetitionSummaryDtoPaginatedList>(
     { url: `/api/competitions/my`, method: 'GET', params, signal },
     options
   );

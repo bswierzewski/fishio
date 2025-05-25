@@ -1,19 +1,36 @@
 // app/(main)/logbook/[catchId]/page.tsx
-"use client"; // Required for using client-side hooks
+'use client';
 
-import { useDeleteExistingLogbookEntry, useGetLogbookEntryDetailsById, getGetCurrentUserLogbookEntriesQueryKey } from '@/lib/api/endpoints/logbook';
-import { LogbookEntryDto, HttpValidationProblemDetails, ProblemDetails } from '@/lib/api/models';
+// Required for using client-side hooks
+import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, CalendarDays, Edit, MapPin, Ruler, Trash2, Weight } from 'lucide-react';
+// For error state
+import { Terminal } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { notFound, useRouter, useParams } from 'next/navigation'; // Import useParams & useRouter
+import { notFound, useParams, useRouter } from 'next/navigation';
+// Import useParams & useRouter
 import { toast } from 'react-hot-toast';
-import { useQueryClient } from '@tanstack/react-query'; // Import useQueryClient
+
+import {
+  getGetCurrentUserLogbookEntriesQueryKey,
+  useDeleteExistingLogbookEntry,
+  useGetLogbookEntryDetailsById
+} from '@/lib/api/endpoints/logbook';
+import { HttpValidationProblemDetails, LogbookEntryDto, ProblemDetails } from '@/lib/api/models';
+
+// For loading state
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+// Import useQueryClient
 
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton'; // For loading state
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; // For error state
-import { Terminal } from "lucide-react"; // For error state icon
+import { Skeleton } from '@/components/ui/skeleton';
+
+// app/(main)/logbook/[catchId]/page.tsx
+
+// app/(main)/logbook/[catchId]/page.tsx
+
+// For error state icon
 
 // Ikony
 
@@ -39,17 +56,19 @@ export default function LogbookEntryDetailPage() {
   const queryClient = useQueryClient(); // Get queryClient instance
   const id = params.id as string;
 
-  const { data: entry, isLoading, isError, error } = useGetLogbookEntryDetailsById(parseInt(id, 10), {
+  const {
+    data: entry,
+    isLoading,
+    isError,
+    error
+  } = useGetLogbookEntryDetailsById(parseInt(id, 10), {
     query: {
       enabled: !!id,
-      refetchOnMount: "always",
+      refetchOnMount: 'always'
     }
   });
 
-  const {
-    mutate: deleteLogbookEntry,
-    isPending: isDeletingEntry,
-  } = useDeleteExistingLogbookEntry();
+  const { mutate: deleteLogbookEntry, isPending: isDeletingEntry } = useDeleteExistingLogbookEntry();
 
   if (isLoading) {
     return (
@@ -99,13 +118,10 @@ export default function LogbookEntryDetailPage() {
       <Alert variant="destructive" className="mt-4">
         <Terminal className="h-4 w-4" />
         <AlertTitle>Błąd</AlertTitle>
-        <AlertDescription>
-          Nie udało się załadować szczegółów wpisu. {errorMessage}
-        </AlertDescription>
+        <AlertDescription>Nie udało się załadować szczegółów wpisu. {errorMessage}</AlertDescription>
       </Alert>
     );
   }
-
 
   if (!entry) {
     notFound();
@@ -131,7 +147,7 @@ export default function LogbookEntryDetailPage() {
             toast.success('Wpis w dzienniku został pomyślnie usunięty!');
             // Invalidate the query for the logbook entries list
             queryClient.invalidateQueries({
-              queryKey: getGetCurrentUserLogbookEntriesQueryKey({ PageNumber: 1, PageSize: 20 }),
+              queryKey: getGetCurrentUserLogbookEntriesQueryKey({ PageNumber: 1, PageSize: 20 })
             });
             router.push('/logbook');
           },
@@ -146,7 +162,7 @@ export default function LogbookEntryDetailPage() {
               errorMessage = error.message;
             }
             toast.error(errorMessage);
-          },
+          }
         }
       );
     }
@@ -175,9 +191,9 @@ export default function LogbookEntryDetailPage() {
                 <span className="sr-only">Edytuj</span>
               </Button>
             </Link>
-            <Button 
-              variant="destructive" 
-              size="icon" 
+            <Button
+              variant="destructive"
+              size="icon"
               onClick={handleDeleteEntry}
               disabled={isDeletingEntry || isLoading} // Disable if deleting or initial load in progress
             >
@@ -202,27 +218,32 @@ export default function LogbookEntryDetailPage() {
             src={entry.imageUrl || '/placeholder-image.jpg'} // Changed to imageUrl and added fallback
             alt={`Zdjęcie ${entry.fishSpeciesName || 'ryby'}`} // Changed to fishSpeciesName and added fallback
             layout="fill"
-            objectFit="contain" // Użyj 'contain', aby cała ryba była widoczna
+            objectFit="cover" // Użyj 'contain', aby cała ryba była widoczna
             priority
           />
         </div>
 
         {/* Informacje o Połowie */}
         <div className="p-4 sm:p-6 space-y-4">
-          <h1 className={`text-2xl sm:text-3xl font-bold ${cardTextColorClass}`}>{entry.fishSpeciesName || 'Nieznany gatunek'}</h1> {/* Changed to fishSpeciesName and added fallback */}
-
+          <h1 className={`text-2xl sm:text-3xl font-bold ${cardTextColorClass}`}>
+            {entry.fishSpeciesName || 'Nieznany gatunek'}
+          </h1>{' '}
+          {/* Changed to fishSpeciesName and added fallback */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
             <div className="flex items-center">
               <CalendarDays className={`mr-2 h-5 w-5 ${cardMutedTextColorClass}`} />
               <span className={cardTextColorClass}>Data połowu:</span>
-              <span className={`ml-1 font-medium ${cardTextColorClass}`}>{entry.catchTime ? formatDate(entry.catchTime) : 'Brak danych'}</span>
+              <span className={`ml-1 font-medium ${cardTextColorClass}`}>
+                {entry.catchTime ? formatDate(entry.catchTime) : 'Brak danych'}
+              </span>
             </div>
 
             {entry.lengthInCm && (
               <div className="flex items-center">
                 <Ruler className={`mr-2 h-5 w-5 ${cardMutedTextColorClass}`} />
                 <span className={cardTextColorClass}>Długość:</span>
-                <span className={`ml-1 font-medium ${cardTextColorClass}`}>{entry.lengthInCm} cm</span> {/* Changed to lengthInCm */}
+                <span className={`ml-1 font-medium ${cardTextColorClass}`}>{entry.lengthInCm} cm</span>{' '}
+                {/* Changed to lengthInCm */}
               </div>
             )}
 
@@ -230,7 +251,8 @@ export default function LogbookEntryDetailPage() {
               <div className="flex items-center">
                 <Weight className={`mr-2 h-5 w-5 ${cardMutedTextColorClass}`} />
                 <span className={cardTextColorClass}>Waga:</span>
-                <span className={`ml-1 font-medium ${cardTextColorClass}`}>{entry.weightInKg} kg</span> {/* Changed to weightInKg */}
+                <span className={`ml-1 font-medium ${cardTextColorClass}`}>{entry.weightInKg} kg</span>{' '}
+                {/* Changed to weightInKg */}
               </div>
             )}
 
@@ -246,7 +268,6 @@ export default function LogbookEntryDetailPage() {
               </div>
             )}
           </div>
-
           {/* Notatki */}
           {entry.notes && (
             <div>

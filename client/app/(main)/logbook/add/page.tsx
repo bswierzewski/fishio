@@ -1,14 +1,15 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Calendar, Fish, ImagePlus, MapPin, Ruler, StickyNote, Weight } from 'lucide-react';
 import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-hot-toast';
 
 import { useGetAllFisheries } from '@/lib/api/endpoints/fisheries';
-import { useCreateNewLogbookEntry, getGetCurrentUserLogbookEntriesQueryKey } from '@/lib/api/endpoints/logbook';
+import { getGetCurrentUserLogbookEntriesQueryKey, useCreateNewLogbookEntry } from '@/lib/api/endpoints/logbook';
+import { useGetAllFishSpecies } from '@/lib/api/endpoints/lookup-data';
 import { CreateLogbookEntryCommand, HttpValidationProblemDetails, ProblemDetails } from '@/lib/api/models';
 
 import { Button } from '@/components/ui/button';
@@ -30,10 +31,8 @@ export default function AddLogbookEntryPage() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
   const { data: fisheries } = useGetAllFisheries({ PageNumber: 1, PageSize: 20 });
-  const { 
-    mutate: createNewLogbookEntry, 
-    isPending: isCreatingEntry 
-  } = useCreateNewLogbookEntry();
+  const { data: fishSpecies } = useGetAllFishSpecies();
+  const { mutate: createNewLogbookEntry, isPending: isCreatingEntry } = useCreateNewLogbookEntry();
 
   // Symulacja obsługi zmiany pliku
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,13 +61,22 @@ export default function AddLogbookEntryPage() {
       image: selectedImage,
       lengthInCm: formData.get('length') ? parseFloat(formData.get('length') as string) : undefined,
       weightInKg: formData.get('weight') ? parseFloat(formData.get('weight') as string) : undefined,
-      catchTime: formData.get('catch-time') ? new Date(formData.get('catch-time') as string).toISOString() : new Date().toISOString(),
-      fisheryId: formData.get('fishery') && formData.get('fishery') !== 'none' ? Number(formData.get('fishery') as string) : undefined,
-      notes: formData.get('notes') as string || undefined,
+      catchTime: formData.get('catch-time')
+        ? new Date(formData.get('catch-time') as string).toISOString()
+        : new Date().toISOString(),
+      fishSpeciesId:
+        formData.get('species') && formData.get('species') !== 'none'
+          ? Number(formData.get('species') as string)
+          : undefined,
+      fisheryId:
+        formData.get('fishery') && formData.get('fishery') !== 'none'
+          ? Number(formData.get('fishery') as string)
+          : undefined,
+      notes: (formData.get('notes') as string) || undefined
     };
 
     createNewLogbookEntry(
-      { data: command }, 
+      { data: command },
       {
         onSuccess: () => {
           toast.success('Nowy połów został pomyślnie dodany do dziennika!');
@@ -152,16 +160,21 @@ export default function AddLogbookEntryPage() {
         {/* --- Sekcja Gatunek --- */}
         <div>
           <Label htmlFor="species" className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-1`}>
-            <Fish className="mr-2 h-5 w-5" /> Gatunek (Wymagane)
+            <Fish className="mr-2 h-5 w-5" /> Gatunek
           </Label>
-          <Input
-            id="species"
-            name="species"
-            type="text"
-            placeholder="Np. Szczupak, Okoń..."
-            className="bg-card border-border"
-            required
-          />
+          <Select name="species">
+            <SelectTrigger className="w-full bg-card border-border">
+              <SelectValue placeholder="Wybierz gatunek ryby..." />
+            </SelectTrigger>
+            <SelectContent className="bg-popover">
+              <SelectItem value="none">Nie wybrano</SelectItem>
+              {fishSpecies?.map((species) => (
+                <SelectItem key={species.id} value={species?.id?.toString() ?? ''}>
+                  {species.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* --- Sekcja Wymiary --- */}
@@ -245,12 +258,12 @@ export default function AddLogbookEntryPage() {
 
         {/* --- Przycisk Zapisu --- */}
         <div className="pt-2">
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
             disabled={isCreatingEntry}
           >
-            {isCreatingEntry ? 'Zapisywanie połowu...' : 'Zapisz Połów w Dzienniku'} 
+            {isCreatingEntry ? 'Zapisywanie połowu...' : 'Zapisz Połów w Dzienniku'}
           </Button>
         </div>
       </form>

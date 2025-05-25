@@ -14,7 +14,7 @@ export default function BottomNavbar() {
         <div className="flex items-center justify-around rounded-full bg-secondary p-2 shadow-lg">
           {navLinks.map((link) => {
             const IconComponent = link.icon;
-            const isActive = pathname === link.href;
+            const isActive = pathname.startsWith(link.href);
 
             return (
               <Link

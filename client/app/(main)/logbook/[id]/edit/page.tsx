@@ -1,26 +1,32 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Calendar, Fish, ImagePlus, MapPin, Ruler, StickyNote, Weight } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-hot-toast';
 
 import { useGetAllFisheries } from '@/lib/api/endpoints/fisheries';
-import { 
-  useGetLogbookEntryDetailsById, 
-  useUpdateExistingLogbookEntry, 
-  getGetCurrentUserLogbookEntriesQueryKey, 
-  getGetLogbookEntryDetailsByIdQueryKey 
+import {
+  getGetCurrentUserLogbookEntriesQueryKey,
+  getGetLogbookEntryDetailsByIdQueryKey,
+  useGetLogbookEntryDetailsById,
+  useUpdateExistingLogbookEntry
 } from '@/lib/api/endpoints/logbook';
-import { UpdateLogbookEntryCommand, HttpValidationProblemDetails, ProblemDetails, LogbookEntryDto } from '@/lib/api/models';
+import { useGetAllFishSpecies } from '@/lib/api/endpoints/lookup-data';
+import {
+  HttpValidationProblemDetails,
+  LogbookEntryDto,
+  ProblemDetails,
+  UpdateLogbookEntryCommand
+} from '@/lib/api/models';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'react-hot-toast';
 
 const cardBodyBgClass = 'bg-card';
 const cardTextColorClass = 'text-foreground';
@@ -37,21 +43,19 @@ export default function EditLogbookEntryPage() {
   const [initialImageUrl, setInitialImageUrl] = useState<string | null>(null);
   const [removeCurrentImageFlag, setRemoveCurrentImageFlag] = useState(false);
 
-  const [speciesNameDisplay, setSpeciesNameDisplay] = useState('');
+  const [fishSpeciesId, setFishSpeciesId] = useState<string | undefined>(undefined);
 
   const {
     data: logbookEntry,
     isLoading: isLoadingEntry,
-    error: errorLoadingEntry,
+    error: errorLoadingEntry
   } = useGetLogbookEntryDetailsById(Number(entryId), {
-    query: { enabled: !!entryId },
+    query: { enabled: !!entryId }
   });
 
   const { data: fisheries } = useGetAllFisheries({ PageNumber: 1, PageSize: 100 });
-  const {
-    mutate: updateLogbookEntry,
-    isPending: isUpdatingEntry,
-  } = useUpdateExistingLogbookEntry();
+  const { data: fishSpecies } = useGetAllFishSpecies();
+  const { mutate: updateLogbookEntry, isPending: isUpdatingEntry } = useUpdateExistingLogbookEntry();
 
   const [lengthCm, setLengthCm] = useState<number | undefined>(undefined);
   const [weightKg, setWeightKg] = useState<number | undefined>(undefined);
@@ -61,7 +65,7 @@ export default function EditLogbookEntryPage() {
 
   useEffect(() => {
     if (logbookEntry) {
-      setSpeciesNameDisplay(logbookEntry.fishSpeciesName || '');
+      setFishSpeciesId(logbookEntry.fishSpeciesId?.toString() ?? undefined);
       setLengthCm(logbookEntry.lengthInCm ?? undefined);
       setWeightKg(logbookEntry.weightInKg ?? undefined);
       setCaughtAt(logbookEntry.catchTime ? new Date(logbookEntry.catchTime).toISOString().substring(0, 16) : '');
@@ -86,7 +90,7 @@ export default function EditLogbookEntryPage() {
       setSelectedImageFile(null);
     }
   };
-  
+
   const handleRemoveImage = () => {
     setSelectedImagePreview(null);
     setSelectedImageFile(null);
@@ -105,10 +109,11 @@ export default function EditLogbookEntryPage() {
       lengthInCm: lengthCm,
       weightInKg: weightKg,
       catchTime: caughtAt ? new Date(caughtAt).toISOString() : null,
+      fishSpeciesId: fishSpeciesId && fishSpeciesId !== 'none' ? Number(fishSpeciesId) : null,
       fisheryId: fisheryId ? Number(fisheryId) : null,
       notes: notes || null,
       removeCurrentImage: removeCurrentImageFlag,
-      image: selectedImageFile,
+      image: selectedImageFile
     };
 
     updateLogbookEntry(
@@ -116,11 +121,11 @@ export default function EditLogbookEntryPage() {
       {
         onSuccess: () => {
           toast.success('Wpis w dzienniku został pomyślnie zaktualizowany!');
-          queryClient.invalidateQueries({ 
-            queryKey: getGetCurrentUserLogbookEntriesQueryKey({ PageNumber: 1, PageSize: 20 }) 
+          queryClient.invalidateQueries({
+            queryKey: getGetCurrentUserLogbookEntriesQueryKey({ PageNumber: 1, PageSize: 20 })
           });
-          queryClient.invalidateQueries({ 
-            queryKey: getGetLogbookEntryDetailsByIdQueryKey(Number(entryId)) 
+          queryClient.invalidateQueries({
+            queryKey: getGetLogbookEntryDetailsByIdQueryKey(Number(entryId))
           });
           router.push('/logbook');
         },
@@ -132,10 +137,10 @@ export default function EditLogbookEntryPage() {
           } else if ('detail' in error && error.detail) {
             errorMessage = error.detail;
           } else if ('message' in error && typeof error.message === 'string') {
-             errorMessage = error.message;
+            errorMessage = error.message;
           }
           toast.error(errorMessage);
-        },
+        }
       }
     );
   };
@@ -147,11 +152,15 @@ export default function EditLogbookEntryPage() {
       if ('message' in error && typeof error.message === 'string') return error.message;
     }
     return 'Wystąpił nieoczekiwany błąd.';
-  }
+  };
 
   if (isLoadingEntry) return <p className="text-center py-10">Ładowanie danych wpisu...</p>;
-  if (errorLoadingEntry) return <p className="text-center py-10 text-destructive">Błąd ładowania danych: {getErrorMessage(errorLoadingEntry)}</p>;
-  if (!logbookEntry && !isLoadingEntry) return <p className="text-center py-10">Nie znaleziono wpisu o ID: {entryId}.</p>;
+  if (errorLoadingEntry)
+    return (
+      <p className="text-center py-10 text-destructive">Błąd ładowania danych: {getErrorMessage(errorLoadingEntry)}</p>
+    );
+  if (!logbookEntry && !isLoadingEntry)
+    return <p className="text-center py-10">Nie znaleziono wpisu o ID: {entryId}.</p>;
 
   return (
     <div className="space-y-6 pb-16">
@@ -168,7 +177,10 @@ export default function EditLogbookEntryPage() {
         className={`p-4 sm:p-6 rounded-lg border border-border shadow ${cardBodyBgClass} space-y-6`}
       >
         <div>
-          <Label htmlFor="catch-photo-input" className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-2`}>
+          <Label
+            htmlFor="catch-photo-input"
+            className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-2`}
+          >
             <ImagePlus className="mr-2 h-5 w-5" /> Zdjęcie Ryby
           </Label>
           <div className="mt-1 flex flex-col items-center justify-center rounded-md border-2 border-dashed border-border p-6 hover:border-primary transition-colors">
@@ -197,7 +209,13 @@ export default function EditLogbookEntryPage() {
                 />
               </Label>
               {selectedImagePreview && (
-                <Button variant="ghost" size="sm" type="button" className="text-destructive hover:text-destructive/80" onClick={handleRemoveImage}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  type="button"
+                  className="text-destructive hover:text-destructive/80"
+                  onClick={handleRemoveImage}
+                >
                   Usuń obecne zdjęcie
                 </Button>
               )}
@@ -208,21 +226,30 @@ export default function EditLogbookEntryPage() {
 
         <div>
           <Label htmlFor="species" className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-1`}>
-            <Fish className="mr-2 h-5 w-5" /> Gatunek (Obecnie: {speciesNameDisplay || 'Nie podano'})
+            <Fish className="mr-2 h-5 w-5" /> Gatunek
           </Label>
-          <Input
-            id="species-display"
-            name="species-display"
-            type="text"
-            placeholder="Nazwa gatunku (np. Szczupak)"
-            className="bg-input border-border text-muted-foreground"
-            value={speciesNameDisplay}
-            readOnly
-            disabled
-          />
-          <p className="text-xs text-muted-foreground mt-1">
-            Edycja gatunku wymaga implementacji wyboru z listy gatunków (ID).
-          </p>
+          {fishSpecies ? (
+            <Select
+              key={fishSpeciesId || 'select-species-placeholder'}
+              name="species"
+              value={fishSpeciesId || 'none'}
+              onValueChange={(value) => setFishSpeciesId(value === 'none' ? undefined : value)}
+            >
+              <SelectTrigger className="w-full bg-input border-border">
+                <SelectValue placeholder="Wybierz gatunek ryby..." />
+              </SelectTrigger>
+              <SelectContent className="bg-popover border-border">
+                <SelectItem value="none">Nie wybrano</SelectItem>
+                {fishSpecies.map((species) => (
+                  <SelectItem key={species.id} value={species?.id?.toString() ?? ''}>
+                    {species.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <Input disabled placeholder="Ładowanie listy gatunków..." className="bg-input border-border" />
+          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

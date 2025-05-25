@@ -45,6 +45,8 @@ export * from './httpValidationProblemDetailsErrors';
 export * from './listAvailableCompetitionsParams';
 export * from './logbookEntryDto';
 export * from './myCompetitionFilter';
+export * from './myCompetitionSummaryDto';
+export * from './myCompetitionSummaryDtoPaginatedList';
 export * from './participantRole';
 export * from './problemDetails';
 export * from './recordCompetitionFishCatchCommand';
