@@ -51,7 +51,7 @@ public class Competition : BaseAuditableEntity
         Fishery = fishery;
         Rules = rules;
         ImageUrl = imageUrl;
-        Status = CompetitionStatus.Draft;
+        Status = CompetitionStatus.AcceptingRegistrations;
         ResultsToken = Guid.NewGuid().ToString("N");
 
         // Automatycznie dodaj organizatora jako uczestnika z rolą Organizator

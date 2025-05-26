@@ -127,7 +127,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
   const [paramsResolved, setParamsResolved] = useState(false);
 
   // Get current user information (must be called before any early returns)
-  const { id: currentUserId, name: currentUserName, isLoading: userLoading } = useCurrentUser();
+  const { id: currentUserId, name: currentUserName } = useCurrentUser();
 
   // Resolve params properly with useEffect
   useEffect(() => {
@@ -392,28 +392,6 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
             {cancelCompetitionMutation.isPending ? 'Anulowanie...' : 'Anuluj Zawody'}
           </Button>
         )}
-
-        {competition.resultsToken && (
-          <Link href={`/results/${competition.resultsToken}`}>
-            <Button variant="outline" className="border-primary text-primary hover:bg-primary/10 hover:text-primary">
-              {competition.status === CompetitionStatus.Upcoming && (
-                <>
-                  <Hourglass className="mr-2 h-4 w-4" /> Śledź Zawody
-                </>
-              )}
-              {competition.status === CompetitionStatus.Ongoing && (
-                <>
-                  <Activity className="mr-2 h-4 w-4 animate-pulse" /> Zobacz Wyniki na Żywo
-                </>
-              )}
-              {competition.status === CompetitionStatus.Finished && (
-                <>
-                  <BarChart3 className="mr-2 h-4 w-4" /> Zobacz Oficjalne Wyniki
-                </>
-              )}
-            </Button>
-          </Link>
-        )}
       </div>
 
       {/* Main Content Grid */}
@@ -444,18 +422,20 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
                 </div>
               )}
 
-              {competition.categories && competition.categories.length > 0 && (
+              {competition.categories && competition.categories.filter((c) => !c.isPrimaryScoring).length > 0 && (
                 <div>
                   <h3 className="font-semibold mb-1 text-foreground flex items-center">
                     <Award className="mr-2 h-4 w-4 text-amber-500" />
                     Kategorie Specjalne:
                   </h3>
                   <div className="flex flex-wrap gap-2">
-                    {competition.categories.map((category, index) => (
-                      <Badge key={index} variant="secondary">
-                        {category.name}
-                      </Badge>
-                    ))}
+                    {competition.categories
+                      .filter((category) => !category.isPrimaryScoring)
+                      .map((category, index) => (
+                        <Badge key={index} variant="secondary">
+                          {category.name}
+                        </Badge>
+                      ))}
                   </div>
                 </div>
               )}
@@ -488,10 +468,55 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
             </div>
             <div className="p-4">
               {competition.status === CompetitionStatus.Upcoming ||
-              competition.status === CompetitionStatus.AcceptingRegistrations ? (
+              competition.status === CompetitionStatus.AcceptingRegistrations ||
+              competition.status === CompetitionStatus.Scheduled ? (
                 <p className="text-sm text-muted-foreground">Ranking będzie dostępny po rozpoczęciu zawodów.</p>
+              ) : competition.status === CompetitionStatus.Ongoing ? (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <Activity className="h-5 w-5 text-green-600 animate-pulse" />
+                    <div>
+                      <p className="text-sm font-medium text-green-800">Zawody w trakcie!</p>
+                      <p className="text-xs text-green-600">Wyniki są aktualizowane na bieżąco</p>
+                    </div>
+                  </div>
+                  {competition.resultsToken && (
+                    <Link href={`/results/${competition.resultsToken}`} className="block">
+                      <Button
+                        variant="default"
+                        className="w-full bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
+                      >
+                        <Activity className="mr-2 h-4 w-4 animate-pulse" />
+                        Zobacz Wyniki na Żywo
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+              ) : competition.status === CompetitionStatus.Finished ? (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <Trophy className="h-5 w-5 text-blue-600" />
+                    <div>
+                      <p className="text-sm font-medium text-blue-800">Zawody zakończone</p>
+                      <p className="text-xs text-blue-600">Oficjalne wyniki są dostępne</p>
+                    </div>
+                  </div>
+                  {competition.resultsToken && (
+                    <Link href={`/results/${competition.resultsToken}`} className="block">
+                      <Button
+                        variant="default"
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
+                      >
+                        <BarChart3 className="mr-2 h-4 w-4" />
+                        Zobacz Oficjalne Wyniki
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+              ) : competition.status === CompetitionStatus.Cancelled ? (
+                <p className="text-sm text-red-600">Zawody zostały anulowane. Ranking nie jest dostępny.</p>
               ) : (
-                <p className="text-sm text-muted-foreground">Tabela wyników (w przygotowaniu)...</p>
+                <p className="text-sm text-muted-foreground">Ranking nie jest obecnie dostępny.</p>
               )}
             </div>
           </div>

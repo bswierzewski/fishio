@@ -26,7 +26,8 @@ import {
   CategoryType,
   CompetitionType,
   CreateCompetitionCommand,
-  GetUserCompetitionsListParams
+  GetUserCompetitionsListParams,
+  SpecialCategoryDefinitionCommandDto
 } from '@/lib/api/models';
 
 import FieldInfo from '@/components/FieldInfo';
@@ -92,11 +93,7 @@ export default function AddCompetitionPage() {
       image: null as File | null,
       primaryScoringCategoryDefinitionId: undefined as number | undefined,
       primaryScoringFishSpeciesId: null as number | null,
-      specialCategories: [] as Array<{
-        categoryDefinitionId: number;
-        fishSpeciesId?: number | null;
-        customNameOverride?: string | null;
-      }>
+      specialCategories: [] as SpecialCategoryDefinitionCommandDto[]
     } as CreateCompetitionCommand,
     onSubmit: async ({ value }) => {
       createCompetition({ data: value });
@@ -438,8 +435,13 @@ export default function AddCompetitionPage() {
                             if (typeof checked === 'boolean' && category.id) {
                               const currentCategories = field.state.value || [];
                               if (checked) {
-                                // Add category
-                                const newCategories = [...currentCategories, { categoryDefinitionId: category.id }];
+                                // Add category with proper SpecialCategoryDefinitionCommandDto structure
+                                const newCategory: SpecialCategoryDefinitionCommandDto = {
+                                  categoryDefinitionId: category.id,
+                                  fishSpeciesId: null,
+                                  customNameOverride: null
+                                };
+                                const newCategories = [...currentCategories, newCategory];
                                 field.handleChange(newCategories);
                               } else {
                                 // Remove category
