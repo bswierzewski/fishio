@@ -8,13 +8,14 @@ interface CurrentUser {
   name: string | null;
   email: string | null;
   imageUrl: string | null;
-  isLoading: boolean;
   error: unknown;
 }
 
 /**
  * Custom hook to get the current user's information.
- * Uses the dedicated /api/users/me endpoint for clean separation of concerns.
+ *
+ * This hook assumes the user authentication state is already loaded
+ * since the AuthLoadingWrapper handles the loading state globally.
  *
  * This hook provides both Clerk user information (for client-side operations)
  * and domain user information (from the backend API).
@@ -23,22 +24,9 @@ interface CurrentUser {
  * through the UserProvisioningMiddleware and ICurrentUserService.
  */
 export function useCurrentUser(): CurrentUser {
-  const { user: clerkUser, isLoaded: clerkLoaded } = useUser();
+  const { user: clerkUser } = useUser();
 
-  const {
-    data: currentUserData,
-    isLoading: apiLoading,
-    error
-  } = useGetCurrentUser({
-    query: {
-      enabled: clerkLoaded && !!clerkUser, // Only fetch if user is authenticated
-      staleTime: 5 * 60 * 1000, // 5 minutes - user info doesn't change often
-      gcTime: 10 * 60 * 1000, // 10 minutes
-      retry: 1 // Only retry once for user info
-    }
-  });
-
-  const isLoading = !clerkLoaded || apiLoading;
+  const { data: currentUserData, error } = useGetCurrentUser();
 
   return {
     id: currentUserData?.id || null, // Domain user ID from backend
@@ -46,7 +34,6 @@ export function useCurrentUser(): CurrentUser {
     name: currentUserData?.name || clerkUser?.fullName || null,
     email: currentUserData?.email || clerkUser?.primaryEmailAddress?.emailAddress || null,
     imageUrl: currentUserData?.imageUrl || clerkUser?.imageUrl || null,
-    isLoading,
     error
   };
 }

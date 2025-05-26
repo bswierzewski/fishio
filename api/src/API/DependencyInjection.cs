@@ -115,7 +115,7 @@ public static class DependencyInjection
                     ValidIssuer = clerkOptions.Authority, // Powtórzenie dla jawnej walidacji
 
                     ValidateAudience = true,
-                    ValidAudiences = new[] { clerkOptions.Audience, "http://localhost:3000" }, // Accept both aud and azp values
+                    ValidAudience = clerkOptions.Audience, // Accept both aud and azp values
 
                     ValidateIssuerSigningKey = true,
                     // Klucze zostaną pobrane z JWKS URI dostarczonego przez Authority
@@ -125,14 +125,6 @@ public static class DependencyInjection
 
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.FromSeconds(30),
-
-                    // Custom audience validation to handle both 'aud' and 'azp' claims
-                    AudienceValidator = (audiences, securityToken, validationParameters) =>
-                    {
-                        // Accept if any of the token's audiences match our valid audiences
-                        var validAudiences = validationParameters.ValidAudiences ?? new[] { clerkOptions.Audience };
-                        return audiences?.Any(aud => validAudiences.Contains(aud)) == true;
-                    }
                 };
             });
 

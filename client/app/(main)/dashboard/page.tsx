@@ -49,7 +49,7 @@ const ActionCard = ({
   src?: string;
   className?: string;
 }) => (
-  <Link href={href} className={`block w-40 flex-shrink-0 h-full ${className}`}>
+  <Link href={href} className={`block w-44 flex-shrink-0 h-full ${className}`}>
     <div className="relative flex h-full flex-col items-center justify-center rounded-lg border border-border bg-card p-3 text-center transition-colors hover:bg-muted/50">
       {src && <Image src={src} alt="" layout="fill" objectFit="contain" className="opacity-10 z-0 p-4" />}
       <Icon className="h-8 w-8 text-primary mb-2 relative z-10" />
@@ -221,7 +221,7 @@ export default function DashboardPage() {
         <div className={`flex space-x-4 overflow-x-auto pb-4 ${cardHeight} items-stretch`}>
           {recentCatches.length > 0 ? (
             recentCatches.map((entry: DashboardLogbookSummaryDto) => (
-              <Link href={`/logbook/${entry.id}`} className="w-40 flex-shrink-0 h-full" key={`log-${entry.id}`}>
+              <Link href={`/logbook/${entry.id}`} className="w-44 flex-shrink-0 h-full" key={`log-${entry.id}`}>
                 <div className="h-full w-full overflow-hidden rounded-lg shadow border border-border flex flex-col bg-card hover:shadow-md transition-shadow">
                   <div className="relative h-full w-full bg-muted flex-shrink-0">
                     <Image
@@ -249,7 +249,7 @@ export default function DashboardPage() {
             openCompetitions.map((comp: DashboardCompetitionSummaryDto) => (
               <Link
                 href={`/competitions/${comp.id}`}
-                className="w-40 flex-shrink-0 h-full"
+                className="w-44 flex-shrink-0 h-full"
                 key={`open-comp-${comp.id}`}
               >
                 <div className="h-full w-full overflow-hidden rounded-lg shadow border border-border flex flex-col bg-card hover:shadow-md transition-shadow">
@@ -293,7 +293,7 @@ export default function DashboardPage() {
             featuredFisheries.map((fishery: DashboardFisherySummaryDto) => (
               <Link
                 href={`/fisheries/${fishery.id}`}
-                className="w-48 flex-shrink-0 h-full group"
+                className="w-44 flex-shrink-0 h-full group"
                 key={`fishery-${fishery.id}`}
               >
                 <div className="relative h-full w-full flex-shrink-0 overflow-hidden rounded-lg shadow border border-border flex flex-col justify-end hover:shadow-md transition-shadow">

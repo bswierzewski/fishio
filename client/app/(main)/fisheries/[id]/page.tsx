@@ -2,23 +2,26 @@
 
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { BarChart3, Calendar, Edit, Fish as FishIcon, List, MapPin, Plus, Trophy, User, Users } from 'lucide-react';
+import { BarChart3, Edit, Fish as FishIcon, List, MapPin, Plus, User } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound, useParams } from 'next/navigation';
 import { useEffect } from 'react';
 
 import { useGetFisheryById } from '@/lib/api/endpoints/fisheries';
-// Assuming DTOs from generated API client
-import { FishSpeciesSimpleDto, FisheryDto } from '@/lib/api/models';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const formatDateInternal = (dateInput: Date | string | number) => {
   const date = typeof dateInput === 'string' || typeof dateInput === 'number' ? new Date(dateInput) : dateInput;
   return format(date, 'dd MMMM yyyy', { locale: pl });
+};
+
+const formatLastCatchDate = (dateInput: Date | string | number | null | undefined) => {
+  if (!dateInput) return null;
+  const date = typeof dateInput === 'string' || typeof dateInput === 'number' ? new Date(dateInput) : dateInput;
+  return format(date, 'dd.MM.yyyy', { locale: pl });
 };
 
 export default function FisheryDetailPage() {
@@ -74,6 +77,16 @@ export default function FisheryDetailPage() {
   const definedSpeciesForDisplay = fishery.fishSpecies || [];
   const canEdit = true; // This might come from user permissions or API in a real app
   const canAddCatchHere = true;
+
+  // Extract statistics from the API response (these might be available as additional properties)
+  const statistics = (fishery as any).statistics || {};
+  const totalCatches = statistics.totalCatchesCount || 0;
+  const totalAnglers = statistics.totalAnglers || 0;
+  const totalCompetitions = statistics.totalCompetitions || 0;
+  const lastCatchDate = statistics.lastCatchDate;
+
+  // Enhanced fish species with catch data (if available)
+  const enhancedFishSpecies = (fishery as any).fishSpecies || definedSpeciesForDisplay;
 
   return (
     <div className="space-y-6">
@@ -147,108 +160,106 @@ export default function FisheryDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content Area */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Fishery Information Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FishIcon className="h-5 w-5" />
-                Informacje o Łowisku
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                {fishery.created && (
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">Dodano:</span>
-                    <span className="font-medium">{formatDateInternal(fishery.created)}</span>
+          {/* Statistics Section */}
+          <div className="overflow-hidden rounded-lg border border-border bg-card shadow">
+            <div className="bg-slate-800 text-slate-100 relative flex h-10 flex-shrink-0 items-center space-x-2 p-3">
+              <div className="relative z-10 flex items-center space-x-2">
+                <BarChart3 className="h-4 w-4" />
+                <span className="text-xs font-medium truncate">Statystyki Łowiska</span>
+              </div>
+            </div>
+            <div className="p-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                <div className="space-y-1">
+                  <div className="text-2xl font-bold text-foreground">{totalCatches}</div>
+                  <div className="text-xs text-muted-foreground">Połowy</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-2xl font-bold text-foreground">{totalAnglers}</div>
+                  <div className="text-xs text-muted-foreground">Wędkarze</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-2xl font-bold text-foreground">{totalCompetitions}</div>
+                  <div className="text-xs text-muted-foreground">Zawody</div>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-2xl font-bold text-foreground">
+                    {lastCatchDate ? formatLastCatchDate(lastCatchDate) : '-'}
                   </div>
-                )}
-
-                <div className="flex items-center gap-2">
-                  <List className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Gatunki ryb:</span>
-                  <span className="font-medium">{definedSpeciesForDisplay.length}</span>
+                  <div className="text-xs text-muted-foreground">Ostatni połów</div>
                 </div>
               </div>
-
-              {/* Placeholder for future statistics when detailed endpoint is available */}
-              <div className="mt-6 p-4 bg-muted/50 rounded-lg">
-                <div className="flex items-center gap-2 mb-3">
-                  <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-muted-foreground">Statystyki</span>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-                  <div className="space-y-1">
-                    <div className="text-2xl font-bold text-muted-foreground">-</div>
-                    <div className="text-xs text-muted-foreground">Połowy</div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-2xl font-bold text-muted-foreground">-</div>
-                    <div className="text-xs text-muted-foreground">Wędkarze</div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-2xl font-bold text-muted-foreground">-</div>
-                    <div className="text-xs text-muted-foreground">Zawody</div>
-                  </div>
-                  <div className="space-y-1">
-                    <div className="text-2xl font-bold text-muted-foreground">-</div>
-                    <div className="text-xs text-muted-foreground">Ostatni połów</div>
-                  </div>
-                </div>
+              {totalCatches === 0 && (
                 <p className="text-xs text-muted-foreground mt-3 text-center">
-                  Szczegółowe statystyki będą dostępne wkrótce
+                  Brak zarejestrowanych połowów na tym łowisku
                 </p>
-              </div>
-            </CardContent>
-          </Card>
+              )}
+            </div>
+          </div>
 
-          {/* Recent Catches Placeholder */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FishIcon className="h-5 w-5" />
-                Ostatnie Połowy
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <FishIcon className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
-                <p className="text-muted-foreground mb-4">Brak zarejestrowanych połowów na tym łowisku</p>
-                <Link href={`/logbook/add?fisheryId=${fishery.id}`}>
-                  <Button variant="outline" size="sm">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Dodaj pierwszy połów
-                  </Button>
-                </Link>
+          {/* Recent Catches Section */}
+          <div className="overflow-hidden rounded-lg border border-border bg-card shadow">
+            <div className="bg-slate-800 text-slate-100 relative flex h-10 flex-shrink-0 items-center space-x-2 p-3">
+              <div className="relative z-10 flex items-center space-x-2">
+                <FishIcon className="h-4 w-4" />
+                <span className="text-xs font-medium truncate">Ostatnie Połowy</span>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+            <div className="p-4">
+              {totalCatches > 0 ? (
+                <div className="text-center py-8">
+                  <FishIcon className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-muted-foreground mb-4">Lista ostatnich połowów będzie dostępna wkrótce</p>
+                  <p className="text-sm text-muted-foreground">
+                    Łącznie zarejestrowano {totalCatches} połowów na tym łowisku
+                  </p>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <FishIcon className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-muted-foreground mb-4">Brak zarejestrowanych połowów na tym łowisku</p>
+                  <Link href={`/logbook/add?fisheryId=${fishery.id}`}>
+                    <Button variant="outline" size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Dodaj pierwszy połów
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Sidebar */}
         <div className="space-y-6">
-          {/* Fish Species Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <List className="h-5 w-5" />
-                Występujące Gatunki
-                <span className="ml-auto bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-sm font-medium">
+          {/* Fish Species Section */}
+          <div className="overflow-hidden rounded-lg border border-border bg-card shadow">
+            <div className="bg-slate-800 text-slate-100 relative flex h-10 flex-shrink-0 items-center space-x-2 p-3">
+              <div className="relative z-10 flex items-center space-x-2">
+                <List className="h-4 w-4" />
+                <span className="text-xs font-medium truncate">Występujące Gatunki</span>
+                <span className="ml-auto bg-black/20 text-slate-100 px-2 py-1 rounded-md text-xs font-medium">
                   {definedSpeciesForDisplay.length}
                 </span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+              </div>
+            </div>
+            <div className="p-4">
               {definedSpeciesForDisplay.length > 0 ? (
                 <div className="space-y-2">
-                  {definedSpeciesForDisplay.map((species: FishSpeciesSimpleDto) => (
+                  {enhancedFishSpecies.map((species: any) => (
                     <div
                       key={species.id}
-                      className="flex items-center gap-2 p-2 rounded-md bg-muted/50 hover:bg-muted transition-colors"
+                      className="flex items-center justify-between p-2 rounded-md bg-muted/50 hover:bg-muted transition-colors"
                     >
-                      <FishIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <span className="text-sm font-medium">{species.name}</span>
+                      <div className="flex items-center gap-2">
+                        <FishIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                        <span className="text-sm font-medium">{species.name}</span>
+                      </div>
+                      {species.catchesCount !== undefined && (
+                        <div className="text-xs text-muted-foreground">
+                          {species.catchesCount} {species.catchesCount === 1 ? 'połów' : 'połowów'}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -258,8 +269,8 @@ export default function FisheryDetailPage() {
                   <p className="text-sm text-muted-foreground">Brak zdefiniowanych gatunków dla tego łowiska</p>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
       </div>
     </div>

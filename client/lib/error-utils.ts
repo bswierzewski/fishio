@@ -76,7 +76,8 @@ export function handleApiError(error: AxiosError): void {
       toast.error(data?.detail || data?.title || 'Nieprawidłowe żądanie. Sprawdź wprowadzone dane.');
       break;
     case 401:
-      // Handled by interceptor (sign out)
+      // Don't show toast for 401 - let the application handle authentication state
+      // through Clerk's proper flow. The user will be redirected by middleware if needed.
       break;
     case 403:
       toast.error('Nie masz uprawnień do wykonania tej akcji.');

@@ -81,7 +81,7 @@ export default function AddLogbookEntryPage() {
         onSuccess: () => {
           toast.success('Nowy połów został pomyślnie dodany do dziennika!');
           queryClient.invalidateQueries({
-            queryKey: getGetCurrentUserLogbookEntriesQueryKey({ PageNumber: 1, PageSize: 20 })
+            queryKey: [getGetCurrentUserLogbookEntriesQueryKey({ PageNumber: 1, PageSize: 20 })]
           });
           router.push('/logbook');
         },
