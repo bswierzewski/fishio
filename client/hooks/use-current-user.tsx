@@ -15,7 +15,7 @@ interface CurrentUser {
  * Custom hook to get the current user's information.
  *
  * This hook assumes the user authentication state is already loaded
- * since the AuthLoadingWrapper handles the loading state globally.
+ * since the AuthGuard handles the loading state globally.
  *
  * This hook provides both Clerk user information (for client-side operations)
  * and domain user information (from the backend API).

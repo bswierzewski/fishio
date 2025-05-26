@@ -16,14 +16,8 @@ let requestInterceptorId: number | undefined;
 let responseInterceptorId: number | undefined;
 
 type GetTokenFunction = (options?: { template?: string; skipCache?: boolean }) => Promise<string | null>;
-type SignOutFunction = (options?: { redirectUrl?: string; sessionId?: string }) => Promise<void>;
 
-export const setupClerkInterceptors = (
-  instance: AxiosInstance,
-  tokenTemplate: string,
-  getToken: GetTokenFunction,
-  signOut: SignOutFunction
-) => {
+export const setupClerkInterceptors = (instance: AxiosInstance, tokenTemplate: string, getToken: GetTokenFunction) => {
   if (requestInterceptorId !== undefined) {
     instance.interceptors.request.eject(requestInterceptorId);
   }
@@ -55,12 +49,10 @@ export const setupClerkInterceptors = (
 
       const axiosError = error as AxiosError;
 
-      // Handle 401 errors - use Clerk's signOut
+      // Handle 401 errors - let Clerk handle authentication state
       if (axiosError.response?.status === 401) {
-        console.log('ApiClient: Unauthorized (401). Signing out...');
-
-        await signOut({ redirectUrl: '/sign-in' });
-
+        console.log('ApiClient: Unauthorized (401). Let Clerk handle authentication state.');
+        // Don't sign out here - let Clerk's own mechanisms handle this
         return Promise.reject(axiosError);
       }
 

@@ -2,11 +2,11 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 
 const isPublicRoute = createRouteMatcher([
-  '/', // Strona główna (Landing Page) JEST TERAZ PUBLICZNA
-  '/sign-in(.*)', // Strony logowania Clerk
-  '/sign-up(.*)', // Strony rejestracji Clerk
-  '/results', // Publiczne wyniki zawodów
-  '/api/webhooks/clerk' // Webhooki Clerk (jeśli używasz)
+  '/', // Landing page (public)
+  '/sign-in(.*)', // Clerk sign-in pages
+  '/sign-up(.*)', // Clerk sign-up pages
+  '/results(.*)', // Public competition results
+  '/api/webhooks/clerk' // Clerk webhooks
 ]);
 
 const isSignInOrSignUpRoute = createRouteMatcher(['/sign-in(.*)', '/sign-up(.*)']);
@@ -15,45 +15,54 @@ export default clerkMiddleware(async (auth, req) => {
   const { userId } = await auth();
   const url = req.nextUrl;
 
-  // Użytkownik jest zalogowany
+  console.log(`Middleware: ${url.pathname}, userId: ${userId ? 'present' : 'none'}`);
+
+  // User is authenticated
   if (userId) {
-    // Jeśli zalogowany użytkownik próbuje wejść na stronę logowania/rejestracji,
-    // przekieruj go na dashboard '/dashboard'
+    // Redirect authenticated users away from auth pages
     if (isSignInOrSignUpRoute(req)) {
+      console.log('Redirecting authenticated user from auth page to dashboard');
       const dashboardUrl = new URL('/dashboard', req.url);
       return NextResponse.redirect(dashboardUrl);
     }
-    // Jeśli zalogowany użytkownik próbuje wejść na stronę główną '/',
-    // przekieruj go na dashboard '/dashboard'
+
+    // Redirect authenticated users from landing page to dashboard
     if (url.pathname === '/') {
+      console.log('Redirecting authenticated user from landing page to dashboard');
       const dashboardUrl = new URL('/dashboard', req.url);
       return NextResponse.redirect(dashboardUrl);
     }
-    // Pozwól zalogowanemu użytkownikowi kontynuować na inne strony (w tym /dashboard)
+
+    // Allow authenticated users to access all other routes
     return NextResponse.next();
   }
 
-  // Użytkownik NIE jest zalogowany
+  // User is NOT authenticated
   if (!userId) {
-    // Jeśli niezalogowany użytkownik próbuje wejść na stronę CHRONIONĄ
-    // (czyli nie jest to strona publiczna z listy isPublicRoute)
+    // Redirect unauthenticated users from protected routes to sign-in
     if (!isPublicRoute(req)) {
-      // Przekieruj go na stronę logowania '/sign-in'
-      const signInUrl = new URL('/sign-in', req.url);
-      signInUrl.searchParams.set('redirect_url', url.pathname); // Zapamiętaj, gdzie chciał iść
       console.log(`Redirecting unauthenticated user from ${url.pathname} to /sign-in`);
+      const signInUrl = new URL('/sign-in', req.url);
+      // Preserve the intended destination for post-login redirect
+      if (url.pathname !== '/') {
+        signInUrl.searchParams.set('redirect_url', url.pathname + url.search);
+      }
       return NextResponse.redirect(signInUrl);
     }
 
-    // Jeśli niezalogowany użytkownik wchodzi na stronę PUBLICZNĄ (np. '/', /sign-in),
-    // pozwól mu kontynuować.
+    // Allow unauthenticated users to access public routes
     return NextResponse.next();
   }
 
-  // Domyślnie, pozwól kontynuować.
+  // Default: allow the request to continue
   return NextResponse.next();
 });
 
 export const config = {
-  matcher: ['/((?!.*\\..*|_next).*)', '/', '/(api|trpc)(.*)']
+  matcher: [
+    // Skip Next.js internals and all static files, unless found in search params
+    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+    // Always run for API routes
+    '/(api|trpc)(.*)'
+  ]
 };
