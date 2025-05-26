@@ -25,6 +25,7 @@ export * from './competitionType';
 export * from './createCompetitionCommand';
 export * from './createFisheryCommand';
 export * from './createLogbookEntryCommand';
+export * from './currentUserDto';
 export * from './dashboardCompetitionSummaryDto';
 export * from './dashboardDto';
 export * from './dashboardFisherySummaryDto';
