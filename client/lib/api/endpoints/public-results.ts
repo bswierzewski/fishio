@@ -18,7 +18,7 @@ import type {
 } from '@tanstack/react-query';
 
 import { customInstance } from '../axios';
-import type { Void } from '../models';
+import type { PublicCompetitionResultsDto } from '../models';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
@@ -27,7 +27,7 @@ export const getResultsByToken = (
   options?: SecondParameter<typeof customInstance>,
   signal?: AbortSignal
 ) => {
-  return customInstance<Void>({ url: `/api/results/${token}`, method: 'GET', signal }, options);
+  return customInstance<PublicCompetitionResultsDto>({ url: `/api/results/${token}`, method: 'GET', signal }, options);
 };
 
 export const getGetResultsByTokenQueryKey = (token: string) => {
