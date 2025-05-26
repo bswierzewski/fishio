@@ -116,7 +116,7 @@ public class GetPublicCompetitionResultsQueryHandler : IRequestHandler<GetPublic
         var metric = primaryScoringCategory.CategoryDefinition.Metric;
         var calcLogic = primaryScoringCategory.CategoryDefinition.CalculationLogic;
 
-        foreach (var participant in competition.Participants.Where(p => p.Role == ParticipantRole.Competitor || p.Role == ParticipantRole.Guest))
+        foreach (var participant in competition.Participants.Where(p => p.Role == ParticipantRole.Competitor))
         {
             var participantCatches = competition.FishCatches
                 .Where(fc => fc.ParticipantId == participant.Id)
@@ -268,7 +268,7 @@ public class GetPublicCompetitionResultsQueryHandler : IRequestHandler<GetPublic
             {
                 var participantScores = new List<(CompetitionParticipant participant, decimal score, int fishCount)>();
 
-                foreach (var participant in competition.Participants.Where(p => p.Role == ParticipantRole.Competitor || p.Role == ParticipantRole.Guest))
+                foreach (var participant in competition.Participants.Where(p => p.Role == ParticipantRole.Competitor))
                 {
                     var participantCatches = competition.FishCatches.Where(fc => fc.ParticipantId == participant.Id);
                     if (definition.RequiresSpecificFishSpecies && categoryConfig.FishSpeciesId.HasValue)

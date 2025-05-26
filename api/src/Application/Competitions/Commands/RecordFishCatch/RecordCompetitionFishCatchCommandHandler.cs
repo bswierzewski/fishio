@@ -48,7 +48,7 @@ public class RecordCompetitionFishCatchCommandHandler : IRequestHandler<RecordCo
         }
 
         var participantToCredit = competition.Participants
-            .FirstOrDefault(p => p.Id == request.ParticipantEntryId && (p.Role == ParticipantRole.Competitor || p.Role == ParticipantRole.Guest));
+            .FirstOrDefault(p => p.Id == request.ParticipantEntryId && p.Role == ParticipantRole.Competitor);
         if (participantToCredit == null)
         {
             throw new NotFoundException("Wybrany uczestnik nie został znaleziony w tych zawodach lub nie jest zawodnikiem/gościem.", request.ParticipantEntryId.ToString());

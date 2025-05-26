@@ -28,8 +28,8 @@ public class CompetitionParticipantConfiguration : IEntityTypeConfiguration<Comp
         builder.Property(cp => cp.Role).IsRequired();
         builder.Property(cp => cp.AddedByOrganizer).IsRequired();
 
-        // Unikalny indeks dla (CompetitionId, UserId) jeśli UserId nie jest null
-        builder.HasIndex(cp => new { cp.CompetitionId, cp.UserId })
+        // Unikalny indeks dla (CompetitionId, UserId, Role) jeśli UserId nie jest null - pozwala na wiele ról dla tego samego użytkownika
+        builder.HasIndex(cp => new { cp.CompetitionId, cp.UserId, cp.Role })
             .IsUnique()
             .HasFilter("\"UserId\" IS NOT NULL");
 

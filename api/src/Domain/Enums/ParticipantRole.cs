@@ -11,8 +11,5 @@ public enum ParticipantRole
     Judge,
 
     [Description("Zawodnik")]
-    Competitor,
-
-    [Description("Gość")]
-    Guest
+    Competitor
 }

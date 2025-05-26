@@ -78,7 +78,6 @@ export default function MyCompetitionsPage() {
       case ParticipantRole.Judge:
         return { icon: <ShieldCheck className="h-3 w-3" />, label: 'Sędzia' };
       case ParticipantRole.Competitor:
-      case ParticipantRole.Guest:
         return { icon: <UserCheck className="h-3 w-3" />, label: 'Uczestnik' };
       default:
         return { icon: <UserCheck className="h-3 w-3" />, label: 'Uczestnik' };

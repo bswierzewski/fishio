@@ -212,9 +212,9 @@ public class Competition : BaseAuditableEntity
         if (Status != CompetitionStatus.AcceptingRegistrations && Status != CompetitionStatus.Draft && Status != CompetitionStatus.Scheduled && addedByOrganizer)
             throw new InvalidOperationException("Organizator może dodawać uczestników tylko gdy zawody są w statusie Draft, AcceptingRegistrations lub Scheduled.");
 
-
-        if (_participants.Any(p => p.UserId == user.Id))
-            throw new InvalidOperationException($"Użytkownik '{user.Name}' jest już uczestnikiem tych zawodów.");
+        // Sprawdź czy użytkownik już ma tę rolę w tych zawodach
+        if (_participants.Any(p => p.UserId == user.Id && p.Role == role))
+            throw new InvalidOperationException($"Użytkownik '{user.Name}' już ma rolę {role} w tych zawodach.");
 
         var participant = new CompetitionParticipant(this, user, role, addedByOrganizer);
         _participants.Add(participant);
@@ -227,13 +227,12 @@ public class Competition : BaseAuditableEntity
         if (Status != CompetitionStatus.AcceptingRegistrations && Status != CompetitionStatus.Draft && Status != CompetitionStatus.Scheduled)
             throw new InvalidOperationException("Gości można dodawać tylko gdy zawody są w statusie Draft, AcceptingRegistrations lub Scheduled.");
 
-        if (role != ParticipantRole.Competitor && role != ParticipantRole.Guest)
-            throw new ArgumentException("Gość może mieć tylko rolę Competitor lub Guest.", nameof(role));
+        if (role != ParticipantRole.Competitor)
+            throw new ArgumentException("Gość może mieć tylko rolę Competitor.", nameof(role));
 
         // Można dodać walidację unikalności GuestIdentifier, jeśli jest używany
         if (!string.IsNullOrWhiteSpace(guestIdentifier) && _participants.Any(p => p.GuestIdentifier == guestIdentifier))
             throw new InvalidOperationException($"Uczestnik-gość z identyfikatorem '{guestIdentifier}' już istnieje.");
-
 
         var guestParticipant = new CompetitionParticipant(this, guestName, role, addedByOrganizer, guestIdentifier);
         _participants.Add(guestParticipant);
@@ -263,16 +262,12 @@ public class Competition : BaseAuditableEntity
         if (Status != CompetitionStatus.Draft && Status != CompetitionStatus.AcceptingRegistrations && Status != CompetitionStatus.Scheduled)
             throw new InvalidOperationException("Sędziów można przypisywać tylko przed rozpoczęciem zawodów.");
 
-        var existingParticipant = _participants.FirstOrDefault(p => p.UserId == user.Id);
-        if (existingParticipant != null)
-        {
-            if (existingParticipant.Role == ParticipantRole.Judge)
-                throw new InvalidOperationException($"Użytkownik '{user.Name}' jest już sędzią w tych zawodach.");
-            // Jeśli jest np. zawodnikiem, można rozważyć zmianę roli lub błąd
-            existingParticipant.ChangeRole(ParticipantRole.Judge, Organizer); // Zakładając, że organizator to robi
-            return existingParticipant;
-        }
+        // Sprawdź czy użytkownik już jest sędzią
+        var existingJudgeParticipant = _participants.FirstOrDefault(p => p.UserId == user.Id && p.Role == ParticipantRole.Judge);
+        if (existingJudgeParticipant != null)
+            throw new InvalidOperationException($"Użytkownik '{user.Name}' jest już sędzią w tych zawodach.");
 
+        // Dodaj nową rolę sędziego (użytkownik może mieć już inne role)
         var judgeParticipant = new CompetitionParticipant(this, user, ParticipantRole.Judge, true); // Sędzia dodany przez organizatora
         _participants.Add(judgeParticipant);
         // AddDomainEvent(new JudgeAssignedToCompetitionEvent(this, judgeParticipant));
@@ -287,7 +282,7 @@ public class Competition : BaseAuditableEntity
         if (Status != CompetitionStatus.Draft && Status != CompetitionStatus.AcceptingRegistrations && Status != CompetitionStatus.Scheduled)
             throw new InvalidOperationException("Sędziów można usuwać tylko przed rozpoczęciem zawodów.");
 
-        // Można rozważyć, czy nie zmienić roli na "Competitor" zamiast usuwać, jeśli był też zawodnikiem
+        // Usuń tylko rolę sędziego (użytkownik może mieć inne role)
         _participants.Remove(judgeParticipant);
         // AddDomainEvent(new JudgeRemovedFromCompetitionEvent(this, judgeParticipant));
     }
@@ -351,8 +346,8 @@ public class Competition : BaseAuditableEntity
 
         if (participant.CompetitionId != Id)
             throw new ArgumentException("Uczestnik nie należy do tych zawodów.", nameof(participant));
-        if (participant.Role != ParticipantRole.Competitor && participant.Role != ParticipantRole.Guest) // Gość też może być zawodnikiem
-            throw new ArgumentException("Połów można zarejestrować tylko dla zawodnika lub gościa.", nameof(participant));
+        if (participant.Role != ParticipantRole.Competitor)
+            throw new ArgumentException("Połów można zarejestrować tylko dla zawodnika.", nameof(participant));
 
         var judgeAsParticipant = _participants.FirstOrDefault(p => p.UserId == judge.Id && p.Role == ParticipantRole.Judge);
         if (judgeAsParticipant == null)

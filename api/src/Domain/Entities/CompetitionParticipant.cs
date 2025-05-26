@@ -44,9 +44,9 @@ public class CompetitionParticipant : BaseAuditableEntity
     {
         Guard.Against.Null(competition, nameof(competition));
         Guard.Against.NullOrWhiteSpace(guestName, nameof(guestName));
-        if (role == ParticipantRole.Organizer || role == ParticipantRole.Judge)
+        if (role != ParticipantRole.Competitor)
         {
-            throw new ArgumentException("Goście nie mogą pełnić roli Organizatora ani Sędziego.", nameof(role));
+            throw new ArgumentException("Goście mogą mieć tylko rolę Competitor.", nameof(role));
         }
 
         CompetitionId = competition.Id;
@@ -61,9 +61,9 @@ public class CompetitionParticipant : BaseAuditableEntity
     {
         // TODO: Dodać walidację, czy assigningUser ma uprawnienia do zmiany roli
         // TODO: Dodać walidację, czy zmiana roli jest dozwolona (np. gość na sędziego)
-        if (UserId == null && (newRole == ParticipantRole.Judge || newRole == ParticipantRole.Organizer))
+        if (UserId == null && newRole != ParticipantRole.Competitor)
         {
-            throw new InvalidOperationException("Gość nie może zostać Sędzią ani Organizatorem.");
+            throw new InvalidOperationException("Gość może mieć tylko rolę Competitor.");
         }
 
         // Przykład: Sędzia nie może stać się zwykłym zawodnikiem, jeśli ma już zarejestrowane połowy jako sędzia

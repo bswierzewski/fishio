@@ -44,7 +44,7 @@ public class GetCompetitionDetailsQueryHandler : IRequestHandler<GetCompetitionD
             FisheryName = competition.Fishery?.Name,
             FisheryLocation = competition.Fishery?.Location,
             ImageUrl = competition.ImageUrl,
-            ParticipantsCount = competition.Participants.Count(p => p.Role == ParticipantRole.Competitor || p.Role == ParticipantRole.Guest),
+            ParticipantsCount = competition.Participants.Count(p => p.Role == ParticipantRole.Competitor),
             PrimaryScoringInfo = primaryScoringCategory != null
                 ? (primaryScoringCategory.CustomNameOverride ?? primaryScoringCategory.CategoryDefinition.Name) +
                   (primaryScoringCategory.CategoryDefinition.Metric != CategoryMetric.NotApplicable ? $" ({GetMetricAbbreviation(primaryScoringCategory.CategoryDefinition.Metric)})" : "")

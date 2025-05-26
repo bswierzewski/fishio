@@ -18,12 +18,14 @@ public class AddParticipantCommandValidator : AbstractValidator<AddParticipantCo
 
         RuleFor(v => v.CompetitionId).NotEmpty();
 
-        When(v => v.UserId.HasValue, () => {
+        When(v => v.UserId.HasValue, () =>
+        {
             RuleFor(v => v.UserId)
                 .GreaterThan(0).WithMessage("Nieprawidłowe ID użytkownika.")
                 .MustAsync(UserMustExist).WithMessage("Wybrany użytkownik nie istnieje.");
             RuleFor(v => v.GuestName).Empty().WithMessage("Nie podawaj nazwy gościa, jeśli podajesz ID użytkownika.");
-        }).Otherwise(() => {
+        }).Otherwise(() =>
+        {
             RuleFor(v => v.GuestName)
                 .NotEmpty().WithMessage("Nazwa gościa jest wymagana, jeśli nie podano ID użytkownika.")
                 .MaximumLength(200).WithMessage("Nazwa gościa nie może przekraczać 200 znaków.");
@@ -31,9 +33,9 @@ public class AddParticipantCommandValidator : AbstractValidator<AddParticipantCo
 
         RuleFor(v => v.Role)
             .IsInEnum().WithMessage("Nieprawidłowa rola uczestnika.")
-            .Must(role => role == ParticipantRole.Competitor || role == ParticipantRole.Guest)
+            .Must(role => role == ParticipantRole.Competitor)
                 .When(v => !v.UserId.HasValue)
-                .WithMessage("Gość może mieć tylko rolę Competitor lub Guest.");
+                .WithMessage("Gość może mieć tylko rolę Competitor.");
         // Organizator może przypisać rolę Judge tylko zarejestrowanemu użytkownikowi (obsłużone w AssignJudge)
     }
 

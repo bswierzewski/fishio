@@ -100,8 +100,6 @@ const getRoleIcon = (role: ParticipantRole) => {
       return <ShieldCheck className="mr-2 h-4 w-4 text-blue-500" />;
     case ParticipantRole.Competitor:
       return <UserCheck className="mr-2 h-4 w-4 text-green-500" />;
-    case ParticipantRole.Guest:
-      return <UserCheck className="mr-2 h-4 w-4 text-gray-500" />;
     default:
       return <UserCheck className="mr-2 h-4 w-4" />;
   }
@@ -115,8 +113,6 @@ const getRoleText = (role: ParticipantRole) => {
       return 'Sędzia';
     case ParticipantRole.Competitor:
       return 'Zawodnik';
-    case ParticipantRole.Guest:
-      return 'Gość';
     default:
       return role;
   }
@@ -216,7 +212,6 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
   const organizers = competition.participantsList?.filter((p) => p.role === ParticipantRole.Organizer) || [];
   const judges = competition.participantsList?.filter((p) => p.role === ParticipantRole.Judge) || [];
   const competitors = competition.participantsList?.filter((p) => p.role === ParticipantRole.Competitor) || [];
-  const guests = competition.participantsList?.filter((p) => p.role === ParticipantRole.Guest) || [];
 
   const handleJoinCompetition = async () => {
     if (!competitionId) return;
@@ -570,21 +565,6 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
                     <h4 className="font-medium text-sm mb-2 text-green-600">Zawodnicy</h4>
                     <ul className="space-y-1 text-sm">
                       {competitors.map((participant) => (
-                        <li key={participant.id} className="flex items-center text-muted-foreground">
-                          {getRoleIcon(participant.role!)}
-                          {participant.name}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Guests */}
-                {guests.length > 0 && (
-                  <div>
-                    <h4 className="font-medium text-sm mb-2 text-gray-600">Goście</h4>
-                    <ul className="space-y-1 text-sm">
-                      {guests.map((participant) => (
                         <li key={participant.id} className="flex items-center text-muted-foreground">
                           {getRoleIcon(participant.role!)}
                           {participant.name}

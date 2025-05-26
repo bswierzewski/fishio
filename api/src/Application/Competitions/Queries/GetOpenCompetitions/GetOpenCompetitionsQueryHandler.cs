@@ -45,7 +45,7 @@ public class GetOpenCompetitionsQueryHandler : IRequestHandler<GetOpenCompetitio
             Type = c.Type,
             FisheryName = c.Fishery != null ? c.Fishery.Name : null,
             ImageUrl = c.ImageUrl,
-            ParticipantsCount = c.Participants.Count(p => p.Role == ParticipantRole.Competitor || p.Role == ParticipantRole.Guest),
+            ParticipantsCount = c.Participants.Count(p => p.Role == ParticipantRole.Competitor),
             PrimaryScoringInfo = c.Categories
                                   .Where(cat => cat.IsPrimaryScoring && cat.IsEnabled)
                                   .Select(cat => (cat.CustomNameOverride ?? cat.CategoryDefinition.Name) +

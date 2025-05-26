@@ -11,6 +11,5 @@ export type ParticipantRole = (typeof ParticipantRole)[keyof typeof ParticipantR
 export const ParticipantRole = {
   Organizer: 'Organizer',
   Judge: 'Judge',
-  Competitor: 'Competitor',
-  Guest: 'Guest'
+  Competitor: 'Competitor'
 } as const;
