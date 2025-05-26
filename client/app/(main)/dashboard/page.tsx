@@ -223,20 +223,13 @@ export default function DashboardPage() {
             recentCatches.map((entry: DashboardLogbookSummaryDto) => (
               <Link href={`/logbook/${entry.id}`} className="w-40 flex-shrink-0 h-full" key={`log-${entry.id}`}>
                 <div className="h-full w-full overflow-hidden rounded-lg shadow border border-border flex flex-col bg-card hover:shadow-md transition-shadow">
-                  <div className="relative h-34 w-full bg-muted flex-shrink-0">
+                  <div className="relative h-full w-full bg-muted flex-shrink-0">
                     <Image
                       src={entry.imageUrl || '/placeholder-fish.svg'}
                       alt={entry.fishSpeciesName || 'Złowiona ryba'}
                       layout="fill"
                       objectFit="cover"
                     />
-                  </div>
-                  <div className={`p-2 px-3 flex-grow flex flex-col justify-between ${cardBodyBgClass}`}>
-                    <div>
-                      <p className={`text-xs ${cardMutedTextColorClass}`}>
-                        {new Date(entry.catchTime ?? new Date()).toLocaleDateString('pl-PL')}
-                      </p>
-                    </div>
                   </div>
                 </div>
               </Link>

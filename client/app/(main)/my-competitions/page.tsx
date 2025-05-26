@@ -44,10 +44,6 @@ export default function MyCompetitionsPage() {
 
   const competitions = competitionsData?.items || [];
 
-  // Debug logging to see what data we're getting
-  console.log('Competitions data:', competitionsData);
-  console.log('Competitions:', competitions);
-
   const getStatusLabel = (status?: CompetitionStatus) => {
     switch (status) {
       case CompetitionStatus.AcceptingRegistrations:
@@ -253,7 +249,7 @@ export default function MyCompetitionsPage() {
       ) : null}
 
       {/* Pagination */}
-      {!isLoading && competitionsData && competitionsData.totalPages && competitionsData.totalPages > 1 && (
+      {!isLoading && competitionsData && competitionsData.totalPages && competitionsData.totalPages > 1 ? (
         <div className="flex justify-center items-center space-x-2 mt-6">
           <Button
             variant="outline"
@@ -273,7 +269,7 @@ export default function MyCompetitionsPage() {
             Następna
           </Button>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
