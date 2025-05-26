@@ -10,6 +10,8 @@ import { useGetCompetitionDetailsById, useJudgeRecordsFishCatch } from '@/lib/ap
 import { useGetAllFishSpecies } from '@/lib/api/endpoints/lookup-data';
 import { CompetitionStatus, ParticipantRole } from '@/lib/api/models';
 
+import { useCurrentUser } from '@/hooks/use-current-user';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -21,6 +23,10 @@ import { Textarea } from '@/components/ui/textarea';
 export default function NewCatchPage({ params }: { params: Promise<{ id: string }> }) {
   const [competitionId, setCompetitionId] = useState<number | null>(null);
   const [paramsResolved, setParamsResolved] = useState(false);
+
+  // Get current user information (must be called before any early returns)
+  const { id: currentUserId, name: currentUserName } = useCurrentUser();
+
   const [formData, setFormData] = useState({
     participantEntryId: '',
     fishSpeciesId: '',
@@ -85,9 +91,11 @@ export default function NewCatchPage({ params }: { params: Promise<{ id: string 
   }
 
   // Check if user is judge and competition is ongoing
-  const currentUserId = 1; // This should come from auth context
-  const userParticipant = competition.participantsList?.find((p) => p.userId === currentUserId);
-  const isJudge = userParticipant?.role === ParticipantRole.Judge;
+  // Now we can use the proper domain user ID for accurate authorization
+  const userParticipants = currentUserId
+    ? competition.participantsList?.filter((p) => p.userId === currentUserId) || []
+    : [];
+  const isJudge = userParticipants.some((p) => p.role === ParticipantRole.Judge);
   const isOngoing = competition.status === CompetitionStatus.Ongoing;
 
   if (!isJudge) {

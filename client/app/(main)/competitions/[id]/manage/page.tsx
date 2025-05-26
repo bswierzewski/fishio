@@ -15,6 +15,8 @@ import {
 } from '@/lib/api/endpoints/competitions';
 import { type AddParticipantCommand, type AssignJudgeCommand, ParticipantRole } from '@/lib/api/models';
 
+import { useCurrentUser } from '@/hooks/use-current-user';
+
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -33,6 +35,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function CompetitionManagePage({ params }: { params: Promise<{ id: string }> }) {
   const [competitionId, setCompetitionId] = useState<number | null>(null);
   const [paramsResolved, setParamsResolved] = useState(false);
+
+  // Get current user information (must be called before any early returns)
+  const { id: currentUserId, name: currentUserName } = useCurrentUser();
 
   // Dialog states
   const [addParticipantOpen, setAddParticipantOpen] = useState(false);
@@ -104,10 +109,9 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
     notFound();
   }
 
-  // Check if user is organizer (in real app, get from auth context)
-  const currentUserId = 1;
-  const userParticipant = competition.participantsList?.find((p) => p.userId === currentUserId);
-  const isOrganizer = userParticipant?.role === ParticipantRole.Organizer;
+  // Check if user is organizer
+  // Now we can use the proper domain user ID for accurate authorization
+  const isOrganizer = currentUserId ? competition.organizerId === currentUserId : false;
 
   if (!isOrganizer) {
     return (

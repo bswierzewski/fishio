@@ -1,6 +1,7 @@
 'use client';
 
 import { useForm } from '@tanstack/react-form';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft,
   Award,
@@ -18,10 +19,15 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 
-import { useCreateNewCompetition } from '@/lib/api/endpoints/competitions';
+import { getGetUserCompetitionsListQueryKey, useCreateNewCompetition } from '@/lib/api/endpoints/competitions';
 import { useGetAllFisheries } from '@/lib/api/endpoints/fisheries';
 import { useGetAllFishSpecies, useGetGlobalCategoryDefinitions } from '@/lib/api/endpoints/lookup-data';
-import { CategoryType, CompetitionType, CreateCompetitionCommand } from '@/lib/api/models';
+import {
+  CategoryType,
+  CompetitionType,
+  CreateCompetitionCommand,
+  GetUserCompetitionsListParams
+} from '@/lib/api/models';
 
 import FieldInfo from '@/components/FieldInfo';
 import { Button } from '@/components/ui/button';
@@ -38,6 +44,7 @@ const cardMutedTextColorClass = 'text-muted-foreground';
 
 export default function AddCompetitionPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [selectedImagePreview, setSelectedImagePreview] = useState<string | null>(null);
 
   // API hooks
@@ -45,7 +52,10 @@ export default function AddCompetitionPage() {
     mutation: {
       onSuccess: () => {
         toast.success('Zawody zostały utworzone pomyślnie!');
-        router.push('/competitions');
+        queryClient.invalidateQueries({
+          queryKey: [getGetUserCompetitionsListQueryKey({} as GetUserCompetitionsListParams)]
+        });
+        router.push('/my-competitions');
       },
       onError: (error: unknown) => {
         console.error('Błąd podczas tworzenia zawodów:', error);

@@ -42,6 +42,8 @@ import {
 } from '@/lib/api/endpoints/competitions';
 import { CompetitionStatus, CompetitionType, ParticipantRole } from '@/lib/api/models';
 
+import { useCurrentUser } from '@/hooks/use-current-user';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -124,6 +126,9 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
   const [competitionId, setCompetitionId] = useState<number | null>(null);
   const [paramsResolved, setParamsResolved] = useState(false);
 
+  // Get current user information (must be called before any early returns)
+  const { id: currentUserId, name: currentUserName, isLoading: userLoading } = useCurrentUser();
+
   // Resolve params properly with useEffect
   useEffect(() => {
     const resolveParams = async () => {
@@ -184,12 +189,14 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
   }
 
   // Determine user capabilities based on current user and competition data
-  // Note: In a real app, you'd get current user info from auth context
-  const currentUserId = 1; // This should come from auth context
-  const userParticipant = competition.participantsList?.find((p) => p.userId === currentUserId);
-  const isOrganizer = userParticipant?.role === ParticipantRole.Organizer;
-  const isJudge = userParticipant?.role === ParticipantRole.Judge;
-  const isParticipant = !!userParticipant;
+  // Now we can use the proper domain user ID for accurate authorization
+  const userParticipants = currentUserId
+    ? competition.participantsList?.filter((p) => p.userId === currentUserId) || []
+    : [];
+
+  const isOrganizer = currentUserId ? competition.organizerId === currentUserId : false;
+  const isJudge = userParticipants.some((p) => p.role === ParticipantRole.Judge);
+  const isParticipant = userParticipants.length > 0;
 
   const canJoin =
     !isParticipant &&
