@@ -72,18 +72,16 @@ public class CurrentUserService : ICurrentUserService
         _logger.LogInformation("Domain user not found for ClerkUserId {ClerkUserId} (from JWT). Attempting JIT provisioning.", currentClerkUserId);
 
         var principal = _httpContextAccessor.HttpContext?.User;
-        // Przykładowe pobieranie imienia i emaila z claimów JWT.
-        // Nazwy claimów mogą się różnić w zależności od konfiguracji Clerk.
+
         var userName = principal?.FindFirst(ClaimTypes.Name)?.Value
-                       ?? principal?.FindFirst("name")?.Value
-                       ?? principal?.FindFirst("preferred_username")?.Value
-                       ?? "Default clerk UserName";
+                       ?? principal?.FindFirst("name")?.Value ?? string.Empty;
+
         var userEmail = principal?.FindFirst(ClaimTypes.Email)?.Value
-                        ?? principal?.FindFirst("email")?.Value;
+                        ?? principal?.FindFirst("email")?.Value ?? string.Empty;
 
         var imageUrl = principal?.FindFirst("imageUrl")?.Value;
 
-        var newUser = new User(currentClerkUserId, userName, userEmail, imageUrl);
+        var newUser = new User(currentClerkUserId, userEmail, userName, imageUrl);
 
         try
         {

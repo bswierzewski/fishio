@@ -15,11 +15,13 @@ public class User : BaseAuditableEntity
 
     private User() { }
 
-    public User(string clerkUserId, string name, string? email, string? imageUrl)
+    public User(string clerkUserId, string email, string? name, string? imageUrl)
     {
         Guard.Against.NullOrWhiteSpace(clerkUserId, nameof(clerkUserId));
-        Guard.Against.NullOrWhiteSpace(name, nameof(name));
-        // Można dodać walidację formatu email, jeśli jest wymagany
+        Guard.Against.NullOrWhiteSpace(email, nameof(email));
+
+        if (string.IsNullOrWhiteSpace(name))
+            name = email;
 
         ClerkUserId = clerkUserId;
         Name = name;
@@ -32,14 +34,14 @@ public class User : BaseAuditableEntity
     /// </summary>
     public void UpdateDetailsFromClerk(string newName, string? newEmail, string? newImageUrl)
     {
-        Guard.Against.NullOrWhiteSpace(newName, nameof(newName));
+        Guard.Against.NullOrWhiteSpace(newEmail, nameof(newEmail));
 
-        if (Name != newName)
+        if (Email != newEmail)
         {
-            Name = newName;
+            Email = newEmail;
         }
-        // Email i ImageUrl mogą być null, więc pozwalamy na ich aktualizację na null
-        Email = newEmail;
+
+        Name = newName;
         ImageUrl = newImageUrl;
 
         // Można dodać zdarzenie domenowe: UserDetailsUpdatedFromClerkEvent(this)
