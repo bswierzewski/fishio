@@ -107,6 +107,19 @@ public class Competition : BaseAuditableEntity
         // AddDomainEvent(new CompetitionApprovedEvent(this));
     }
 
+    public void OpenRegistrations()
+    {
+        if (Status != CompetitionStatus.Draft)
+            throw new InvalidOperationException("Można otworzyć rejestracje tylko dla zawodów w wersji roboczej (Draft).");
+
+        // Sprawdzić, czy wszystkie wymagane pola są uzupełnione (np. przynajmniej jedna kategoria główna)
+        if (!_categories.Any(c => c.IsPrimaryScoring && c.IsEnabled))
+            throw new InvalidOperationException("Zawody muszą mieć zdefiniowaną przynajmniej jedną aktywną kategorię główną przed otwarciem rejestracji.");
+
+        Status = CompetitionStatus.AcceptingRegistrations;
+        // AddDomainEvent(new CompetitionRegistrationsOpenedEvent(this));
+    }
+
 
     public void ScheduleCompetition()
     {
@@ -115,6 +128,43 @@ public class Competition : BaseAuditableEntity
         if (Schedule.Start <= DateTimeOffset.UtcNow)
             throw new InvalidOperationException("Nie można zaplanować zawodów, których czas rozpoczęcia już minął.");
         Status = CompetitionStatus.Scheduled;
+    }
+
+    public void SetUpcoming()
+    {
+        if (Status != CompetitionStatus.Scheduled)
+            throw new InvalidOperationException("Można ustawić status 'Upcoming' tylko dla zaplanowanych zawodów.");
+
+        // Sprawdzenie, czy czas rozpoczęcia jest blisko (np. w ciągu następnych 24 godzin)
+        var timeUntilStart = Schedule.Start - DateTimeOffset.UtcNow;
+        if (timeUntilStart.TotalHours > 24)
+            throw new InvalidOperationException("Status 'Upcoming' można ustawić tylko gdy do rozpoczęcia zostało mniej niż 24 godziny.");
+
+        Status = CompetitionStatus.Upcoming;
+        // AddDomainEvent(new CompetitionUpcomingEvent(this));
+    }
+
+    public void ReopenRegistrations()
+    {
+        if (Status != CompetitionStatus.Scheduled && Status != CompetitionStatus.Upcoming)
+            throw new InvalidOperationException("Można ponownie otworzyć rejestracje tylko dla zawodów w statusie Scheduled lub Upcoming.");
+
+        if (Schedule.Start <= DateTimeOffset.UtcNow)
+            throw new InvalidOperationException("Nie można ponownie otworzyć rejestracji dla zawodów, które już się rozpoczęły.");
+
+        Status = CompetitionStatus.AcceptingRegistrations;
+        // AddDomainEvent(new CompetitionRegistrationsReopenedEvent(this));
+    }
+
+    public void RejectApproval(string reason)
+    {
+        Guard.Against.NullOrWhiteSpace(reason, nameof(reason));
+        if (Status != CompetitionStatus.PendingApproval)
+            throw new InvalidOperationException("Można odrzucić tylko zawody oczekujące na zatwierdzenie.");
+
+        Status = CompetitionStatus.Draft;
+        // TODO: Zapisać powód odrzucenia, np. w nowym polu `RejectionReason`
+        // AddDomainEvent(new CompetitionApprovalRejectedEvent(this, reason));
     }
 
 

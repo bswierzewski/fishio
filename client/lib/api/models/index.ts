@@ -52,6 +52,7 @@ export * from './participantRole';
 export * from './problemDetails';
 export * from './recordCompetitionFishCatchCommand';
 export * from './recordFishCatchCommand';
+export * from './rejectApprovalCommand';
 export * from './searchAvailableUsersParams';
 export * from './specialCategoryDefinitionCommandDto';
 export * from './updateCompetitionCategoryCommand';
