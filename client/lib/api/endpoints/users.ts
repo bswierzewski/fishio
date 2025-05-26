@@ -18,7 +18,7 @@ import type {
 } from '@tanstack/react-query';
 
 import { customInstance } from '../axios';
-import type { CurrentUserDto, ProblemDetails, SearchAvailableUsersParams, Void } from '../models';
+import type { CurrentUserDto, ProblemDetails, SearchAvailableUsersParams, UserDto } from '../models';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
@@ -115,7 +115,7 @@ export const searchAvailableUsers = (
   options?: SecondParameter<typeof customInstance>,
   signal?: AbortSignal
 ) => {
-  return customInstance<Void>({ url: `/api/users/search`, method: 'GET', params, signal }, options);
+  return customInstance<UserDto[]>({ url: `/api/users/search`, method: 'GET', params, signal }, options);
 };
 
 export const getSearchAvailableUsersQueryKey = (params?: SearchAvailableUsersParams) => {

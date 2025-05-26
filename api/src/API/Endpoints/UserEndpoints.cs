@@ -18,7 +18,8 @@ public static class UserEndpoints
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         group.MapGet("/search", SearchAvailableUsers)
-            .WithName(nameof(SearchAvailableUsers));
+            .WithName(nameof(SearchAvailableUsers))
+            .Produces<List<UserDto>>(StatusCodes.Status200OK);
     }
 
     private static async Task<IResult> GetCurrentUser(ISender sender, CancellationToken ct)

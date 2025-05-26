@@ -63,6 +63,7 @@ export * from './updateCompetitionCategoryCommand';
 export * from './updateCompetitionCommand';
 export * from './updateFisheryCommand';
 export * from './updateLogbookEntryCommand';
+export * from './userDto';
 export * from './userLogbookEntryDto';
 export * from './userLogbookEntryDtoPaginatedList';
 export * from './void';
