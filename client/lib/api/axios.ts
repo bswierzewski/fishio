@@ -38,30 +38,6 @@ export const setupClerkInterceptors = (instance: AxiosInstance, tokenTemplate: s
       return Promise.reject(error);
     }
   );
-
-  responseInterceptorId = instance.interceptors.response.use(
-    (response) => response,
-    async (error: AxiosError) => {
-      if (Axios.isCancel(error)) {
-        // If request was cancelled, propagate the error
-        return Promise.reject(error);
-      }
-
-      const axiosError = error as AxiosError;
-
-      // Handle 401 errors - let Clerk handle authentication state
-      if (axiosError.response?.status === 401) {
-        console.log('ApiClient: Unauthorized (401). Let Clerk handle authentication state.');
-        // Don't sign out here - let Clerk's own mechanisms handle this
-        return Promise.reject(axiosError);
-      }
-
-      // Handle all other errors with user-friendly messages
-      handleApiError(axiosError);
-
-      return Promise.reject(axiosError);
-    }
-  );
 };
 
 export const customInstance = async <T>(config: AxiosRequestConfig, options?: AxiosRequestConfig): Promise<T> => {

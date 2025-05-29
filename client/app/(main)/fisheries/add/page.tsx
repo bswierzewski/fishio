@@ -1,14 +1,15 @@
 'use client';
 
 import { useForm } from '@tanstack/react-form';
+import { useQueryClient } from '@tanstack/react-query';
 // Formularze zazwyczaj wymagają stanu po stronie klienta
-import { ArrowLeft, ImagePlus, ListChecks, MapPin, Text } from 'lucide-react';
+import { ArrowLeft, ImagePlus, ListChecks, MapPin, Text, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 
-import { useCreateFishery, useGetAllFisheries } from '@/lib/api/endpoints/fisheries';
+import { getGetAllFisheriesQueryKey, useCreateFishery, useGetAllFisheries } from '@/lib/api/endpoints/fisheries';
 import { useGetAllFishSpecies } from '@/lib/api/endpoints/lookup-data';
 import { CreateFisheryCommand, FishSpeciesDto } from '@/lib/api/models';
 
@@ -26,10 +27,16 @@ const cardMutedTextColorClass = 'text-muted-foreground';
 
 export default function AddFisheryPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
+
   const { mutate, isPending } = useCreateFishery({
     mutation: {
       onSuccess: () => {
         toast.success('Łowisko zostało dodane.');
+        // Invalidate fisheries cache to refresh the list
+        queryClient.invalidateQueries({
+          queryKey: getGetAllFisheriesQueryKey({ PageNumber: 1, PageSize: 20 })
+        });
         router.push('/fisheries');
       },
       onError: (error: unknown) => {
@@ -88,6 +95,22 @@ export default function AddFisheryPage() {
       setSelectedImagePreview(null);
       form.setFieldValue('image', null);
     }
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedImagePreview(null);
+    form.setFieldValue('image', null);
+    // Reset the file input
+    const fileInput = document.getElementById('fishery-photo-input') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  };
+
+  const handleRemoveImageClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleRemoveImage();
   };
 
   const handleSpeciesChange = (speciesId: number) => {
@@ -248,38 +271,49 @@ export default function AddFisheryPage() {
                 >
                   <ImagePlus className="mr-2 h-5 w-5" /> Zdjęcie Łowiska (Opcjonalne)
                 </Label>
-                <div className="mt-1 flex justify-center rounded-md border-2 border-dashed border-border px-6 pt-5 pb-6 hover:border-primary transition-colors">
+                <label
+                  htmlFor="fishery-photo-input"
+                  className="mt-1 flex justify-center rounded-md border-2 border-dashed border-border px-6 pt-5 pb-6 hover:border-primary transition-colors cursor-pointer"
+                >
                   <div className="space-y-1 text-center">
                     {selectedImagePreview ? (
-                      <img
-                        src={selectedImagePreview}
-                        alt="Podgląd zdjęcia łowiska"
-                        className="mx-auto h-32 w-auto rounded-md object-contain"
-                      />
+                      <div className="relative">
+                        <img
+                          src={selectedImagePreview}
+                          alt="Podgląd zdjęcia łowiska"
+                          className="mx-auto h-32 w-auto rounded-md object-contain"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 hover:cursor-pointer"
+                          onClick={handleRemoveImageClick}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
                     ) : (
                       <ImagePlus className={`mx-auto h-12 w-12 ${cardMutedTextColorClass}`} />
                     )}
                     <div className="flex text-sm text-muted-foreground">
-                      <label
-                        htmlFor="fishery-photo-input"
-                        className="relative cursor-pointer rounded-md bg-card font-medium text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 focus-within:ring-offset-card hover:text-primary/80"
-                      >
-                        <span>Załaduj plik</span>
-                        <input
-                          id="fishery-photo-input"
-                          name={field.name}
-                          type="file"
-                          className="sr-only"
-                          accept="image/*"
-                          onChange={handleImageChange}
-                          onBlur={field.handleBlur}
-                        />
-                      </label>
-                      <p className="pl-1">lub przeciągnij i upuść</p>
+                      <span className="font-medium text-primary">
+                        {selectedImagePreview ? 'Zmień zdjęcie' : 'Załaduj plik'}
+                      </span>
+                      {!selectedImagePreview && <p className="pl-1">lub przeciągnij i upuść</p>}
                     </div>
                     <p className="text-xs text-muted-foreground">PNG, JPG, GIF do 10MB</p>
                   </div>
-                </div>
+                  <input
+                    id="fishery-photo-input"
+                    name={field.name}
+                    type="file"
+                    className="sr-only"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    onBlur={field.handleBlur}
+                  />
+                </label>
                 <FieldInfo field={field} />
               </>
             )}

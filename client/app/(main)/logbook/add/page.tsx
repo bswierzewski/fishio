@@ -1,7 +1,7 @@
 'use client';
 
 import { useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Calendar, Fish, ImagePlus, MapPin, Ruler, StickyNote, Weight } from 'lucide-react';
+import { ArrowLeft, Calendar, Fish, ImagePlus, MapPin, Ruler, StickyNote, Weight, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -47,10 +47,27 @@ export default function AddLogbookEntryPage() {
     }
   };
 
+  const handleRemoveImage = () => {
+    setSelectedImagePreview(null);
+    setSelectedImage(null);
+    // Reset the file input
+    const fileInput = document.getElementById('catch-photo-input') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  };
+
+  const handleRemoveImageClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleRemoveImage();
+  };
+
   // Symulacja wysłania formularza
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // Basic validation: ensure image is selected
+
+    // Validate that an image is selected
     if (!selectedImage) {
       toast.error('Zdjęcie ryby jest wymagane.');
       return;
@@ -115,37 +132,48 @@ export default function AddLogbookEntryPage() {
           <Label htmlFor="catch-photo" className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-2`}>
             <ImagePlus className="mr-2 h-5 w-5" /> Zdjęcie Ryby (Wymagane)
           </Label>
-          <div className="mt-1 flex justify-center rounded-md border-2 border-dashed border-border px-6 pt-5 pb-6 hover:border-primary transition-colors">
+          <label
+            htmlFor="catch-photo-input"
+            className="mt-1 flex justify-center rounded-md border-2 border-dashed border-border px-6 pt-5 pb-6 hover:border-primary transition-colors cursor-pointer"
+          >
             <div className="space-y-1 text-center">
               {selectedImagePreview ? (
-                <img
-                  src={selectedImagePreview}
-                  alt="Podgląd zdjęcia"
-                  className="mx-auto h-32 w-auto rounded-md object-contain"
-                />
+                <div className="relative">
+                  <img
+                    src={selectedImagePreview}
+                    alt="Podgląd zdjęcia"
+                    className="mx-auto h-32 w-auto rounded-md object-contain"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 hover:cursor-pointer"
+                    onClick={handleRemoveImageClick}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
               ) : (
                 <ImagePlus className={`mx-auto h-12 w-12 ${cardMutedTextColorClass}`} />
               )}
-              <div className="flex text-sm text-muted-foreground">
-                <label
-                  htmlFor="catch-photo-input"
-                  className="relative cursor-pointer rounded-md bg-card font-medium text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 focus-within:ring-offset-card hover:text-primary/80"
-                >
-                  <span>Załaduj plik</span>
-                  <input
-                    id="catch-photo-input"
-                    name="catch-photo"
-                    type="file"
-                    className="sr-only"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                  />
-                </label>
-                <p className="pl-1">lub przeciągnij i upuść</p>
+              <div className="flex text-sm text-muted-foreground justify-center">
+                <span className="font-medium text-primary">
+                  {selectedImagePreview ? 'Zmień zdjęcie' : 'Załaduj plik'}
+                </span>
+                {!selectedImagePreview && <p className="pl-1">lub przeciągnij i upuść</p>}
               </div>
               <p className="text-xs text-muted-foreground">PNG, JPG, GIF do 10MB</p>
             </div>
-          </div>
+            <input
+              id="catch-photo-input"
+              name="catch-photo"
+              type="file"
+              className="sr-only"
+              accept="image/*"
+              onChange={handleImageChange}
+            />
+          </label>
         </div>
 
         {/* --- Sekcja Gatunek --- */}

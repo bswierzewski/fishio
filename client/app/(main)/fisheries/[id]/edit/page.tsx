@@ -1,6 +1,7 @@
 'use client';
 
 import { useForm } from '@tanstack/react-form';
+import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, ImagePlus, ListChecks, MapPin, Text, X } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -29,6 +30,8 @@ export default function EditFisheryPage() {
   const params = useParams();
   const fisheryId = Number(params.id);
 
+  const queryClient = useQueryClient();
+
   const [selectedImagePreview, setSelectedImagePreview] = useState<string | null>(null);
   const [initialImageUrl, setInitialImageUrl] = useState<string | null>(null);
   const [removeCurrentImageFlag, setRemoveCurrentImageFlag] = useState(false);
@@ -53,6 +56,9 @@ export default function EditFisheryPage() {
   const { mutate, isPending } = useUpdateExistingFishery({
     mutation: {
       onSuccess: () => {
+        // Also invalidate the current fishery detail query
+        queryClient.invalidateQueries({ queryKey: [`/api/fisheries/${fisheryId}`] });
+
         toast.success('Łowisko zostało zaktualizowane.');
         router.push(`/fisheries/${fisheryId}`);
       },
@@ -128,6 +134,12 @@ export default function EditFisheryPage() {
     setSelectedImagePreview(null);
     form.setFieldValue('image', null);
     setRemoveCurrentImageFlag(true);
+  };
+
+  const handleRemoveImageClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    handleRemoveImage();
   };
 
   const handleSpeciesChange = (speciesId: number) => {
@@ -308,7 +320,10 @@ export default function EditFisheryPage() {
                 >
                   <ImagePlus className="mr-2 h-5 w-5" /> Zdjęcie Łowiska (Opcjonalne)
                 </Label>
-                <div className="mt-1 flex justify-center rounded-md border-2 border-dashed border-border px-6 pt-5 pb-6 hover:border-primary transition-colors">
+                <label
+                  htmlFor="fishery-photo-input"
+                  className="mt-1 flex justify-center rounded-md border-2 border-dashed border-border px-6 pt-5 pb-6 hover:border-primary transition-colors cursor-pointer"
+                >
                   <div className="space-y-1 text-center">
                     {selectedImagePreview ? (
                       <div className="relative">
@@ -321,8 +336,8 @@ export default function EditFisheryPage() {
                           type="button"
                           variant="destructive"
                           size="sm"
-                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0"
-                          onClick={handleRemoveImage}
+                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 hover:cursor-pointer"
+                          onClick={handleRemoveImageClick}
                         >
                           <X className="h-3 w-3" />
                         </Button>
@@ -332,26 +347,23 @@ export default function EditFisheryPage() {
                     )}
 
                     <div className="flex text-sm text-muted-foreground justify-center">
-                      <label
-                        htmlFor="fishery-photo-input"
-                        className="relative cursor-pointer rounded-md bg-card font-medium text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 focus-within:ring-offset-card hover:text-primary/80"
-                      >
-                        <span>{selectedImagePreview ? 'Zmień zdjęcie' : 'Załaduj plik'}</span>
-                        <input
-                          id="fishery-photo-input"
-                          name={field.name}
-                          type="file"
-                          className="sr-only"
-                          accept="image/*"
-                          onChange={handleImageChange}
-                          onBlur={field.handleBlur}
-                        />
-                      </label>
+                      <span className="font-medium text-primary">
+                        {selectedImagePreview ? 'Zmień zdjęcie' : 'Załaduj plik'}
+                      </span>
                       {!selectedImagePreview && <p className="pl-1">lub przeciągnij i upuść</p>}
                     </div>
                     <p className="text-xs text-muted-foreground">PNG, JPG, GIF do 10MB</p>
                   </div>
-                </div>
+                  <input
+                    id="fishery-photo-input"
+                    name={field.name}
+                    type="file"
+                    className="sr-only"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    onBlur={field.handleBlur}
+                  />
+                </label>
                 <FieldInfo field={field} />
               </>
             )}

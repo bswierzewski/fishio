@@ -485,7 +485,10 @@ export default function AddCompetitionPage() {
                 >
                   <ImagePlus className="mr-2 h-5 w-5" /> Zdjęcie Zawodów (Opcjonalne)
                 </Label>
-                <div className="mt-1 flex justify-center rounded-md border-2 border-dashed border-border px-6 pt-5 pb-6 hover:border-primary transition-colors">
+                <label
+                  htmlFor="competition-photo-input"
+                  className="mt-1 flex justify-center rounded-md border-2 border-dashed border-border px-6 pt-5 pb-6 hover:border-primary transition-colors cursor-pointer"
+                >
                   <div className="space-y-1 text-center">
                     {selectedImagePreview ? (
                       <img
@@ -497,25 +500,20 @@ export default function AddCompetitionPage() {
                       <ImagePlus className={`mx-auto h-12 w-12 ${cardMutedTextColorClass}`} />
                     )}
                     <div className="flex text-sm text-muted-foreground">
-                      <label
-                        htmlFor="competition-photo-input"
-                        className="relative cursor-pointer rounded-md bg-card font-medium text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 focus-within:ring-offset-card hover:text-primary/80"
-                      >
-                        <span>Załaduj plik</span>
-                        <input
-                          id="competition-photo-input"
-                          name="image"
-                          type="file"
-                          className="sr-only"
-                          accept="image/*"
-                          onChange={handleImageChange}
-                        />
-                      </label>
+                      <span className="font-medium text-primary">Załaduj plik</span>
                       <p className="pl-1">lub przeciągnij i upuść</p>
                     </div>
                     <p className="text-xs text-muted-foreground">PNG, JPG, GIF do 10MB</p>
                   </div>
-                </div>
+                  <input
+                    id="competition-photo-input"
+                    name="image"
+                    type="file"
+                    className="sr-only"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                  />
+                </label>
                 <FieldInfo field={field} />
               </>
             )}

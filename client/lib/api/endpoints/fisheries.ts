@@ -23,7 +23,7 @@ import type {
 import { customInstance } from '../axios';
 import type {
   CreateFisheryCommand,
-  FisheryDto,
+  FisheryDetailsDto,
   FisheryDtoPaginatedList,
   GetAllFisheriesParams,
   HttpValidationProblemDetails,
@@ -214,7 +214,7 @@ export const useCreateFishery = <TError = HttpValidationProblemDetails | Problem
   return useMutation(mutationOptions, queryClient);
 };
 export const getFisheryById = (id: number, options?: SecondParameter<typeof customInstance>, signal?: AbortSignal) => {
-  return customInstance<FisheryDto>({ url: `/api/fisheries/${id}`, method: 'GET', signal }, options);
+  return customInstance<FisheryDetailsDto>({ url: `/api/fisheries/${id}`, method: 'GET', signal }, options);
 };
 
 export const getGetFisheryByIdQueryKey = (id: number) => {

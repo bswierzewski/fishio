@@ -144,10 +144,31 @@ export default function DashboardPage() {
   }
 
   // Nawet jeśli 'data' jest null, chcemy wyświetlić strukturę i ActionCards
-  const myCompetitions = [...(data?.myUpcomingCompetitions || []), ...(data?.myRecentCompetitions || [])].slice(
-    0,
-    sliceCount
-  );
+  const upcomingCompetitions = data?.myUpcomingCompetitions || [];
+  const recentCompetitions = data?.myRecentCompetitions || [];
+
+  // Create a Map to ensure uniqueness by competition ID, preferring upcoming over recent
+  const competitionsMap = new Map<
+    number,
+    { competition: DashboardCompetitionSummaryDto; source: 'upcoming' | 'recent' }
+  >();
+
+  // Add upcoming competitions first (they take priority)
+  upcomingCompetitions.forEach((comp) => {
+    if (comp.id !== undefined) {
+      competitionsMap.set(comp.id, { competition: comp, source: 'upcoming' });
+    }
+  });
+
+  // Add recent competitions only if they're not already in the map
+  recentCompetitions.forEach((comp) => {
+    if (comp.id !== undefined && !competitionsMap.has(comp.id)) {
+      competitionsMap.set(comp.id, { competition: comp, source: 'recent' });
+    }
+  });
+
+  // Convert back to array and slice
+  const myCompetitions = Array.from(competitionsMap.values()).slice(0, sliceCount);
 
   const recentCatches = (data?.recentLogbookEntries || []).slice(0, sliceCount);
   const openCompetitions = (data?.openCompetitions || []).slice(0, sliceCount);
@@ -160,13 +181,13 @@ export default function DashboardPage() {
         <h2 className="text-xl font-bold mb-4 text-foreground">Moje Zawody</h2>
         <div className={`flex space-x-4 overflow-x-auto pb-4 ${cardHeight} items-stretch`}>
           {myCompetitions.length > 0 ? (
-            myCompetitions.map((comp: DashboardCompetitionSummaryDto) => {
+            myCompetitions.map(({ competition: comp, source }) => {
               const statusInfo = getStatusStyles(comp.status);
               return (
                 <Link
                   href={`/competitions/${comp.id}`}
                   className="w-44 flex-shrink-0 h-full" // h-full dodane
-                  key={`my-comp-${comp.id}`}
+                  key={`my-comp-${source}-${comp.id}`}
                 >
                   <div className="h-full flex-shrink-0 overflow-hidden rounded-lg shadow border border-border flex flex-col bg-card hover:shadow-md transition-shadow">
                     <div

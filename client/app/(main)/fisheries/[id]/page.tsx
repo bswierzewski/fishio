@@ -1,14 +1,18 @@
 'use client';
 
+import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { BarChart3, Edit, Fish as FishIcon, List, MapPin, Plus, User } from 'lucide-react';
+import { BarChart3, Edit, Fish as FishIcon, List, MapPin, Plus, Trash2, User } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { notFound, useParams } from 'next/navigation';
+import { notFound, useParams, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 
-import { useGetFisheryById } from '@/lib/api/endpoints/fisheries';
+import { useDeleteExistingFishery, useGetFisheryById } from '@/lib/api/endpoints/fisheries';
+
+import { useCurrentUser } from '@/hooks/use-current-user';
 
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -26,8 +30,13 @@ const formatLastCatchDate = (dateInput: Date | string | number | null | undefine
 
 export default function FisheryDetailPage() {
   const params = useParams();
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const idParam = params.id as string;
   const fisheryId = parseInt(idParam, 10);
+
+  // Get current user information
+  const { id: currentUserId } = useCurrentUser();
 
   // Fetch fishery data using the hook
   const {
@@ -38,6 +47,9 @@ export default function FisheryDetailPage() {
   } = useGetFisheryById(fisheryId, {
     query: { enabled: !isNaN(fisheryId) }
   });
+
+  // Delete mutation
+  const deleteFisheryMutation = useDeleteExistingFishery();
 
   useEffect(() => {
     if (isNaN(fisheryId)) {
@@ -75,18 +87,46 @@ export default function FisheryDetailPage() {
   }
 
   const definedSpeciesForDisplay = fishery.fishSpecies || [];
-  const canEdit = true; // This might come from user permissions or API in a real app
+
+  // Determine permissions based on ownership
+  const isOwner = currentUserId && fishery.ownerId === currentUserId;
+  const canEdit = isOwner;
+  const canDelete = isOwner;
   const canAddCatchHere = true;
 
-  // Extract statistics from the API response (these might be available as additional properties)
-  const statistics = (fishery as any).statistics || {};
+  // Extract statistics from the API response
+  const statistics = fishery.statistics || {};
   const totalCatches = statistics.totalCatchesCount || 0;
   const totalAnglers = statistics.totalAnglers || 0;
   const totalCompetitions = statistics.totalCompetitions || 0;
   const lastCatchDate = statistics.lastCatchDate;
 
-  // Enhanced fish species with catch data (if available)
-  const enhancedFishSpecies = (fishery as any).fishSpecies || definedSpeciesForDisplay;
+  // Fish species with catch data
+  const enhancedFishSpecies = fishery.fishSpecies || [];
+
+  // Handle delete fishery
+  const handleDeleteFishery = async () => {
+    if (!fishery.id) return;
+
+    const confirmed = window.confirm(
+      `Czy na pewno chcesz usunąć łowisko "${fishery.name}"?\n\nTa operacja jest nieodwracalna i usunie wszystkie powiązane dane.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await deleteFisheryMutation.mutateAsync({ id: fishery.id });
+
+      // Invalidate all fisheries queries to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['/api/fisheries'] });
+
+      toast.success('Łowisko zostało pomyślnie usunięte');
+      router.push('/fisheries');
+    } catch (error) {
+      console.error('Error deleting fishery:', error);
+      toast.error('Nie udało się usunąć łowiska. Spróbuj ponownie.');
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -110,10 +150,10 @@ export default function FisheryDetailPage() {
                   {fishery.location}
                 </div>
               )}
-              {fishery.userName && (
+              {fishery.ownerName && (
                 <div className="flex items-center text-sm opacity-80 drop-shadow-sm">
                   <User className="mr-1.5 h-4 w-4" />
-                  Dodane przez: {fishery.userName}
+                  Dodane przez: {fishery.ownerName}
                 </div>
               )}
             </div>
@@ -127,10 +167,10 @@ export default function FisheryDetailPage() {
                 {fishery.location}
               </div>
             )}
-            {fishery.userName && (
+            {fishery.ownerName && (
               <div className="flex items-center text-sm text-muted-foreground">
                 <User className="mr-1.5 h-4 w-4" />
-                Dodane przez: {fishery.userName}
+                Dodane przez: {fishery.ownerName}
               </div>
             )}
           </div>
@@ -139,14 +179,34 @@ export default function FisheryDetailPage() {
 
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3">
-        {canEdit && (
-          <Link href={`/fisheries/${fishery.id}/edit`}>
-            <Button variant="outline" className="flex items-center gap-2">
-              <Edit className="h-4 w-4" />
-              Edytuj Łowisko
+        {/* Owner-only buttons */}
+        <div className="flex gap-3 flex-1">
+          {canEdit && (
+            <Link href={`/fisheries/${fishery.id}/edit`}>
+              <Button variant="outline" className="flex items-center gap-2">
+                <Edit className="h-4 w-4" />
+                Edytuj Łowisko
+              </Button>
+            </Link>
+          )}
+          {canDelete && (
+            <Button
+              variant="destructive"
+              className="flex items-center gap-2"
+              onClick={handleDeleteFishery}
+              disabled={deleteFisheryMutation.isPending}
+            >
+              {deleteFisheryMutation.isPending ? (
+                <span className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+              ) : (
+                <Trash2 className="h-4 w-4" />
+              )}
+              {deleteFisheryMutation.isPending ? 'Usuwanie...' : 'Usuń Łowisko'}
             </Button>
-          </Link>
-        )}
+          )}
+        </div>
+
+        {/* Public buttons */}
         {canAddCatchHere && (
           <Link href={`/logbook/add?fisheryId=${fishery.id}`}>
             <Button className="flex items-center gap-2">
@@ -246,7 +306,7 @@ export default function FisheryDetailPage() {
             <div className="p-4">
               {definedSpeciesForDisplay.length > 0 ? (
                 <div className="space-y-2">
-                  {enhancedFishSpecies.map((species: any) => (
+                  {enhancedFishSpecies.map((species) => (
                     <div
                       key={species.id}
                       className="flex items-center justify-between p-2 rounded-md bg-muted/50 hover:bg-muted transition-colors"

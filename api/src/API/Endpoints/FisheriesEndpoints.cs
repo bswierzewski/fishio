@@ -22,7 +22,7 @@ public static class FisheriesEndpoints
 
         group.MapGet("/{id:int}", GetFisheryById)
             .WithName(nameof(GetFisheryById))
-            .Produces<FisheryDto>(StatusCodes.Status200OK)
+            .Produces<FisheryDetailsDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
 
         group.MapPost("/", CreateFishery)
