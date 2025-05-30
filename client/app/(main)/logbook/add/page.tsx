@@ -113,16 +113,6 @@ export default function AddLogbookEntryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <Link href="/logbook">
-          <Button variant="outline" size="sm">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Wróć do Dziennika
-          </Button>
-        </Link>
-        <h1 className={`text-xl sm:text-2xl font-bold ${cardTextColorClass}`}>Dodaj Nowy Połów do Dziennika</h1>
-        <div>{/* Pusty div dla wyrównania, jeśli potrzebne */}</div>
-      </div>
-
       <form
         onSubmit={handleSubmit}
         className={`p-4 sm:p-6 rounded-lg border border-border shadow ${cardBodyBgClass} space-y-6`}

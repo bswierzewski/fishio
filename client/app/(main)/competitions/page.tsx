@@ -53,15 +53,6 @@ export default function CompetitionsPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Otwarte Zawody</h1>
-          <Link href="/competitions/add">
-            <Button className="bg-accent text-accent-foreground hover:bg-accent/90 w-full sm:w-auto">
-              <Plus className="mr-2 h-4 w-4" /> Stwórz Nowe Zawody
-            </Button>
-          </Link>
-        </div>
-
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative flex-grow">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -99,15 +90,6 @@ export default function CompetitionsPage() {
   if (error) {
     return (
       <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Otwarte Zawody</h1>
-          <Link href="/competitions/add">
-            <Button className="bg-accent text-accent-foreground hover:bg-accent/90 w-full sm:w-auto">
-              <Plus className="mr-2 h-4 w-4" /> Stwórz Nowe Zawody
-            </Button>
-          </Link>
-        </div>
-
         <div className="mt-8 rounded-lg border border-destructive bg-destructive/10 p-8 text-center">
           <p className="text-destructive mb-4">Wystąpił błąd podczas ładowania zawodów.</p>
           <Button onClick={() => refetch()} variant="outline">
@@ -120,16 +102,6 @@ export default function CompetitionsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Nagłówek strony i przycisk dodawania */}
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Otwarte Zawody</h1>
-        <Link href="/competitions/add">
-          <Button className="bg-accent text-accent-foreground hover:bg-accent/90 w-full sm:w-auto">
-            <Plus className="mr-2 h-4 w-4" /> Stwórz Nowe Zawody
-          </Button>
-        </Link>
-      </div>
-
       {/* Pasek Wyszukiwania i Filtrowania */}
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-grow">

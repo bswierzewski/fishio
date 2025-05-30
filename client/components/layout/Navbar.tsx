@@ -1,8 +1,9 @@
 'use client';
 
+import SidebarDrawer from './SidebarDrawer';
 import { ClerkLoaded, ClerkLoading } from '@clerk/clerk-react';
 import { UserButton } from '@clerk/nextjs';
-import { InformationCircleIcon } from '@heroicons/react/24/solid';
+import { Bars3Icon } from '@heroicons/react/24/solid';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -49,9 +50,12 @@ export default function Navbar() {
   return (
     <nav className="px-5 p-2 z-50 shadow bg-secondary rounded-b-md">
       <div className="container mx-auto flex justify-between items-center">
-        <Link href="/about">
-          <InformationCircleIcon className="text-background h-8" />
-        </Link>
+        <SidebarDrawer>
+          <div className="flex h-8 w-8 items-center justify-center text-background hover:cursor-pointer">
+            <Bars3Icon className="h-8 w-8" />
+            <span className="sr-only">Otwórz menu</span>
+          </div>
+        </SidebarDrawer>
 
         <span className="font-bold uppercase text-background tracking-widest">{pageTitle}</span>
 

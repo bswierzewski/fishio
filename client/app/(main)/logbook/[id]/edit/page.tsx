@@ -169,14 +169,6 @@ export default function EditLogbookEntryPage() {
 
   return (
     <div className="space-y-6 pb-16">
-      <div className="flex items-center justify-between">
-        <Button variant="outline" size="sm" onClick={() => router.back()}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> Anuluj
-        </Button>
-        <h1 className={`text-xl sm:text-2xl font-bold ${cardTextColorClass}`}>Edytuj Połów w Dzienniku</h1>
-        <div>{/* Spacer */}</div>
-      </div>
-
       <form
         onSubmit={handleSubmit}
         className={`p-4 sm:p-6 rounded-lg border border-border shadow ${cardBodyBgClass} space-y-6`}

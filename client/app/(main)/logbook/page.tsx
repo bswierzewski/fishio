@@ -1,15 +1,14 @@
 'use client';
 
-import { Filter, Fish, Plus, Search, Ruler, Weight } from 'lucide-react';
+import { format } from 'date-fns';
+import { Filter, Fish, Plus, Ruler, Search, Weight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { format } from 'date-fns';
 
 import { useGetCurrentUserLogbookEntries } from '@/lib/api/endpoints/logbook';
 import { UserLogbookEntryDto } from '@/lib/api/models';
 
 import { Button } from '@/components/ui/button';
-
 import { Input } from '@/components/ui/input';
 
 // Style karty (można przenieść do stałych, jeśli się powtarzają)
@@ -25,16 +24,6 @@ export default function LogbookPage() {
 
   return (
     <div className="space-y-6">
-      {/* Nagłówek strony i przycisk dodawania */}
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Mój Dziennik Połowów</h1>
-        <Link href="/logbook/add">
-          <Button className="bg-accent text-accent-foreground hover:bg-accent/90 w-full sm:w-auto">
-            <Plus className="mr-2 h-4 w-4" /> Dodaj Nowy Połów
-          </Button>
-        </Link>
-      </div>
-
       {/* Pasek Wyszukiwania i Filtrowania (Opcjonalny) */}
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-grow">

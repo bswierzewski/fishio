@@ -1,10 +1,11 @@
 'use client';
 
-import { useGetAllFisheries } from '@/lib/api/endpoints/fisheries';
-import { FisheryDto as Fishery } from '@/lib/api/models';
-import { Filter, MapPin, Plus, Search, AlertTriangle, Loader2 } from 'lucide-react';
+import { AlertTriangle, Filter, Loader2, MapPin, Plus, Search } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+
+import { useGetAllFisheries } from '@/lib/api/endpoints/fisheries';
+import { FisheryDto as Fishery } from '@/lib/api/models';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,12 +19,7 @@ const cardMutedTextColorClass = 'text-muted-foreground';
 
 export default function FisheriesPage() {
   // Na razie wyświetlamy wszystkie łowiska
-  const {
-    data: fisheriesResponse,
-    isLoading,
-    isError,
-    error,
-  } = useGetAllFisheries({ PageNumber: 1, PageSize: 20 });
+  const { data: fisheriesResponse, isLoading, isError, error } = useGetAllFisheries({ PageNumber: 1, PageSize: 20 });
 
   const fisheries = fisheriesResponse?.items || [];
 
@@ -31,16 +27,6 @@ export default function FisheriesPage() {
 
   return (
     <div className="space-y-6">
-      {/* Nagłówek strony i przycisk dodawania */}
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Łowiska</h1>
-        <Link href="/fisheries/add">
-          <Button className="bg-accent text-accent-foreground hover:bg-accent/90 w-full sm:w-auto">
-            <Plus className="mr-2 h-4 w-4" /> Dodaj Nowe Łowisko
-          </Button>
-        </Link>
-      </div>
-
       {/* Pasek Wyszukiwania i Filtrowania (Opcjonalny) */}
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-grow">
@@ -68,9 +54,7 @@ export default function FisheriesPage() {
         <div className="mt-8 rounded-lg border border-destructive bg-destructive/10 p-8 text-center">
           <AlertTriangle className="mx-auto h-12 w-12 text-destructive mb-4" />
           <p className="text-destructive mb-2 font-semibold">Wystąpił błąd podczas ładowania łowisk.</p>
-          <p className="text-sm text-destructive/80 mb-4">
-            {(error as Error)?.message || 'Spróbuj ponownie później.'}
-          </p>
+          <p className="text-sm text-destructive/80 mb-4">{(error as Error)?.message || 'Spróbuj ponownie później.'}</p>
           {/* Można dodać przycisk do ponowienia próby */}
         </div>
       )}

@@ -194,20 +194,6 @@ export default function EditFisheryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <Link href={`/fisheries/${fisheryId}`}>
-          <Button variant="outline" size="sm">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Wróć do Łowiska
-          </Button>
-        </Link>
-        <h1 className={`text-xl sm:text-2xl font-bold ${cardTextColorClass}`}>Edytuj Łowisko</h1>
-        <Link href={`/fisheries/${fisheryId}`}>
-          <Button variant="outline" size="sm">
-            Anuluj
-          </Button>
-        </Link>
-      </div>
-
       <form
         onSubmit={(e) => {
           e.preventDefault();

@@ -106,16 +106,6 @@ export default function MyCompetitionsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Nagłówek strony */}
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Moje Zawody</h1>
-        <Link href="/competitions/add">
-          <Button className="bg-accent text-accent-foreground hover:bg-accent/90 w-full sm:w-auto">
-            <Plus className="mr-2 h-4 w-4" /> Stwórz Nowe Zawody
-          </Button>
-        </Link>
-      </div>
-
       {/* Pasek Wyszukiwania i Filtrowania */}
       <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-grow">

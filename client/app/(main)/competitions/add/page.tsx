@@ -165,16 +165,6 @@ export default function AddCompetitionPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <Link href="/competitions">
-          <Button variant="outline" size="sm">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Wróć do Listy Zawodów
-          </Button>
-        </Link>
-        <h1 className={`text-xl sm:text-2xl font-bold ${cardTextColorClass}`}>Stwórz Nowe Zawody</h1>
-        <div></div>
-      </div>
-
       <form
         onSubmit={(e) => {
           e.preventDefault();
