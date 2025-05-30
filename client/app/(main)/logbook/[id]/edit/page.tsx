@@ -9,7 +9,6 @@ import { toast } from 'react-hot-toast';
 
 import { useGetAllFisheries } from '@/lib/api/endpoints/fisheries';
 import {
-  getGetCurrentUserLogbookEntriesQueryKey,
   getGetLogbookEntryDetailsByIdQueryKey,
   useGetLogbookEntryDetailsById,
   useUpdateExistingLogbookEntry
@@ -134,7 +133,7 @@ export default function EditLogbookEntryPage() {
         onSuccess: () => {
           toast.success('Wpis w dzienniku został pomyślnie zaktualizowany!');
           queryClient.invalidateQueries({
-            queryKey: getGetCurrentUserLogbookEntriesQueryKey({ PageNumber: 1, PageSize: 20 })
+            queryKey: ['/api/logbook']
           });
           queryClient.invalidateQueries({
             queryKey: getGetLogbookEntryDetailsByIdQueryKey(Number(entryId))

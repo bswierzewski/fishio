@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
 import { useGetAllFisheries } from '@/lib/api/endpoints/fisheries';
-import { getGetCurrentUserLogbookEntriesQueryKey, useCreateNewLogbookEntry } from '@/lib/api/endpoints/logbook';
+import { useCreateNewLogbookEntry } from '@/lib/api/endpoints/logbook';
 import { useGetAllFishSpecies } from '@/lib/api/endpoints/lookup-data';
 import { CreateLogbookEntryCommand, HttpValidationProblemDetails, ProblemDetails } from '@/lib/api/models';
 
@@ -98,7 +98,7 @@ export default function AddLogbookEntryPage() {
         onSuccess: () => {
           toast.success('Nowy połów został pomyślnie dodany do dziennika!');
           queryClient.invalidateQueries({
-            queryKey: [getGetCurrentUserLogbookEntriesQueryKey({ PageNumber: 1, PageSize: 20 })]
+            queryKey: ['/api/logbook']
           });
           router.push('/logbook');
         },

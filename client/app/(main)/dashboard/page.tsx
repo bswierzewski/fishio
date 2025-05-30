@@ -75,9 +75,9 @@ export default function DashboardPage() {
   const isLg = useMediaQuery('(min-width: 1024px)');
 
   let sliceCount = 2;
-  if (isLg) sliceCount = 8;
-  else if (isMd) sliceCount = 6;
-  else if (isSm) sliceCount = 3;
+  if (isLg) sliceCount = 4;
+  else if (isMd) sliceCount = 3;
+  else if (isSm) sliceCount = 2;
 
   const getStatusStyles = (status?: CompetitionStatus) => {
     switch (status) {
@@ -258,7 +258,7 @@ export default function DashboardPage() {
           ) : (
             <EmptySectionPlaceholder message="Brak zarejestrowanych połowów. Dodaj swój pierwszy połów!" icon={Fish} />
           )}
-          <ActionCard href="/logbook/add" text="Dodaj Nowy Połów" icon={Plus} src="/koi.svg" />
+          <ActionCard href="/logbook" text="Mój Dziennik" icon={ArrowRight} src="/koi.svg" />
         </div>
       </section>
 
@@ -348,9 +348,9 @@ export default function DashboardPage() {
             />
           )}
           <ActionCard
-            href="/fisheries/add"
-            text="Dodaj Łowisko"
-            icon={Plus}
+            href="/fisheries"
+            text="Wszystkie Łowiska"
+            icon={ArrowRight}
             src="/pond.svg"
             className={featuredFisheries.length === 0 && !isSm ? 'hidden' : ''} // Ukryj na mobilce jeśli placeholder
           />

@@ -2,7 +2,9 @@
 
 // Required for using client-side hooks
 import { useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, CalendarDays, Edit, MapPin, Ruler, Trash2, Weight } from 'lucide-react';
+import { format, parseISO } from 'date-fns';
+import { pl } from 'date-fns/locale';
+import { ArrowLeft, CalendarDays, Clock, Edit, MapPin, Ruler, Trash2, Weight } from 'lucide-react';
 // For error state
 import { Terminal } from 'lucide-react';
 import Image from 'next/image';
@@ -11,11 +13,7 @@ import { notFound, useParams, useRouter } from 'next/navigation';
 // Import useParams & useRouter
 import { toast } from 'react-hot-toast';
 
-import {
-  getGetCurrentUserLogbookEntriesQueryKey,
-  useDeleteExistingLogbookEntry,
-  useGetLogbookEntryDetailsById
-} from '@/lib/api/endpoints/logbook';
+import { useDeleteExistingLogbookEntry, useGetLogbookEntryDetailsById } from '@/lib/api/endpoints/logbook';
 import { HttpValidationProblemDetails, LogbookEntryDto, ProblemDetails } from '@/lib/api/models';
 
 // For loading state
@@ -30,14 +28,13 @@ const cardTextColorClass = 'text-foreground';
 const cardMutedTextColorClass = 'text-muted-foreground';
 
 const formatDate = (date: Date | string) => {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return dateObj.toLocaleString('pl-PL', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  try {
+    const dateObj = typeof date === 'string' ? parseISO(date) : date;
+    return format(dateObj, 'dd MMMM yyyy, HH:mm', { locale: pl });
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return 'Nieprawidłowa data';
+  }
 };
 
 export default function LogbookEntryDetailPage() {
@@ -79,6 +76,7 @@ export default function LogbookEntryDetailPage() {
               <Skeleton className="h-5 w-1/2" /> {/* Length placeholder */}
               <Skeleton className="h-5 w-1/2" /> {/* Weight placeholder */}
               <Skeleton className="h-5 w-full sm:col-span-2" /> {/* Fishery placeholder */}
+              <Skeleton className="h-5 w-1/2" /> {/* Created date placeholder */}
             </div>
             <div>
               <Skeleton className="h-6 w-1/4 mb-1" /> {/* Notes title placeholder */}
@@ -137,7 +135,7 @@ export default function LogbookEntryDetailPage() {
             toast.success('Wpis w dzienniku został pomyślnie usunięty!');
             // Invalidate the query for the logbook entries list
             queryClient.invalidateQueries({
-              queryKey: getGetCurrentUserLogbookEntriesQueryKey({ PageNumber: 1, PageSize: 20 })
+              queryKey: ['/api/logbook']
             });
             router.push('/logbook');
           },
@@ -198,10 +196,10 @@ export default function LogbookEntryDetailPage() {
           {' '}
           {/* Proporcje obrazka */}
           <Image
-            src={entry.imageUrl || '/placeholder-image.jpg'} // Changed to imageUrl and added fallback
+            src={entry.imageUrl || '/koi.svg'} // Use existing koi.svg as fallback
             alt={`Zdjęcie ${entry.fishSpeciesName || 'ryby'}`} // Changed to fishSpeciesName and added fallback
-            layout="fill"
-            objectFit="cover" // Użyj 'contain', aby cała ryba była widoczna
+            fill
+            className="object-cover" // Updated to use className instead of objectFit
             priority
           />
         </div>
@@ -210,8 +208,7 @@ export default function LogbookEntryDetailPage() {
         <div className="p-4 sm:p-6 space-y-4">
           <h1 className={`text-2xl sm:text-3xl font-bold ${cardTextColorClass}`}>
             {entry.fishSpeciesName || 'Nieznany gatunek'}
-          </h1>{' '}
-          {/* Changed to fishSpeciesName and added fallback */}
+          </h1>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
             <div className="flex items-center">
               <CalendarDays className={`mr-2 h-5 w-5 ${cardMutedTextColorClass}`} />
@@ -221,43 +218,52 @@ export default function LogbookEntryDetailPage() {
               </span>
             </div>
 
-            {entry.lengthInCm && (
-              <div className="flex items-center">
-                <Ruler className={`mr-2 h-5 w-5 ${cardMutedTextColorClass}`} />
-                <span className={cardTextColorClass}>Długość:</span>
-                <span className={`ml-1 font-medium ${cardTextColorClass}`}>{entry.lengthInCm} cm</span>{' '}
-                {/* Changed to lengthInCm */}
-              </div>
-            )}
+            <div className="flex items-center">
+              <Ruler className={`mr-2 h-5 w-5 ${cardMutedTextColorClass}`} />
+              <span className={cardTextColorClass}>Długość:</span>
+              <span className={`ml-1 font-medium ${entry.lengthInCm ? cardTextColorClass : cardMutedTextColorClass}`}>
+                {entry.lengthInCm ? `${entry.lengthInCm} cm` : 'Nie podano'}
+              </span>
+            </div>
 
-            {entry.weightInKg && (
-              <div className="flex items-center">
-                <Weight className={`mr-2 h-5 w-5 ${cardMutedTextColorClass}`} />
-                <span className={cardTextColorClass}>Waga:</span>
-                <span className={`ml-1 font-medium ${cardTextColorClass}`}>{entry.weightInKg} kg</span>{' '}
-                {/* Changed to weightInKg */}
-              </div>
-            )}
+            <div className="flex items-center">
+              <Weight className={`mr-2 h-5 w-5 ${cardMutedTextColorClass}`} />
+              <span className={cardTextColorClass}>Waga:</span>
+              <span className={`ml-1 font-medium ${entry.weightInKg ? cardTextColorClass : cardMutedTextColorClass}`}>
+                {entry.weightInKg ? `${entry.weightInKg} kg` : 'Nie podano'}
+              </span>
+            </div>
 
-            {fisheryName && fisheryId && (
-              <div className="flex items-center sm:col-span-2">
-                {' '}
-                {/* Łowisko może zająć całą szerokość */}
-                <MapPin className={`mr-2 h-5 w-5 ${cardMutedTextColorClass}`} />
-                <span className={cardTextColorClass}>Łowisko:</span>
+            <div className="flex items-center sm:col-span-2">
+              <MapPin className={`mr-2 h-5 w-5 ${cardMutedTextColorClass}`} />
+              <span className={cardTextColorClass}>Łowisko:</span>
+              {fisheryName && fisheryId ? (
                 <Link href={`/fisheries/${fisheryId}`} className="ml-1 font-medium text-primary hover:underline">
                   {fisheryName}
                 </Link>
-              </div>
-            )}
+              ) : (
+                <span className={`ml-1 font-medium ${cardMutedTextColorClass}`}>Nie podano</span>
+              )}
+            </div>
+
+            {/* Display creation date */}
+            <div className="flex items-center sm:col-span-2">
+              <Clock className={`mr-2 h-5 w-5 ${cardMutedTextColorClass}`} />
+              <span className={cardTextColorClass}>Dodano:</span>
+              <span className={`ml-1 font-medium ${cardMutedTextColorClass}`}>
+                {entry.created ? formatDate(entry.created) : 'Brak danych'}
+              </span>
+            </div>
           </div>
           {/* Notatki */}
-          {entry.notes && (
-            <div>
-              <h2 className={`text-lg font-semibold mb-1 ${cardTextColorClass}`}>Notatki:</h2>
+          <div>
+            <h2 className={`text-lg font-semibold mb-1 ${cardTextColorClass}`}>Notatki:</h2>
+            {entry.notes ? (
               <p className={`text-sm whitespace-pre-wrap ${cardMutedTextColorClass}`}>{entry.notes}</p>
-            </div>
-          )}
+            ) : (
+              <p className={`text-sm italic ${cardMutedTextColorClass}`}>Brak notatek</p>
+            )}
+          </div>
         </div>
       </div>
     </div>

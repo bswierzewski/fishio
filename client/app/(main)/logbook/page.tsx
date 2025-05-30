@@ -62,28 +62,6 @@ export default function LogbookPage() {
                     className="transition-transform duration-300 group-hover:scale-105" // Efekt lekkiego zoomu na hover
                   />
                 </div>
-                {/* Treść Karty */}
-                <div className={`p-3 ${cardBodyBgClass}`}>
-                  <p className={`text-xs ${cardMutedTextColorClass}`}>
-                    {entry.catchTime ? format(new Date(entry.catchTime), 'yyyy-MM-dd HH:mm') : 'Brak daty'}
-                  </p>
-                  {/* Opcjonalnie: Wyświetl wymiary, jeśli dostępne */}
-                  {(entry.lengthInCm || entry.weightInKg) && (
-                    <div className={`mt-1 flex items-center gap-2 text-xs ${cardMutedTextColorClass}`}>
-                      {entry.lengthInCm && (
-                        <span className="flex items-center">
-                          <Ruler className="mr-1 h-3 w-3" /> {`${entry.lengthInCm} cm`}
-                        </span>
-                      )}
-                      {entry.lengthInCm && entry.weightInKg && <span>/</span>}
-                      {entry.weightInKg && (
-                        <span className="flex items-center">
-                          <Weight className="mr-1 h-3 w-3" /> {`${entry.weightInKg} kg`}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
               </div>
             </Link>
           ))}
