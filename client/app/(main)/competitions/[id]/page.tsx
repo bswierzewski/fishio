@@ -417,23 +417,31 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
                 </div>
               )}
 
-              {competition.categories && competition.categories.filter((c) => !c.isPrimaryScoring).length > 0 && (
-                <div>
-                  <h3 className="font-semibold mb-1 text-foreground flex items-center">
-                    <Award className="mr-2 h-4 w-4 text-amber-500" />
-                    Kategorie Specjalne:
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
+              {/* Additional Categories Section */}
+              <div>
+                <h3 className="font-semibold mb-1 text-foreground flex items-center">
+                  <Award className="mr-2 h-4 w-4 text-amber-500" />
+                  Dodatkowe Kategorie:
+                </h3>
+                {competition.categories && competition.categories.filter((c) => !c.isPrimaryScoring).length > 0 ? (
+                  <div className="space-y-2">
                     {competition.categories
                       .filter((category) => !category.isPrimaryScoring)
                       .map((category, index) => (
-                        <Badge key={index} variant="secondary">
-                          {category.name}
-                        </Badge>
+                        <div key={index} className="flex items-start gap-2 p-2 bg-muted/50 rounded-md">
+                          <Badge variant="secondary" className="flex-shrink-0">
+                            {category.name}
+                          </Badge>
+                          {category.description && (
+                            <p className="text-xs text-muted-foreground leading-relaxed">{category.description}</p>
+                          )}
+                        </div>
                       ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <p className="text-sm text-muted-foreground">Brak dodatkowych kategorii w tych zawodach.</p>
+                )}
+              </div>
 
               <div>
                 <h3 className="font-semibold mb-1 text-foreground">Regulamin:</h3>
