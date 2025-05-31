@@ -1,5 +1,6 @@
 'use client';
 
+import { formatDateTimeLocal } from '@/lib/utils';
 import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -85,7 +86,7 @@ export default function AddCompetitionPage() {
   const form = useForm({
     defaultValues: {
       name: '',
-      startTime: new Date().toISOString().substring(0, 16),
+      startTime: formatDateTimeLocal(),
       endTime: '',
       fisheryId: undefined as number | undefined,
       rules: '',

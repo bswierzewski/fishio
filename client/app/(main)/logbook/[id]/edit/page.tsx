@@ -1,5 +1,6 @@
 'use client';
 
+import { formatDateTimeLocal, parseLocalDateTime } from '@/lib/utils';
 import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Calendar, Fish, ImagePlus, MapPin, Ruler, StickyNote, Weight, X } from 'lucide-react';
 import Link from 'next/link';
@@ -67,7 +68,7 @@ export default function EditLogbookEntryPage() {
       setFishSpeciesId(logbookEntry.fishSpeciesId?.toString() ?? undefined);
       setLengthCm(logbookEntry.lengthInCm ?? undefined);
       setWeightKg(logbookEntry.weightInKg ?? undefined);
-      setCaughtAt(logbookEntry.catchTime ? new Date(logbookEntry.catchTime).toISOString().substring(0, 16) : '');
+      setCaughtAt(logbookEntry.catchTime ? formatDateTimeLocal(new Date(logbookEntry.catchTime)) : '');
       setFisheryId(logbookEntry.fisheryId?.toString() ?? undefined);
       setNotes(logbookEntry.notes || '');
       if (logbookEntry.imageUrl) {
@@ -119,7 +120,7 @@ export default function EditLogbookEntryPage() {
       id: Number(entryId),
       lengthInCm: lengthCm,
       weightInKg: weightKg,
-      catchTime: caughtAt ? new Date(caughtAt).toISOString() : null,
+      catchTime: caughtAt ? parseLocalDateTime(caughtAt) : null,
       fishSpeciesId: fishSpeciesId && fishSpeciesId !== 'none' ? Number(fishSpeciesId) : null,
       fisheryId: fisheryId ? Number(fisheryId) : null,
       notes: notes || null,

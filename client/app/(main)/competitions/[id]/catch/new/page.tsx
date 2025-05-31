@@ -1,5 +1,6 @@
 'use client';
 
+import { formatDateTimeLocal } from '@/lib/utils';
 import { ArrowLeft, Camera, Fish, Save } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -33,7 +34,7 @@ export default function NewCatchPage({ params }: { params: Promise<{ id: string 
     lengthInCm: '',
     weightInKg: '',
     image: null as File | null,
-    catchTime: new Date().toISOString().slice(0, 16) // Current time in YYYY-MM-DDTHH:mm format
+    catchTime: formatDateTimeLocal() // Current time in YYYY-MM-DDTHH:mm format
   });
 
   // Resolve params properly with useEffect
@@ -174,7 +175,7 @@ export default function NewCatchPage({ params }: { params: Promise<{ id: string 
         lengthInCm: '',
         weightInKg: '',
         image: null,
-        catchTime: new Date().toISOString().slice(0, 16)
+        catchTime: formatDateTimeLocal()
       });
 
       // Reset file input

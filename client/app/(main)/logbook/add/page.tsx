@@ -1,5 +1,6 @@
 'use client';
 
+import { formatDateTimeLocal, parseLocalDateTime } from '@/lib/utils';
 import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Calendar, Fish, ImagePlus, MapPin, Ruler, StickyNote, Weight, X } from 'lucide-react';
 import Link from 'next/link';
@@ -76,10 +77,10 @@ export default function AddLogbookEntryPage() {
     const formData = new FormData(event.currentTarget);
     const command: CreateLogbookEntryCommand = {
       image: selectedImage,
-      lengthInCm: formData.get('length') ? parseFloat(formData.get('length') as string) : undefined,
-      weightInKg: formData.get('weight') ? parseFloat(formData.get('weight') as string) : undefined,
+      lengthInCm: formData.get('length') ? Number(formData.get('length') as string) : undefined,
+      weightInKg: formData.get('weight') ? Number(formData.get('weight') as string) : undefined,
       catchTime: formData.get('catch-time')
-        ? new Date(formData.get('catch-time') as string).toISOString()
+        ? parseLocalDateTime(formData.get('catch-time') as string)
         : new Date().toISOString(),
       fishSpeciesId:
         formData.get('species') && formData.get('species') !== 'none'
@@ -221,13 +222,12 @@ export default function AddLogbookEntryPage() {
           <Label htmlFor="catch-time" className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-1`}>
             <Calendar className="mr-2 h-5 w-5" /> Data i Czas Połowu (Wymagane)
           </Label>
-          {/* W przyszłości: komponent DatePicker z shadcn/ui */}
           <Input
             id="catch-time"
             name="catch-time"
             type="datetime-local"
             className="bg-card border-border"
-            defaultValue={new Date().toISOString().substring(0, 16)}
+            defaultValue={formatDateTimeLocal()}
             required
           />
         </div>
