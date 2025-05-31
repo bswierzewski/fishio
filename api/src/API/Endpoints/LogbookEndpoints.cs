@@ -1,5 +1,6 @@
 ﻿using Fishio.Application.Common.Models;
 using Fishio.Application.Logbook.Queries.ListLogbookEntries;
+using Fishio.Application.Logbook.Queries.GetLogbookStatistics;
 using Fishio.Application.LogbookEntries.Commands.CreateLogbookEntry;
 using Fishio.Application.LogbookEntries.Commands.DeleteLogbookEntry;
 using Fishio.Application.LogbookEntries.Commands.UpdateLogbookEntry;
@@ -28,6 +29,11 @@ public static class LogbookEndpoints
         group.MapGet("/", GetCurrentUserLogbookEntries)
             .WithName(nameof(GetCurrentUserLogbookEntries))
             .Produces<PaginatedList<UserLogbookEntryDto>>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
+
+        group.MapGet("/statistics", GetLogbookStatistics)
+            .WithName(nameof(GetLogbookStatistics))
+            .Produces<LogbookStatisticsDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         group.MapGet("/{id:int}", GetLogbookEntryDetailsById) // Zmieniono nazwę metody
@@ -70,6 +76,15 @@ public static class LogbookEndpoints
     {
         var entries = await sender.Send(query, ct);
         return TypedResults.Ok(entries);
+    }
+
+    private static async Task<IResult> GetLogbookStatistics(
+        ISender sender,
+        [AsParameters] GetLogbookStatisticsQuery query,
+        CancellationToken ct)
+    {
+        var statistics = await sender.Send(query, ct);
+        return TypedResults.Ok(statistics);
     }
 
     private static async Task<IResult> GetLogbookEntryDetailsById( // Zmieniono nazwę metody

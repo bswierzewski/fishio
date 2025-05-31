@@ -93,7 +93,28 @@ export default function MyCompetitionsPage() {
   if (error) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Moje Zawody</h1>
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Moje Zawody</h1>
+            <p className="text-muted-foreground">Zarządzaj zawodami, które organizujesz lub w których uczestniczysz</p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Link href="/competitions/add">
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Utwórz Zawody
+              </Button>
+            </Link>
+            <Link href="/competitions">
+              <Button variant="outline">
+                <Trophy className="mr-2 h-4 w-4" />
+                Wszystkie Zawody
+              </Button>
+            </Link>
+          </div>
+        </div>
+
         <div className="rounded-lg border border-destructive bg-destructive/10 p-4 text-center">
           <p className="text-destructive">Wystąpił błąd podczas ładowania zawodów.</p>
           <Button onClick={() => refetch()} variant="outline" className="mt-2">
@@ -106,6 +127,28 @@ export default function MyCompetitionsPage() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Moje Zawody</h1>
+          <p className="text-muted-foreground">Zarządzaj zawodami, które organizujesz lub w których uczestniczysz</p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Link href="/competitions/add">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Utwórz Zawody
+            </Button>
+          </Link>
+          <Link href="/competitions">
+            <Button variant="outline">
+              <Trophy className="mr-2 h-4 w-4" />
+              Wszystkie Zawody
+            </Button>
+          </Link>
+        </div>
+      </div>
+
       {/* Pasek Wyszukiwania i Filtrowania */}
       <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-grow">

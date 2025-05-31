@@ -1,7 +1,7 @@
 'use client';
 
 import { format } from 'date-fns';
-import { Filter, Fish, Plus, Ruler, Search, Weight } from 'lucide-react';
+import { BarChart3, Filter, Fish, Plus, Ruler, Search, Weight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -24,6 +24,28 @@ export default function LogbookPage() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Dziennik Połowów</h1>
+          <p className="text-muted-foreground">Dokumentuj swoje połowy i śledź postępy w wędkarstwie</p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Link href="/logbook/add">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Dodaj Połów
+            </Button>
+          </Link>
+          <Link href="/logbook/statistics">
+            <Button variant="outline">
+              <BarChart3 className="mr-2 h-4 w-4" />
+              Statystyki
+            </Button>
+          </Link>
+        </div>
+      </div>
+
       {/* Pasek Wyszukiwania i Filtrowania (Opcjonalny) */}
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-grow">

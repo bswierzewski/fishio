@@ -24,8 +24,10 @@ import { customInstance } from '../axios';
 import type {
   CreateLogbookEntryCommand,
   GetCurrentUserLogbookEntriesParams,
+  GetLogbookStatisticsParams,
   HttpValidationProblemDetails,
   LogbookEntryDto,
+  LogbookStatisticsDto,
   ProblemDetails,
   UpdateLogbookEntryCommand,
   UserLogbookEntryDtoPaginatedList
@@ -234,6 +236,120 @@ export function useGetCurrentUserLogbookEntries<
   queryClient?: QueryClient
 ): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
   const queryOptions = getGetCurrentUserLogbookEntriesQueryOptions(params, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const getLogbookStatistics = (
+  params?: GetLogbookStatisticsParams,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal
+) => {
+  return customInstance<LogbookStatisticsDto>(
+    { url: `/api/logbook/statistics`, method: 'GET', params, signal },
+    options
+  );
+};
+
+export const getGetLogbookStatisticsQueryKey = (params?: GetLogbookStatisticsParams) => {
+  return [`/api/logbook/statistics`, ...(params ? [params] : [])] as const;
+};
+
+export const getGetLogbookStatisticsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getLogbookStatistics>>,
+  TError = ProblemDetails
+>(
+  params?: GetLogbookStatisticsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getLogbookStatistics>>, TError, TData>>;
+    request?: SecondParameter<typeof customInstance>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetLogbookStatisticsQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getLogbookStatistics>>> = ({ signal }) =>
+    getLogbookStatistics(params, requestOptions, signal);
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getLogbookStatistics>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetLogbookStatisticsQueryResult = NonNullable<Awaited<ReturnType<typeof getLogbookStatistics>>>;
+export type GetLogbookStatisticsQueryError = ProblemDetails;
+
+export function useGetLogbookStatistics<
+  TData = Awaited<ReturnType<typeof getLogbookStatistics>>,
+  TError = ProblemDetails
+>(
+  params: undefined | GetLogbookStatisticsParams,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getLogbookStatistics>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getLogbookStatistics>>,
+          TError,
+          Awaited<ReturnType<typeof getLogbookStatistics>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetLogbookStatistics<
+  TData = Awaited<ReturnType<typeof getLogbookStatistics>>,
+  TError = ProblemDetails
+>(
+  params?: GetLogbookStatisticsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getLogbookStatistics>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getLogbookStatistics>>,
+          TError,
+          Awaited<ReturnType<typeof getLogbookStatistics>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetLogbookStatistics<
+  TData = Awaited<ReturnType<typeof getLogbookStatistics>>,
+  TError = ProblemDetails
+>(
+  params?: GetLogbookStatisticsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getLogbookStatistics>>, TError, TData>>;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetLogbookStatistics<
+  TData = Awaited<ReturnType<typeof getLogbookStatistics>>,
+  TError = ProblemDetails
+>(
+  params?: GetLogbookStatisticsParams,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getLogbookStatistics>>, TError, TData>>;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetLogbookStatisticsQueryOptions(params, options);
 
   const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
     queryKey: DataTag<QueryKey, TData, TError>;

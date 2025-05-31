@@ -27,6 +27,22 @@ export default function FisheriesPage() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Łowiska</h1>
+          <p className="text-muted-foreground">Przeglądaj dostępne łowiska i znajdź idealne miejsce na wędkowanie</p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Link href="/fisheries/add">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Dodaj Łowisko
+            </Button>
+          </Link>
+        </div>
+      </div>
+
       {/* Pasek Wyszukiwania i Filtrowania (Opcjonalny) */}
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-grow">
