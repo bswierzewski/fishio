@@ -11,6 +11,7 @@ import {
   PlusIcon,
   TrophyIcon
 } from '@heroicons/react/24/solid';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
@@ -159,63 +160,68 @@ export default function SidebarDrawer({ children }: SidebarDrawerProps) {
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent side="left" className="w-80 p-0">
-        <div className="flex h-full flex-col">
+        <VisuallyHidden>
+          <SheetTitle>Menu nawigacyjne</SheetTitle>
+        </VisuallyHidden>
+        <div className="flex h-full flex-col bg-background">
           {/* Header with user info */}
-          <SheetHeader className="bg-secondary border-b p-6">
+          <div className="bg-slate-800 text-slate-100 p-6">
             <div className="flex items-center space-x-4">
               <ClerkLoading>
-                <div className="h-10 w-10 animate-pulse rounded-full bg-primary-foreground/20" />
+                <div className="h-10 w-10 animate-pulse rounded-full bg-slate-600" />
               </ClerkLoading>
               <ClerkLoaded>
                 <UserButton />
               </ClerkLoaded>
               <div className="flex-1 min-w-0">
-                <SheetTitle className="text-left text-lg font-semibold truncate text-primary-foreground">
-                  {name || 'Użytkownik'}
-                </SheetTitle>
-                {email && <p className="text-sm text-primary-foreground/80 truncate">{email}</p>}
+                <h2 className="text-left text-lg font-semibold truncate text-slate-100">{name || 'Użytkownik'}</h2>
+                {email && <p className="text-sm text-slate-300 truncate">{email}</p>}
               </div>
             </div>
-          </SheetHeader>
+          </div>
 
           {/* Navigation content */}
-          <div className="flex-1 overflow-y-auto p-6">
-            <nav className="space-y-6">
-              {navigationSections.map((section, sectionIndex) => (
-                <div key={section.title}>
-                  <div className="mb-3 bg-primary/10 rounded-lg px-3 py-2">
-                    <h3 className="text-sm font-medium text-primary uppercase tracking-wider">{section.title}</h3>
+          <div className="flex-1 overflow-y-auto pt-1">
+            {navigationSections.map((section, sectionIndex) => (
+              <div key={section.title}>
+                {/* Section header with black background spanning full width */}
+                <div className="bg-slate-800 text-slate-100 relative flex h-10 flex-shrink-0 items-center space-x-2 px-6">
+                  <div className="relative z-10 flex items-center space-x-2">
+                    <span className="text-xs font-medium truncate uppercase tracking-wider">{section.title}</span>
                   </div>
-                  <div className="space-y-1">
-                    {section.items.map((item) => {
-                      const IconComponent = item.icon;
-                      const active = isActive(item.href);
-
-                      return (
-                        <Link key={item.href} href={item.href} onClick={handleLinkClick}>
-                          <div
-                            className={`flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground ${
-                              active
-                                ? 'bg-primary text-primary-foreground'
-                                : 'text-muted-foreground hover:text-foreground'
-                            }`}
-                          >
-                            <IconComponent className="h-5 w-5 flex-shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <div className="font-medium">{item.label}</div>
-                              {item.description && (
-                                <div className="text-xs opacity-75 truncate">{item.description}</div>
-                              )}
-                            </div>
-                          </div>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                  {sectionIndex < navigationSections.length - 1 && <Separator className="mt-4" />}
                 </div>
-              ))}
-            </nav>
+
+                {/* Section items */}
+                <div className="px-4 py-3 space-y-1">
+                  {section.items.map((item) => {
+                    const IconComponent = item.icon;
+                    const active = isActive(item.href);
+
+                    return (
+                      <Link key={item.href} href={item.href} onClick={handleLinkClick}>
+                        <div
+                          className={`flex items-center space-x-3 rounded-lg px-3 py-3 text-sm transition-all duration-200 hover:bg-muted ${
+                            active ? 'bg-primary text-primary-foreground' : 'text-foreground hover:text-foreground'
+                          }`}
+                        >
+                          <IconComponent className="h-5 w-5 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium">{item.label}</div>
+                            {item.description && (
+                              <div
+                                className={`text-xs truncate ${active ? 'text-primary-foreground/80' : 'text-muted-foreground'}`}
+                              >
+                                {item.description}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </SheetContent>
