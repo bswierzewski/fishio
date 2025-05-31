@@ -3,7 +3,7 @@
 import { Award, Filter, ListChecks, Plus, Search, Trophy } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useGetOpenCompetitionsList } from '@/lib/api/endpoints/competitions';
 import { CompetitionSummaryDto } from '@/lib/api/models';
@@ -32,6 +32,22 @@ export default function CompetitionsPage() {
     PageNumber: pageNumber,
     PageSize: pageSize
   });
+
+  // Debug logging
+  useEffect(() => {
+    console.log('=== COMPETITIONS PAGE DEBUG ===');
+    console.log('isLoading:', isLoading);
+    console.log('error:', error);
+    console.log('competitionsResponse:', competitionsResponse);
+    console.log('items:', competitionsResponse?.items);
+    console.log('items length:', competitionsResponse?.items?.length);
+    console.log('hasNextPage:', competitionsResponse?.hasNextPage);
+    console.log('hasPreviousPage:', competitionsResponse?.hasPreviousPage);
+    console.log('totalCount:', competitionsResponse?.totalCount);
+    console.log('pageNumber:', competitionsResponse?.pageNumber);
+    console.log('totalPages:', competitionsResponse?.totalPages);
+    console.log('================================');
+  }, [isLoading, error, competitionsResponse]);
 
   const openCompetitions = competitionsResponse?.items || [];
   const hasNextPage = competitionsResponse?.hasNextPage || false;

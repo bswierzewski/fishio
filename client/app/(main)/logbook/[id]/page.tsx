@@ -157,8 +157,8 @@ export default function LogbookEntryDetailPage() {
       {/* Przycisk Powrotu i Tytuł */}
       <div className="flex items-center justify-between">
         <Link href="/logbook">
-          <Button variant="outline" size="sm">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Wróć do Dziennika
+          <Button className="shadow" variant="outline" size="icon">
+            <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
         {/* Opcjonalnie: przyciski edycji/usuwania */}

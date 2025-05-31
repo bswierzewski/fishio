@@ -20,8 +20,7 @@ public class GetOpenCompetitionsQueryHandler : IRequestHandler<GetOpenCompetitio
             .Where(c => c.Type == CompetitionType.Public &&
                         (c.Status == CompetitionStatus.AcceptingRegistrations ||
                          c.Status == CompetitionStatus.Scheduled ||
-                         c.Status == CompetitionStatus.Upcoming) &&
-                        c.Schedule.Start > now) // Tylko te, które się jeszcze nie rozpoczęły
+                         c.Status == CompetitionStatus.Upcoming))
             .Include(c => c.Fishery)
             .Include(c => c.Participants)
             .Include(c => c.Categories).ThenInclude(cc => cc.CategoryDefinition);

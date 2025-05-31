@@ -3,7 +3,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { BarChart3, Edit, Fish as FishIcon, List, MapPin, Plus, Trash2, User } from 'lucide-react';
+import { BarChart3, Calendar, Edit, Fish as FishIcon, List, MapPin, Plus, Trash2, User } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound, useParams, useRouter } from 'next/navigation';
@@ -254,6 +254,31 @@ export default function FisheryDetailPage() {
                   Brak zarejestrowanych połowów na tym łowisku
                 </p>
               )}
+            </div>
+          </div>
+
+          {/* Recent Catches Section */}
+          <div className="overflow-hidden rounded-lg border border-border bg-card shadow">
+            <div className="bg-slate-800 text-slate-100 relative flex h-10 flex-shrink-0 items-center space-x-2 p-3">
+              <div className="relative z-10 flex items-center space-x-2">
+                <Calendar className="h-4 w-4" />
+                <span className="text-xs font-medium truncate">Nadchodzące Zawody</span>
+              </div>
+            </div>
+            <div className="p-4">
+              <div className="text-center py-8">
+                <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground mb-4">Brak nadchodzących zawodów na tym łowisku</p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Lista zawodów zaplanowanych na tym łowisku będzie dostępna wkrótce
+                </p>
+                <Link href={`/competitions/add`}>
+                  <Button variant="outline" size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Organizuj zawody
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
 
