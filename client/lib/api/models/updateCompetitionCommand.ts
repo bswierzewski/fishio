@@ -17,6 +17,8 @@ export interface UpdateCompetitionCommand {
   rules?: string | null;
   type?: CompetitionType;
   /** @nullable */
-  image?: Blob | null;
+  imageUrl?: string | null;
+  /** @nullable */
+  imagePublicId?: string | null;
   removeCurrentImage?: boolean;
 }

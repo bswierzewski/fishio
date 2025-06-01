@@ -10,10 +10,14 @@ export interface RecordCompetitionFishCatchCommand {
   participantEntryId?: number;
   fishSpeciesId?: number;
   /** @nullable */
-  image?: Blob | null;
+  imageUrl?: string | null;
+  /** @nullable */
+  imagePublicId?: string | null;
   catchTime?: string;
   /** @nullable */
   lengthInCm?: number | null;
   /** @nullable */
   weightInKg?: number | null;
+  /** @nullable */
+  notes?: string | null;
 }

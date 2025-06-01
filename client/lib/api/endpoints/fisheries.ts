@@ -134,29 +134,12 @@ export const createFishery = (
   options?: SecondParameter<typeof customInstance>,
   signal?: AbortSignal
 ) => {
-  const formData = new FormData();
-  if (createFisheryCommand.name !== undefined && createFisheryCommand.name !== null) {
-    formData.append(`name`, createFisheryCommand.name);
-  }
-  if (createFisheryCommand.description !== undefined && createFisheryCommand.description !== null) {
-    formData.append(`description`, createFisheryCommand.description);
-  }
-  if (createFisheryCommand.location !== undefined && createFisheryCommand.location !== null) {
-    formData.append(`location`, createFisheryCommand.location);
-  }
-  if (createFisheryCommand.image !== undefined && createFisheryCommand.image !== null) {
-    formData.append(`image`, createFisheryCommand.image);
-  }
-  if (createFisheryCommand.fishSpeciesIds !== undefined && createFisheryCommand.fishSpeciesIds !== null) {
-    createFisheryCommand.fishSpeciesIds.forEach((value) => formData.append(`fishSpeciesIds`, value.toString()));
-  }
-
   return customInstance<unknown>(
     {
       url: `/api/fisheries`,
       method: 'POST',
-      headers: { 'Content-Type': 'multipart/form-data' },
-      data: formData,
+      headers: { 'Content-Type': 'application/json' },
+      data: createFisheryCommand,
       signal
     },
     options
@@ -310,28 +293,13 @@ export const updateExistingFishery = (
   updateFisheryCommand: UpdateFisheryCommand,
   options?: SecondParameter<typeof customInstance>
 ) => {
-  const formData = new FormData();
-  if (updateFisheryCommand.id !== undefined) {
-    formData.append(`id`, updateFisheryCommand.id.toString());
-  }
-  if (updateFisheryCommand.name !== undefined && updateFisheryCommand.name !== null) {
-    formData.append(`name`, updateFisheryCommand.name);
-  }
-  if (updateFisheryCommand.location !== undefined && updateFisheryCommand.location !== null) {
-    formData.append(`location`, updateFisheryCommand.location);
-  }
-  if (updateFisheryCommand.image !== undefined && updateFisheryCommand.image !== null) {
-    formData.append(`image`, updateFisheryCommand.image);
-  }
-  if (updateFisheryCommand.removeCurrentImage !== undefined) {
-    formData.append(`removeCurrentImage`, updateFisheryCommand.removeCurrentImage.toString());
-  }
-  if (updateFisheryCommand.fishSpeciesIds !== undefined && updateFisheryCommand.fishSpeciesIds !== null) {
-    updateFisheryCommand.fishSpeciesIds.forEach((value) => formData.append(`fishSpeciesIds`, value.toString()));
-  }
-
   return customInstance<void>(
-    { url: `/api/fisheries/${id}`, method: 'PUT', headers: { 'Content-Type': 'multipart/form-data' }, data: formData },
+    {
+      url: `/api/fisheries/${id}`,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: updateFisheryCommand
+    },
     options
   );
 };

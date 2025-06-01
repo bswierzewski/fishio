@@ -12,7 +12,9 @@ export interface UpdateFisheryCommand {
   /** @nullable */
   location?: string | null;
   /** @nullable */
-  image?: Blob | null;
+  imageUrl?: string | null;
+  /** @nullable */
+  imagePublicId?: string | null;
   removeCurrentImage?: boolean;
   /** @nullable */
   fishSpeciesIds?: number[] | null;

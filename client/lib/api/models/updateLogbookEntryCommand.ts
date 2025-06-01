@@ -8,7 +8,9 @@
 export interface UpdateLogbookEntryCommand {
   id?: number;
   /** @nullable */
-  image?: Blob | null;
+  imageUrl?: string | null;
+  /** @nullable */
+  imagePublicId?: string | null;
   removeCurrentImage?: boolean;
   /** @nullable */
   catchTime?: string | null;

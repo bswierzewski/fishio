@@ -7,7 +7,9 @@
 
 export interface CreateLogbookEntryCommand {
   /** @nullable */
-  image?: Blob | null;
+  imageUrl?: string | null;
+  /** @nullable */
+  imagePublicId?: string | null;
   /** @nullable */
   catchTime?: string | null;
   /** @nullable */

@@ -45,52 +45,12 @@ export const createNewCompetition = (
   options?: SecondParameter<typeof customInstance>,
   signal?: AbortSignal
 ) => {
-  const formData = new FormData();
-  if (createCompetitionCommand.name !== undefined && createCompetitionCommand.name !== null) {
-    formData.append(`name`, createCompetitionCommand.name);
-  }
-  if (createCompetitionCommand.startTime !== undefined) {
-    formData.append(`startTime`, createCompetitionCommand.startTime);
-  }
-  if (createCompetitionCommand.endTime !== undefined) {
-    formData.append(`endTime`, createCompetitionCommand.endTime);
-  }
-  if (createCompetitionCommand.fisheryId !== undefined) {
-    formData.append(`fisheryId`, createCompetitionCommand.fisheryId.toString());
-  }
-  if (createCompetitionCommand.rules !== undefined && createCompetitionCommand.rules !== null) {
-    formData.append(`rules`, createCompetitionCommand.rules);
-  }
-  if (createCompetitionCommand.type !== undefined) {
-    formData.append(`type`, createCompetitionCommand.type);
-  }
-  if (createCompetitionCommand.image !== undefined && createCompetitionCommand.image !== null) {
-    formData.append(`image`, createCompetitionCommand.image);
-  }
-  if (createCompetitionCommand.primaryScoringCategoryDefinitionId !== undefined) {
-    formData.append(
-      `primaryScoringCategoryDefinitionId`,
-      createCompetitionCommand.primaryScoringCategoryDefinitionId.toString()
-    );
-  }
-  if (
-    createCompetitionCommand.primaryScoringFishSpeciesId !== undefined &&
-    createCompetitionCommand.primaryScoringFishSpeciesId !== null
-  ) {
-    formData.append(`primaryScoringFishSpeciesId`, createCompetitionCommand.primaryScoringFishSpeciesId.toString());
-  }
-  if (createCompetitionCommand.specialCategories !== undefined && createCompetitionCommand.specialCategories !== null) {
-    createCompetitionCommand.specialCategories.forEach((value) =>
-      formData.append(`specialCategories`, JSON.stringify(value))
-    );
-  }
-
   return customInstance<unknown>(
     {
       url: `/api/competitions`,
       method: 'POST',
-      headers: { 'Content-Type': 'multipart/form-data' },
-      data: formData,
+      headers: { 'Content-Type': 'application/json' },
+      data: createCompetitionCommand,
       signal
     },
     options
@@ -499,41 +459,12 @@ export const updateExistingCompetition = (
   updateCompetitionCommand: UpdateCompetitionCommand,
   options?: SecondParameter<typeof customInstance>
 ) => {
-  const formData = new FormData();
-  if (updateCompetitionCommand.id !== undefined) {
-    formData.append(`id`, updateCompetitionCommand.id.toString());
-  }
-  if (updateCompetitionCommand.name !== undefined && updateCompetitionCommand.name !== null) {
-    formData.append(`name`, updateCompetitionCommand.name);
-  }
-  if (updateCompetitionCommand.startTime !== undefined) {
-    formData.append(`startTime`, updateCompetitionCommand.startTime);
-  }
-  if (updateCompetitionCommand.endTime !== undefined) {
-    formData.append(`endTime`, updateCompetitionCommand.endTime);
-  }
-  if (updateCompetitionCommand.fisheryId !== undefined) {
-    formData.append(`fisheryId`, updateCompetitionCommand.fisheryId.toString());
-  }
-  if (updateCompetitionCommand.rules !== undefined && updateCompetitionCommand.rules !== null) {
-    formData.append(`rules`, updateCompetitionCommand.rules);
-  }
-  if (updateCompetitionCommand.type !== undefined) {
-    formData.append(`type`, updateCompetitionCommand.type);
-  }
-  if (updateCompetitionCommand.image !== undefined && updateCompetitionCommand.image !== null) {
-    formData.append(`image`, updateCompetitionCommand.image);
-  }
-  if (updateCompetitionCommand.removeCurrentImage !== undefined) {
-    formData.append(`removeCurrentImage`, updateCompetitionCommand.removeCurrentImage.toString());
-  }
-
   return customInstance<void>(
     {
       url: `/api/competitions/${id}`,
       method: 'PUT',
-      headers: { 'Content-Type': 'multipart/form-data' },
-      data: formData
+      headers: { 'Content-Type': 'application/json' },
+      data: updateCompetitionCommand
     },
     options
   );
@@ -1677,41 +1608,12 @@ export const judgeRecordsFishCatch = (
   options?: SecondParameter<typeof customInstance>,
   signal?: AbortSignal
 ) => {
-  const formData = new FormData();
-  if (recordCompetitionFishCatchCommand.competitionId !== undefined) {
-    formData.append(`competitionId`, recordCompetitionFishCatchCommand.competitionId.toString());
-  }
-  if (recordCompetitionFishCatchCommand.participantEntryId !== undefined) {
-    formData.append(`participantEntryId`, recordCompetitionFishCatchCommand.participantEntryId.toString());
-  }
-  if (recordCompetitionFishCatchCommand.fishSpeciesId !== undefined) {
-    formData.append(`fishSpeciesId`, recordCompetitionFishCatchCommand.fishSpeciesId.toString());
-  }
-  if (recordCompetitionFishCatchCommand.image !== undefined && recordCompetitionFishCatchCommand.image !== null) {
-    formData.append(`image`, recordCompetitionFishCatchCommand.image);
-  }
-  if (recordCompetitionFishCatchCommand.catchTime !== undefined) {
-    formData.append(`catchTime`, recordCompetitionFishCatchCommand.catchTime);
-  }
-  if (
-    recordCompetitionFishCatchCommand.lengthInCm !== undefined &&
-    recordCompetitionFishCatchCommand.lengthInCm !== null
-  ) {
-    formData.append(`lengthInCm`, recordCompetitionFishCatchCommand.lengthInCm.toString());
-  }
-  if (
-    recordCompetitionFishCatchCommand.weightInKg !== undefined &&
-    recordCompetitionFishCatchCommand.weightInKg !== null
-  ) {
-    formData.append(`weightInKg`, recordCompetitionFishCatchCommand.weightInKg.toString());
-  }
-
   return customInstance<unknown>(
     {
       url: `/api/competitions/${competitionId}/catches`,
       method: 'POST',
-      headers: { 'Content-Type': 'multipart/form-data' },
-      data: formData,
+      headers: { 'Content-Type': 'application/json' },
+      data: recordCompetitionFishCatchCommand,
       signal
     },
     options

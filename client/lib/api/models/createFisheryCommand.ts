@@ -13,7 +13,9 @@ export interface CreateFisheryCommand {
   /** @nullable */
   location?: string | null;
   /** @nullable */
-  image?: Blob | null;
+  imageUrl?: string | null;
+  /** @nullable */
+  imagePublicId?: string | null;
   /** @nullable */
   fishSpeciesIds?: number[] | null;
 }

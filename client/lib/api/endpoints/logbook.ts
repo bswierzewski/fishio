@@ -41,8 +41,11 @@ export const createNewLogbookEntry = (
   signal?: AbortSignal
 ) => {
   const formData = new FormData();
-  if (createLogbookEntryCommand.image !== undefined && createLogbookEntryCommand.image !== null) {
-    formData.append(`image`, createLogbookEntryCommand.image);
+  if (createLogbookEntryCommand.imageUrl !== undefined && createLogbookEntryCommand.imageUrl !== null) {
+    formData.append(`imageUrl`, createLogbookEntryCommand.imageUrl);
+  }
+  if (createLogbookEntryCommand.imagePublicId !== undefined && createLogbookEntryCommand.imagePublicId !== null) {
+    formData.append(`imagePublicId`, createLogbookEntryCommand.imagePublicId);
   }
   if (createLogbookEntryCommand.catchTime !== undefined && createLogbookEntryCommand.catchTime !== null) {
     formData.append(`catchTime`, createLogbookEntryCommand.catchTime);
@@ -480,8 +483,11 @@ export const updateExistingLogbookEntry = (
   if (updateLogbookEntryCommand.id !== undefined) {
     formData.append(`id`, updateLogbookEntryCommand.id.toString());
   }
-  if (updateLogbookEntryCommand.image !== undefined && updateLogbookEntryCommand.image !== null) {
-    formData.append(`image`, updateLogbookEntryCommand.image);
+  if (updateLogbookEntryCommand.imageUrl !== undefined && updateLogbookEntryCommand.imageUrl !== null) {
+    formData.append(`imageUrl`, updateLogbookEntryCommand.imageUrl);
+  }
+  if (updateLogbookEntryCommand.imagePublicId !== undefined && updateLogbookEntryCommand.imagePublicId !== null) {
+    formData.append(`imagePublicId`, updateLogbookEntryCommand.imagePublicId);
   }
   if (updateLogbookEntryCommand.removeCurrentImage !== undefined) {
     formData.append(`removeCurrentImage`, updateLogbookEntryCommand.removeCurrentImage.toString());

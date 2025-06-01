@@ -17,7 +17,9 @@ export interface CreateCompetitionCommand {
   rules?: string | null;
   type?: CompetitionType;
   /** @nullable */
-  image?: Blob | null;
+  imageUrl?: string | null;
+  /** @nullable */
+  imagePublicId?: string | null;
   primaryScoringCategoryDefinitionId?: number;
   /** @nullable */
   primaryScoringFishSpeciesId?: number | null;
