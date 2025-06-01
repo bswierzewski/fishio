@@ -1,278 +1,329 @@
 'use client';
 
-import { formatDateTimeLocal, parseLocalDateTime } from '@/lib/utils';
-import { useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Calendar, Fish, ImagePlus, MapPin, Ruler, StickyNote, Weight, X } from 'lucide-react';
+import { formatDateTimeLocal } from '@/lib/utils';
+import { useForm } from '@tanstack/react-form';
+import { ArrowLeft, Calendar, FileText, Fish, MapPin, Ruler, Weight } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 
 import { useGetAllFisheries } from '@/lib/api/endpoints/fisheries';
 import { useCreateNewLogbookEntry } from '@/lib/api/endpoints/logbook';
 import { useGetAllFishSpecies } from '@/lib/api/endpoints/lookup-data';
-import { CreateLogbookEntryCommand, HttpValidationProblemDetails, ProblemDetails } from '@/lib/api/models';
+import type { CreateLogbookEntryCommand, FishSpeciesDto } from '@/lib/api/models';
 
+import { type DeferredImageData, type ImageUploadResult } from '@/hooks/use-image-upload';
+
+import FieldInfo from '@/components/FieldInfo';
 import { Button } from '@/components/ui/button';
+import { DeferredImageUpload } from '@/components/ui/image-upload';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 
+// Theme utilities
 const cardBodyBgClass = 'bg-card';
-const cardTextColorClass = 'text-foreground';
+const cardTextColorClass = 'text-card-foreground';
 const cardMutedTextColorClass = 'text-muted-foreground';
 
 export default function AddLogbookEntryPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const queryClient = useQueryClient();
   const preselectedFisheryId = searchParams.get('fisheryId');
-  const [selectedImagePreview, setSelectedImagePreview] = useState<string | null>(null);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+
+  const [selectedImageData, setSelectedImageData] = useState<DeferredImageData | null>(null);
+  const [showImageError, setShowImageError] = useState(false);
+  const [uploadImageFunction, setUploadImageFunction] = useState<(() => Promise<ImageUploadResult | null>) | null>(
+    null
+  );
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const { data: fisheries } = useGetAllFisheries({ PageNumber: 1, PageSize: 20 });
   const { data: fishSpecies } = useGetAllFishSpecies();
-  const { mutate: createNewLogbookEntry, isPending: isCreatingEntry } = useCreateNewLogbookEntry();
-
-  // Symulacja obsługi zmiany pliku
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      const file = event.target.files[0];
-      setSelectedImagePreview(URL.createObjectURL(file));
-      setSelectedImage(file);
-      // W przyszłości: logika uploadu pliku
-    } else {
-      setSelectedImagePreview(null);
-      setSelectedImage(null);
+  const { mutate: createNewLogbookEntry, isPending: isCreatingEntry } = useCreateNewLogbookEntry({
+    mutation: {
+      onSuccess: () => {
+        toast.success('Wpis został dodany do dziennika!');
+        router.push('/logbook');
+      },
+      onError: (error) => {
+        console.error('Error creating logbook entry:', error);
+        toast.error('Nie udało się dodać wpisu do dziennika');
+      }
     }
-  };
+  });
 
-  const handleRemoveImage = () => {
-    setSelectedImagePreview(null);
-    setSelectedImage(null);
-    // Reset the file input
-    const fileInput = document.getElementById('catch-photo-input') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.value = '';
-    }
-  };
+  const form = useForm({
+    defaultValues: {
+      catchTime: formatDateTimeLocal(),
+      lengthInCm: '',
+      weightInKg: '',
+      notes: '',
+      fishSpeciesId: '',
+      fisheryId: preselectedFisheryId || ''
+    },
+    onSubmit: async ({ value }) => {
+      // Check if image is required and missing
+      if (!selectedImageData) {
+        setShowImageError(true);
+        toast.error('Zdjęcie ryby jest wymagane');
+        return;
+      }
 
-  const handleRemoveImageClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    handleRemoveImage();
-  };
+      setShowImageError(false);
 
-  // Symulacja wysłania formularza
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+      // First upload the image if one is selected
+      let imageUrl: string | null = null;
+      let imagePublicId: string | null = null;
 
-    // Validate that an image is selected
-    if (!selectedImage) {
-      toast.error('Zdjęcie ryby jest wymagane.');
-      return;
-    }
-
-    const formData = new FormData(event.currentTarget);
-    const command: CreateLogbookEntryCommand = {
-      image: selectedImage,
-      lengthInCm: formData.get('length') ? Number(formData.get('length') as string) : undefined,
-      weightInKg: formData.get('weight') ? Number(formData.get('weight') as string) : undefined,
-      catchTime: formData.get('catch-time')
-        ? parseLocalDateTime(formData.get('catch-time') as string)
-        : new Date().toISOString(),
-      fishSpeciesId:
-        formData.get('species') && formData.get('species') !== 'none'
-          ? Number(formData.get('species') as string)
-          : undefined,
-      fisheryId:
-        formData.get('fishery') && formData.get('fishery') !== 'none'
-          ? Number(formData.get('fishery') as string)
-          : undefined,
-      notes: (formData.get('notes') as string) || undefined
-    };
-
-    createNewLogbookEntry(
-      { data: command },
-      {
-        onSuccess: () => {
-          toast.success('Nowy połów został pomyślnie dodany do dziennika!');
-          queryClient.invalidateQueries({
-            queryKey: ['/api/logbook']
-          });
-          router.push('/logbook');
-        },
-        onError: (error: HttpValidationProblemDetails | ProblemDetails | Error) => {
-          console.error('Error creating new logbook entry:', error);
-          // Don't show manual error toast - let the axios interceptor handle it
-          // The interceptor will show user-friendly validation errors automatically
+      if (selectedImageData && uploadImageFunction) {
+        setIsUploadingImage(true);
+        try {
+          const uploadResult = await uploadImageFunction();
+          if (!uploadResult) {
+            toast.error('Nie udało się przesłać zdjęcia');
+            return;
+          }
+          imageUrl = uploadResult.imageUrl;
+          imagePublicId = uploadResult.imagePublicId;
+        } finally {
+          setIsUploadingImage(false);
         }
       }
-    );
-  };
+
+      const command: CreateLogbookEntryCommand = {
+        imageUrl,
+        imagePublicId,
+        catchTime: value.catchTime || undefined,
+        lengthInCm: value.lengthInCm ? parseFloat(value.lengthInCm) : undefined,
+        weightInKg: value.weightInKg ? parseFloat(value.weightInKg) : undefined,
+        notes: value.notes || undefined,
+        fishSpeciesId: value.fishSpeciesId ? parseInt(value.fishSpeciesId) : undefined,
+        fisheryId: value.fisheryId ? parseInt(value.fisheryId) : undefined
+      };
+
+      createNewLogbookEntry({ data: command });
+    }
+  });
+
+  const isSubmitting = isCreatingEntry || isUploadingImage;
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <Link href="/logbook">
+          <Button variant="outline" size="sm">
+            <ArrowLeft className="mr-2 h-4 w-4" /> Wróć do Dziennika
+          </Button>
+        </Link>
+        <h1 className={`text-xl sm:text-2xl font-bold ${cardTextColorClass}`}>Dodaj Nowy Wpis</h1>
+        <div></div>
+      </div>
+
       <form
-        onSubmit={handleSubmit}
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          form.handleSubmit();
+        }}
         className={`p-4 sm:p-6 rounded-lg border border-border shadow ${cardBodyBgClass} space-y-6`}
       >
         {/* --- Sekcja Zdjęcia --- */}
         <div>
-          <Label htmlFor="catch-photo" className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-2`}>
-            <ImagePlus className="mr-2 h-5 w-5" /> Zdjęcie Ryby (Wymagane)
-          </Label>
-          <label
-            htmlFor="catch-photo-input"
-            className="mt-1 flex justify-center rounded-md border-2 border-dashed border-border px-6 pt-5 pb-6 hover:border-primary transition-colors cursor-pointer"
-          >
-            <div className="space-y-1 text-center">
-              {selectedImagePreview ? (
-                <div className="relative">
-                  <img
-                    src={selectedImagePreview}
-                    alt="Podgląd zdjęcia"
-                    className="mx-auto h-32 w-auto rounded-md object-contain"
-                  />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 hover:cursor-pointer"
-                    onClick={handleRemoveImageClick}
-                  >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </div>
-              ) : (
-                <ImagePlus className={`mx-auto h-12 w-12 ${cardMutedTextColorClass}`} />
-              )}
-              <div className="flex text-sm text-muted-foreground justify-center">
-                <span className="font-medium text-primary">
-                  {selectedImagePreview ? 'Zmień zdjęcie' : 'Załaduj plik'}
-                </span>
-                {!selectedImagePreview && <p className="pl-1">lub przeciągnij i upuść</p>}
-              </div>
-              <p className="text-xs text-muted-foreground">PNG, JPG, GIF do 10MB</p>
-            </div>
-            <input
-              id="catch-photo-input"
-              name="catch-photo"
-              type="file"
-              className="sr-only"
-              accept="image/*"
-              onChange={handleImageChange}
-            />
-          </label>
+          <DeferredImageUpload
+            id="catch-photo-input"
+            label="Zdjęcie Ryby (Wymagane)"
+            required
+            folderName="logbook"
+            onImageSelect={(imageData) => {
+              setSelectedImageData(imageData);
+              if (imageData) {
+                setShowImageError(false);
+              }
+            }}
+            onUploadReady={(uploadFn) => {
+              setUploadImageFunction(() => uploadFn);
+            }}
+          />
+          {showImageError && <p className="text-destructive text-sm mt-1">Zdjęcie ryby jest wymagane.</p>}
         </div>
 
         {/* --- Sekcja Gatunek --- */}
         <div>
-          <Label htmlFor="species" className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-1`}>
-            <Fish className="mr-2 h-5 w-5" /> Gatunek
-          </Label>
-          <Select name="species">
-            <SelectTrigger className="w-full bg-card border-border">
-              <SelectValue placeholder="Wybierz gatunek ryby..." />
-            </SelectTrigger>
-            <SelectContent className="bg-popover">
-              <SelectItem value="none">Nie wybrano</SelectItem>
-              {fishSpecies?.map((species) => (
-                <SelectItem key={species.id} value={species?.id?.toString() ?? ''}>
-                  {species.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <form.Field name="fishSpeciesId">
+            {(field) => (
+              <>
+                <Label
+                  htmlFor={field.name}
+                  className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-1`}
+                >
+                  <Fish className="mr-2 h-5 w-5" /> Gatunek
+                </Label>
+                <Select value={field.state.value || undefined} onValueChange={(value) => field.handleChange(value)}>
+                  <SelectTrigger className="w-full bg-card border-border">
+                    <SelectValue placeholder="Wybierz gatunek ryby..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover">
+                    {fishSpecies?.map((species: FishSpeciesDto) => (
+                      <SelectItem key={species.id} value={species?.id?.toString() ?? ''}>
+                        {species.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FieldInfo field={field} />
+              </>
+            )}
+          </form.Field>
         </div>
 
         {/* --- Sekcja Wymiary --- */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="length" className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-1`}>
-              <Ruler className="mr-2 h-5 w-5" /> Długość (cm)
-            </Label>
-            <Input
-              id="length"
-              name="length"
-              type="number"
-              step="0.1"
-              placeholder="Np. 55.5"
-              className="bg-card border-border"
-            />
+            <form.Field name="lengthInCm">
+              {(field) => (
+                <>
+                  <Label
+                    htmlFor={field.name}
+                    className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-1`}
+                  >
+                    <Ruler className="mr-2 h-5 w-5" /> Długość (cm)
+                  </Label>
+                  <Input
+                    id={field.name}
+                    name={field.name}
+                    type="number"
+                    step="0.1"
+                    placeholder="np. 25.5"
+                    value={field.state.value || ''}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    className="bg-card border-border"
+                  />
+                  <FieldInfo field={field} />
+                </>
+              )}
+            </form.Field>
           </div>
           <div>
-            <Label htmlFor="weight" className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-1`}>
-              <Weight className="mr-2 h-5 w-5" /> Waga (kg)
-            </Label>
-            <Input
-              id="weight"
-              name="weight"
-              type="number"
-              step="0.01"
-              placeholder="Np. 2.75"
-              className="bg-card border-border"
-            />
+            <form.Field name="weightInKg">
+              {(field) => (
+                <>
+                  <Label
+                    htmlFor={field.name}
+                    className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-1`}
+                  >
+                    <Weight className="mr-2 h-5 w-5" /> Waga (kg)
+                  </Label>
+                  <Input
+                    id={field.name}
+                    name={field.name}
+                    type="number"
+                    step="0.01"
+                    placeholder="np. 1.25"
+                    value={field.state.value || ''}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    className="bg-card border-border"
+                  />
+                  <FieldInfo field={field} />
+                </>
+              )}
+            </form.Field>
           </div>
         </div>
 
-        {/* --- Sekcja Data i Czas --- */}
+        {/* --- Sekcja Czas Połowu --- */}
         <div>
-          <Label htmlFor="catch-time" className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-1`}>
-            <Calendar className="mr-2 h-5 w-5" /> Data i Czas Połowu (Wymagane)
-          </Label>
-          <Input
-            id="catch-time"
-            name="catch-time"
-            type="datetime-local"
-            className="bg-card border-border"
-            defaultValue={formatDateTimeLocal()}
-            required
-          />
+          <form.Field name="catchTime">
+            {(field) => (
+              <>
+                <Label
+                  htmlFor={field.name}
+                  className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-1`}
+                >
+                  <Calendar className="mr-2 h-5 w-5" /> Czas Połowu
+                </Label>
+                <Input
+                  id={field.name}
+                  name={field.name}
+                  type="datetime-local"
+                  value={field.state.value || ''}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  className="bg-card border-border"
+                />
+                <FieldInfo field={field} />
+              </>
+            )}
+          </form.Field>
         </div>
 
         {/* --- Sekcja Łowisko --- */}
         <div>
-          <Label htmlFor="fishery" className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-1`}>
-            <MapPin className="mr-2 h-5 w-5" /> Łowisko (Opcjonalne)
-          </Label>
-          <Select name="fishery" defaultValue={preselectedFisheryId || undefined}>
-            <SelectTrigger className="w-full bg-card border-border">
-              <SelectValue placeholder="Wybierz łowisko z listy..." />
-            </SelectTrigger>
-            <SelectContent className="bg-popover">
-              <SelectItem value="none">Brak / Nieokreślone</SelectItem>
-              {fisheries?.items?.map((fishery) => (
-                <SelectItem key={fishery.id} value={fishery?.id?.toString() ?? ''}>
-                  {fishery.name} ({fishery.location})
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <form.Field name="fisheryId">
+            {(field) => (
+              <>
+                <Label
+                  htmlFor={field.name}
+                  className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-1`}
+                >
+                  <MapPin className="mr-2 h-5 w-5" /> Łowisko
+                </Label>
+                <Select value={field.state.value || undefined} onValueChange={(value) => field.handleChange(value)}>
+                  <SelectTrigger className="w-full bg-card border-border">
+                    <SelectValue placeholder="Wybierz łowisko..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-popover">
+                    {fisheries?.items?.map((fishery) => (
+                      <SelectItem key={fishery.id} value={fishery?.id?.toString() ?? ''}>
+                        {fishery.name} - {fishery.location}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FieldInfo field={field} />
+              </>
+            )}
+          </form.Field>
         </div>
 
         {/* --- Sekcja Notatki --- */}
         <div>
-          <Label htmlFor="notes" className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-1`}>
-            <StickyNote className="mr-2 h-5 w-5" /> Notatki (Opcjonalne)
-          </Label>
-          <Textarea
-            id="notes"
-            name="notes"
-            placeholder="Dodatkowe informacje o połowie, przynęta, pogoda..."
-            className="bg-card border-border min-h-[80px]"
-          />
+          <form.Field name="notes">
+            {(field) => (
+              <>
+                <Label
+                  htmlFor={field.name}
+                  className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-1`}
+                >
+                  <FileText className="mr-2 h-5 w-5" /> Notatki
+                </Label>
+                <Textarea
+                  id={field.name}
+                  name={field.name}
+                  placeholder="Dodaj notatki o połowie..."
+                  value={field.state.value || ''}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  className="bg-card border-border min-h-[100px]"
+                />
+                <FieldInfo field={field} />
+              </>
+            )}
+          </form.Field>
         </div>
 
-        {/* --- Przycisk Zapisu --- */}
+        {/* --- Przycisk Submit --- */}
         <div className="pt-2">
           <Button
             type="submit"
             className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-            disabled={isCreatingEntry}
+            disabled={isSubmitting}
           >
-            {isCreatingEntry ? 'Zapisywanie połowu...' : 'Zapisz Połów w Dzienniku'}
+            {isUploadingImage ? 'Przesyłanie zdjęcia...' : isCreatingEntry ? 'Dodawanie...' : 'Dodaj do Dziennika'}
           </Button>
         </div>
       </form>

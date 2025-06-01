@@ -62,7 +62,7 @@ public static class LogbookEndpoints
 
     private static async Task<IResult> CreateNewLogbookEntry(
         ISender sender,
-        [FromForm] CreateLogbookEntryCommand command,
+        CreateLogbookEntryCommand command,
         CancellationToken ct)
     {
         var entryId = await sender.Send(command, ct);
@@ -100,7 +100,7 @@ public static class LogbookEndpoints
     private static async Task<IResult> UpdateExistingLogbookEntry( // Zmieniono nazwę metody
         ISender sender,
         int id,
-        [FromForm] UpdateLogbookEntryCommand command,
+        UpdateLogbookEntryCommand command,
         CancellationToken ct)
     {
         if (id != command.Id)

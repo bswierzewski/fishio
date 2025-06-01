@@ -2,84 +2,61 @@
 
 import { formatDateTimeLocal } from '@/lib/utils';
 import { useForm } from '@tanstack/react-form';
-import { useQueryClient } from '@tanstack/react-query';
-import {
-  ArrowLeft,
-  Award,
-  Calendar,
-  FileText,
-  ImagePlus,
-  ListChecks,
-  MapPin,
-  ShieldCheck,
-  Trophy,
-  Users
-} from 'lucide-react';
+import { ArrowLeft, Calendar, FileText, ImagePlus, MapPin, Trophy } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
-import { getGetUserCompetitionsListQueryKey, useCreateNewCompetition } from '@/lib/api/endpoints/competitions';
+import { useCreateNewCompetition } from '@/lib/api/endpoints/competitions';
 import { useGetAllFisheries } from '@/lib/api/endpoints/fisheries';
 import { useGetAllFishSpecies, useGetGlobalCategoryDefinitions } from '@/lib/api/endpoints/lookup-data';
-import {
-  CategoryType,
+import { CategoryType } from '@/lib/api/models';
+import type {
   CompetitionType,
   CreateCompetitionCommand,
-  GetUserCompetitionsListParams,
+  FishSpeciesDto,
   SpecialCategoryDefinitionCommandDto
 } from '@/lib/api/models';
+
+import type { ImageUploadResult } from '@/hooks/use-image-upload';
 
 import FieldInfo from '@/components/FieldInfo';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { ImageUpload } from '@/components/ui/image-upload';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
 
+// Theme utilities
 const cardBodyBgClass = 'bg-card';
-const cardTextColorClass = 'text-foreground';
+const cardTextColorClass = 'text-card-foreground';
 const cardMutedTextColorClass = 'text-muted-foreground';
 
 export default function AddCompetitionPage() {
   const router = useRouter();
-  const queryClient = useQueryClient();
-  const [selectedImagePreview, setSelectedImagePreview] = useState<string | null>(null);
 
-  // API hooks
+  const { data: fisheries, isLoading: isLoadingFisheries } = useGetAllFisheries({ PageNumber: 1, PageSize: 100 });
+  const { data: categoryDefinitions, isLoading: isLoadingCategories } = useGetGlobalCategoryDefinitions();
+  const { data: specialCategoryDefinitions, isLoading: isLoadingSpecialCategories } = useGetGlobalCategoryDefinitions({
+    FilterByType: CategoryType.SpecialAchievement
+  });
+  const { data: fishSpecies } = useGetAllFishSpecies();
+
   const { mutate: createCompetition, isPending } = useCreateNewCompetition({
     mutation: {
       onSuccess: () => {
         toast.success('Zawody zostały utworzone pomyślnie!');
-        queryClient.invalidateQueries({
-          queryKey: [getGetUserCompetitionsListQueryKey({} as GetUserCompetitionsListParams)]
-        });
-        router.push('/my-competitions');
+        router.push('/competitions');
       },
-      onError: (error: unknown) => {
-        console.error('Błąd podczas tworzenia zawodów:', error);
-        // Don't show manual error toast - let the axios interceptor handle it
-        // The interceptor will show user-friendly validation errors automatically
+      onError: (error) => {
+        console.error('Error creating competition:', error);
+        toast.error('Nie udało się utworzyć zawodów');
       }
     }
-  });
-
-  const { data: fisheriesData, isLoading: isLoadingFisheries } = useGetAllFisheries({
-    PageNumber: 1,
-    PageSize: 100
-  });
-
-  const { data: fishSpecies, isLoading: isLoadingSpecies } = useGetAllFishSpecies();
-
-  const { data: categoryDefinitions, isLoading: isLoadingCategories } = useGetGlobalCategoryDefinitions({
-    FilterByType: CategoryType.MainScoring
-  });
-
-  const { data: specialCategoryDefinitions, isLoading: isLoadingSpecialCategories } = useGetGlobalCategoryDefinitions({
-    FilterByType: CategoryType.SpecialAchievement
   });
 
   // Form setup
@@ -90,8 +67,9 @@ export default function AddCompetitionPage() {
       endTime: '',
       fisheryId: undefined as number | undefined,
       rules: '',
-      type: CompetitionType.Public,
-      image: null as File | null,
+      type: 'Public' as CompetitionType,
+      imageUrl: null as string | null,
+      imagePublicId: null as string | null,
       primaryScoringCategoryDefinitionId: undefined as number | undefined,
       primaryScoringFishSpeciesId: null as number | null,
       specialCategories: [] as SpecialCategoryDefinitionCommandDto[]
@@ -132,14 +110,13 @@ export default function AddCompetitionPage() {
     }
   });
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      const file = event.target.files[0];
-      setSelectedImagePreview(URL.createObjectURL(file));
-      form.setFieldValue('image', file);
+  const handleImageChange = (result: ImageUploadResult | null) => {
+    if (result) {
+      form.setFieldValue('imageUrl', result.imageUrl);
+      form.setFieldValue('imagePublicId', result.imagePublicId);
     } else {
-      setSelectedImagePreview(null);
-      form.setFieldValue('image', null);
+      form.setFieldValue('imageUrl', null);
+      form.setFieldValue('imagePublicId', null);
     }
   };
 
@@ -166,6 +143,16 @@ export default function AddCompetitionPage() {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <Link href="/competitions">
+          <Button variant="outline" size="sm">
+            <ArrowLeft className="mr-2 h-4 w-4" /> Wróć do Listy Zawodów
+          </Button>
+        </Link>
+        <h1 className={`text-xl sm:text-2xl font-bold ${cardTextColorClass}`}>Stwórz Nowe Zawody</h1>
+        <div></div>
+      </div>
+
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -188,12 +175,11 @@ export default function AddCompetitionPage() {
                 <Input
                   id={field.name}
                   name={field.name}
-                  type="text"
-                  placeholder="Np. Puchar Wiosny"
-                  className="bg-card border-border"
                   value={field.state.value ?? ''}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="Np. Mistrzostwa Wędkarskie 2024"
+                  className="bg-card border-border"
                 />
                 <FieldInfo field={field} />
               </>
@@ -201,56 +187,56 @@ export default function AddCompetitionPage() {
           </form.Field>
         </div>
 
-        {/* Start and End Time */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <form.Field name="startTime">
-              {(field) => (
-                <>
-                  <Label
-                    htmlFor={field.name}
-                    className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-1`}
-                  >
-                    <Calendar className="mr-2 h-5 w-5" /> Data i Czas Rozpoczęcia (Wymagane)
-                  </Label>
-                  <Input
-                    id={field.name}
-                    name={field.name}
-                    type="datetime-local"
-                    className="bg-card border-border"
-                    value={field.state.value ?? ''}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                  />
-                  <FieldInfo field={field} />
-                </>
-              )}
-            </form.Field>
-          </div>
-          <div>
-            <form.Field name="endTime">
-              {(field) => (
-                <>
-                  <Label
-                    htmlFor={field.name}
-                    className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-1`}
-                  >
-                    <Calendar className="mr-2 h-5 w-5 opacity-70" /> Data i Czas Zakończenia (Wymagane)
-                  </Label>
-                  <Input
-                    id={field.name}
-                    name={field.name}
-                    type="datetime-local"
-                    className="bg-card border-border"
-                    value={field.state.value ?? ''}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                  />
-                  <FieldInfo field={field} />
-                </>
-              )}
-            </form.Field>
-          </div>
+        {/* Start Time */}
+        <div>
+          <form.Field name="startTime">
+            {(field) => (
+              <>
+                <Label
+                  htmlFor={field.name}
+                  className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-1`}
+                >
+                  <Calendar className="mr-2 h-5 w-5" /> Data Rozpoczęcia (Wymagane)
+                </Label>
+                <Input
+                  id={field.name}
+                  name={field.name}
+                  type="datetime-local"
+                  value={field.state.value ?? ''}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  className="bg-card border-border"
+                />
+                <FieldInfo field={field} />
+              </>
+            )}
+          </form.Field>
+        </div>
+
+        {/* End Time */}
+        <div>
+          <form.Field name="endTime">
+            {(field) => (
+              <>
+                <Label
+                  htmlFor={field.name}
+                  className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-1`}
+                >
+                  <Calendar className="mr-2 h-5 w-5" /> Data Zakończenia (Wymagane)
+                </Label>
+                <Input
+                  id={field.name}
+                  name={field.name}
+                  type="datetime-local"
+                  value={field.state.value ?? ''}
+                  onBlur={field.handleBlur}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  className="bg-card border-border"
+                />
+                <FieldInfo field={field} />
+              </>
+            )}
+          </form.Field>
         </div>
 
         {/* Fishery Selection */}
@@ -258,10 +244,7 @@ export default function AddCompetitionPage() {
           <form.Field name="fisheryId">
             {(field) => (
               <>
-                <Label
-                  htmlFor={field.name}
-                  className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-1`}
-                >
+                <Label className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-1`}>
                   <MapPin className="mr-2 h-5 w-5" /> Łowisko (Wymagane)
                 </Label>
                 <Select
@@ -271,41 +254,12 @@ export default function AddCompetitionPage() {
                   <SelectTrigger className="w-full bg-card border-border">
                     <SelectValue placeholder="Wybierz łowisko..." />
                   </SelectTrigger>
-                  <SelectContent className="bg-popover">
-                    {fisheriesData?.items?.map((fishery) => (
+                  <SelectContent className="bg-popover border-border">
+                    {fisheries?.items?.map((fishery) => (
                       <SelectItem key={fishery.id} value={fishery.id?.toString() ?? ''}>
-                        {fishery.name} {fishery.location && `- ${fishery.location}`}
+                        {fishery.name} - {fishery.location}
                       </SelectItem>
                     ))}
-                  </SelectContent>
-                </Select>
-                <FieldInfo field={field} />
-              </>
-            )}
-          </form.Field>
-        </div>
-
-        {/* Competition Type */}
-        <div>
-          <form.Field name="type">
-            {(field) => (
-              <>
-                <Label
-                  htmlFor={field.name}
-                  className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-1`}
-                >
-                  <Users className="mr-2 h-5 w-5" /> Typ Zawodów (Wymagane)
-                </Label>
-                <Select
-                  value={field.state.value}
-                  onValueChange={(value) => field.handleChange(value as CompetitionType)}
-                >
-                  <SelectTrigger className="w-full bg-card border-border">
-                    <SelectValue placeholder="Wybierz typ zawodów..." />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover">
-                    <SelectItem value={CompetitionType.Public}>Otwarte</SelectItem>
-                    <SelectItem value={CompetitionType.Private}>Zamknięte</SelectItem>
                   </SelectContent>
                 </Select>
                 <FieldInfo field={field} />
@@ -345,56 +299,20 @@ export default function AddCompetitionPage() {
           <form.Field name="primaryScoringCategoryDefinitionId">
             {(field) => (
               <>
-                <Label
-                  htmlFor={field.name}
-                  className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-1`}
-                >
-                  <ListChecks className="mr-2 h-5 w-5" /> Główna Kategoria Punktacji (Wymagane)
+                <Label className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-1`}>
+                  <Trophy className="mr-2 h-5 w-5" /> Główna Kategoria Punktacji (Wymagane)
                 </Label>
                 <Select
                   value={field.state.value?.toString() || ''}
                   onValueChange={(value) => field.handleChange(value ? parseInt(value) : undefined)}
                 >
                   <SelectTrigger className="w-full bg-card border-border">
-                    <SelectValue placeholder="Wybierz główną metodę klasyfikacji..." />
+                    <SelectValue placeholder="Wybierz kategorię..." />
                   </SelectTrigger>
-                  <SelectContent className="bg-popover">
+                  <SelectContent className="bg-popover border-border">
                     {categoryDefinitions?.map((category) => (
                       <SelectItem key={category.id} value={category.id?.toString() ?? ''}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FieldInfo field={field} />
-              </>
-            )}
-          </form.Field>
-        </div>
-
-        {/* Primary Scoring Fish Species (Optional) */}
-        <div>
-          <form.Field name="primaryScoringFishSpeciesId">
-            {(field) => (
-              <>
-                <Label
-                  htmlFor={field.name}
-                  className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-1`}
-                >
-                  <ListChecks className="mr-2 h-5 w-5 opacity-70" /> Gatunek dla Głównej Kategorii (Opcjonalne)
-                </Label>
-                <Select
-                  value={field.state.value?.toString() || 'clear'}
-                  onValueChange={(value) => field.handleChange(value === 'clear' ? null : parseInt(value))}
-                >
-                  <SelectTrigger className="w-full bg-card border-border">
-                    <SelectValue placeholder="Wybierz gatunek (opcjonalne)..." />
-                  </SelectTrigger>
-                  <SelectContent className="bg-popover">
-                    <SelectItem value="clear">Wszystkie gatunki</SelectItem>
-                    {fishSpecies?.map((species) => (
-                      <SelectItem key={species.id} value={species.id?.toString() ?? ''}>
-                        {species.name}
+                        {category.name} ({category.metric})
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -411,49 +329,40 @@ export default function AddCompetitionPage() {
             {(field) => (
               <>
                 <Label className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-2`}>
-                  <Award className="mr-2 h-5 w-5" /> Kategorie Specjalne (Opcjonalne)
+                  <Trophy className="mr-2 h-5 w-5" /> Kategorie Specjalne (Opcjonalne)
                 </Label>
-                <div className="space-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-48 overflow-y-auto border border-border rounded-md p-3 bg-card">
                   {specialCategoryDefinitions?.map((category) => {
-                    const isSelected =
-                      field.state.value?.some((cat) => cat.categoryDefinitionId === category.id) || false;
+                    const isSelected = (field.state.value || []).some(
+                      (selected) => selected.categoryDefinitionId === category.id
+                    );
 
                     return (
-                      <div key={category.id} className="flex items-center space-x-3 p-2 rounded-md">
+                      <div key={category.id} className="flex items-center space-x-2">
                         <Checkbox
-                          id={`special-cat-${category.id}`}
+                          id={`special-category-${category.id}`}
+                          checked={isSelected}
                           onCheckedChange={(checked) => {
-                            if (typeof checked === 'boolean' && category.id) {
-                              const currentCategories = field.state.value || [];
-                              if (checked) {
-                                // Add category with proper SpecialCategoryDefinitionCommandDto structure
-                                const newCategory: SpecialCategoryDefinitionCommandDto = {
-                                  categoryDefinitionId: category.id,
-                                  fishSpeciesId: null,
-                                  customNameOverride: null
-                                };
-                                const newCategories = [...currentCategories, newCategory];
-                                field.handleChange(newCategories);
-                              } else {
-                                // Remove category
-                                const newCategories = currentCategories.filter(
-                                  (cat) => cat.categoryDefinitionId !== category.id
-                                );
-                                field.handleChange(newCategories);
-                              }
+                            const currentCategories = field.state.value || [];
+                            if (checked) {
+                              const newCategory: SpecialCategoryDefinitionCommandDto = {
+                                categoryDefinitionId: category.id!,
+                                fishSpeciesId: null,
+                                customNameOverride: null
+                              };
+                              field.handleChange([...currentCategories, newCategory]);
+                            } else {
+                              field.handleChange(
+                                currentCategories.filter((c) => c.categoryDefinitionId !== category.id)
+                              );
                             }
                           }}
-                          checked={isSelected}
-                          className="border border-border data-[state=checked]:border-primary"
                         />
                         <Label
-                          htmlFor={`special-cat-${category.id}`}
-                          className="text-sm font-normal cursor-pointer flex-grow"
+                          htmlFor={`special-category-${category.id}`}
+                          className={`text-sm cursor-pointer ${cardTextColorClass}`}
                         >
                           {category.name}
-                          {category.description && (
-                            <span className={`block text-xs ${cardMutedTextColorClass}`}>{category.description}</span>
-                          )}
                         </Label>
                       </div>
                     );
@@ -466,50 +375,12 @@ export default function AddCompetitionPage() {
         </div>
 
         {/* Competition Photo */}
-        <div>
-          <form.Field name="image">
-            {(field) => (
-              <>
-                <Label
-                  htmlFor="competition-photo-input"
-                  className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-2`}
-                >
-                  <ImagePlus className="mr-2 h-5 w-5" /> Zdjęcie Zawodów (Opcjonalne)
-                </Label>
-                <label
-                  htmlFor="competition-photo-input"
-                  className="mt-1 flex justify-center rounded-md border-2 border-dashed border-border px-6 pt-5 pb-6 hover:border-primary transition-colors cursor-pointer"
-                >
-                  <div className="space-y-1 text-center">
-                    {selectedImagePreview ? (
-                      <img
-                        src={selectedImagePreview}
-                        alt="Podgląd zdjęcia zawodów"
-                        className="mx-auto h-32 w-auto rounded-md object-contain"
-                      />
-                    ) : (
-                      <ImagePlus className={`mx-auto h-12 w-12 ${cardMutedTextColorClass}`} />
-                    )}
-                    <div className="flex text-sm text-muted-foreground">
-                      <span className="font-medium text-primary">Załaduj plik</span>
-                      <p className="pl-1">lub przeciągnij i upuść</p>
-                    </div>
-                    <p className="text-xs text-muted-foreground">PNG, JPG, GIF do 10MB</p>
-                  </div>
-                  <input
-                    id="competition-photo-input"
-                    name="image"
-                    type="file"
-                    className="sr-only"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                  />
-                </label>
-                <FieldInfo field={field} />
-              </>
-            )}
-          </form.Field>
-        </div>
+        <ImageUpload
+          id="competition-photo-input"
+          label="Zdjęcie Zawodów (Opcjonalne)"
+          folderName="competitions"
+          onImageChange={handleImageChange}
+        />
 
         <div className="pt-2">
           <Button

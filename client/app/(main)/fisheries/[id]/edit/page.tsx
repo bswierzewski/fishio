@@ -1,74 +1,52 @@
 'use client';
 
 import { useForm } from '@tanstack/react-form';
-import { useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, ImagePlus, ListChecks, MapPin, Text, X } from 'lucide-react';
+import { ArrowLeft, FileText, Fish, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import toast from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 import { useGetFisheryById, useUpdateExistingFishery } from '@/lib/api/endpoints/fisheries';
 import { useGetAllFishSpecies } from '@/lib/api/endpoints/lookup-data';
-import { FishSpeciesDto, UpdateFisheryCommand } from '@/lib/api/models';
+import type { FishSpeciesDto, UpdateFisheryCommand } from '@/lib/api/models';
+
+import type { ImageUploadResult } from '@/hooks/use-image-upload';
 
 import FieldInfo from '@/components/FieldInfo';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { ImageUpload } from '@/components/ui/image-upload';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Textarea } from '@/components/ui/textarea';
 
-// Style classes
+// Theme utilities
 const cardBodyBgClass = 'bg-card';
-const cardTextColorClass = 'text-foreground';
+const cardTextColorClass = 'text-card-foreground';
 const cardMutedTextColorClass = 'text-muted-foreground';
 
 export default function EditFisheryPage() {
   const router = useRouter();
   const params = useParams();
-  const fisheryId = Number(params.id);
+  const fisheryId = parseInt(params.id as string);
 
-  const queryClient = useQueryClient();
-
-  const [selectedImagePreview, setSelectedImagePreview] = useState<string | null>(null);
-  const [initialImageUrl, setInitialImageUrl] = useState<string | null>(null);
-  const [removeCurrentImageFlag, setRemoveCurrentImageFlag] = useState(false);
-
-  // Fetch fishery data
-  const {
-    data: fishery,
-    isLoading: isLoadingFishery,
-    error: fisheryError
-  } = useGetFisheryById(fisheryId, {
-    query: { enabled: !!fisheryId }
-  });
-
-  // Fetch fish species
-  const {
-    data: fishSpeciesPaginatedData,
-    isLoading: isLoadingSpecies,
-    isError: isErrorSpecies
-  } = useGetAllFishSpecies();
-
-  // Update mutation
+  const { data: fishery, isLoading: isLoadingFishery } = useGetFisheryById(fisheryId);
+  const { data: fishSpecies, isLoading: isLoadingSpecies } = useGetAllFishSpecies();
   const { mutate, isPending } = useUpdateExistingFishery({
     mutation: {
       onSuccess: () => {
-        // Also invalidate the current fishery detail query
-        queryClient.invalidateQueries({ queryKey: [`/api/fisheries/${fisheryId}`] });
-
-        toast.success('Łowisko zostało zaktualizowane.');
-        router.push(`/fisheries/${fisheryId}`);
+        toast.success('Łowisko zostało zaktualizowane pomyślnie!');
+        router.push('/fisheries');
       },
-      onError: (error: unknown) => {
-        console.error('Błąd podczas aktualizacji łowiska:', error);
-        // Don't show manual error toast - let the axios interceptor handle it
-        // The interceptor will show user-friendly validation errors automatically
+      onError: (error) => {
+        console.error('Error updating fishery:', error);
+        toast.error('Nie udało się zaktualizować łowiska');
       }
     }
   });
+
+  const [removeCurrentImageFlag, setRemoveCurrentImageFlag] = useState(false);
 
   const form = useForm({
     defaultValues: {
@@ -76,7 +54,8 @@ export default function EditFisheryPage() {
       name: '',
       location: '',
       fishSpeciesIds: [] as number[],
-      image: null as File | null,
+      imageUrl: null as string | null,
+      imagePublicId: null as string | null,
       removeCurrentImage: false
     } as UpdateFisheryCommand,
     onSubmit: async ({ value }) => {
@@ -109,37 +88,20 @@ export default function EditFisheryPage() {
         'fishSpeciesIds',
         fishery.fishSpecies?.map((species) => species.id!).filter((id) => id !== undefined) || []
       );
-
-      if (fishery.imageUrl) {
-        setInitialImageUrl(fishery.imageUrl);
-        setSelectedImagePreview(fishery.imageUrl);
-      }
       setRemoveCurrentImageFlag(false);
     }
   }, [fishery, form]);
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      const file = event.target.files[0];
-      setSelectedImagePreview(URL.createObjectURL(file));
-      form.setFieldValue('image', file);
+  const handleImageChange = (result: ImageUploadResult | null) => {
+    if (result) {
+      form.setFieldValue('imageUrl', result.imageUrl);
+      form.setFieldValue('imagePublicId', result.imagePublicId);
       setRemoveCurrentImageFlag(false);
     } else {
-      setSelectedImagePreview(initialImageUrl);
-      form.setFieldValue('image', null);
+      form.setFieldValue('imageUrl', null);
+      form.setFieldValue('imagePublicId', null);
+      setRemoveCurrentImageFlag(true);
     }
-  };
-
-  const handleRemoveImage = () => {
-    setSelectedImagePreview(null);
-    form.setFieldValue('image', null);
-    setRemoveCurrentImageFlag(true);
-  };
-
-  const handleRemoveImageClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    handleRemoveImage();
   };
 
   const handleSpeciesChange = (speciesId: number) => {
@@ -169,8 +131,7 @@ export default function EditFisheryPage() {
     );
   }
 
-  // Error state
-  if (fisheryError || !fishery) {
+  if (!fishery) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -179,14 +140,11 @@ export default function EditFisheryPage() {
               <ArrowLeft className="mr-2 h-4 w-4" /> Wróć do Listy Łowisk
             </Button>
           </Link>
-          <h1 className={`text-xl sm:text-2xl font-bold ${cardTextColorClass}`}>Błąd</h1>
-          <div />
+          <h1 className={`text-xl sm:text-2xl font-bold ${cardTextColorClass}`}>Łowisko nie znalezione</h1>
+          <div></div>
         </div>
-        <div className={`p-4 sm:p-6 rounded-lg border border-border shadow ${cardBodyBgClass} text-center`}>
-          <p className="text-destructive">Nie udało się załadować danych łowiska.</p>
-          <Link href="/fisheries" className="mt-4 inline-block">
-            <Button>Wróć do Listy Łowisk</Button>
-          </Link>
+        <div className={`p-4 sm:p-6 rounded-lg border border-border shadow ${cardBodyBgClass}`}>
+          <p className={cardMutedTextColorClass}>Nie udało się załadować danych łowiska.</p>
         </div>
       </div>
     );
@@ -194,6 +152,16 @@ export default function EditFisheryPage() {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <Link href="/fisheries">
+          <Button variant="outline" size="sm">
+            <ArrowLeft className="mr-2 h-4 w-4" /> Wróć do Listy Łowisk
+          </Button>
+        </Link>
+        <h1 className={`text-xl sm:text-2xl font-bold ${cardTextColorClass}`}>Edytuj Łowisko</h1>
+        <div></div>
+      </div>
+
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -237,7 +205,7 @@ export default function EditFisheryPage() {
                   htmlFor={field.name}
                   className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-1`}
                 >
-                  <MapPin className="mr-2 h-5 w-5 opacity-70" /> Lokalizacja (Wymagane)
+                  <MapPin className="mr-2 h-5 w-5" /> Lokalizacja (Wymagane)
                 </Label>
                 <Input
                   id={field.name}
@@ -245,7 +213,7 @@ export default function EditFisheryPage() {
                   value={field.state.value ?? ''}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
-                  placeholder="Np. Miastowo, ul. Nadbrzeżna lub opis dojazdu"
+                  placeholder="Np. Warszawa, ul. Rybacka 123"
                   className="bg-card border-border"
                 />
                 <FieldInfo field={field} />
@@ -260,33 +228,30 @@ export default function EditFisheryPage() {
             {(field) => (
               <>
                 <Label className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-2`}>
-                  <ListChecks className="mr-2 h-5 w-5" /> Występujące Gatunki (Opcjonalne)
+                  <Fish className="mr-2 h-5 w-5" /> Gatunki Ryb (Opcjonalne)
                 </Label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-2 max-h-60 overflow-y-auto p-2 border border-border rounded-md bg-card">
-                  {isLoadingSpecies && (
-                    <p className={`col-span-full text-sm ${cardMutedTextColorClass}`}>Ładowanie gatunków...</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto border border-border rounded-md p-3 bg-card">
+                  {isLoadingSpecies ? (
+                    <p className={`col-span-full text-center ${cardMutedTextColorClass}`}>Ładowanie gatunków...</p>
+                  ) : fishSpecies && fishSpecies.length > 0 ? (
+                    fishSpecies.map((species: FishSpeciesDto) => (
+                      <div key={species.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`species-${species.id}`}
+                          checked={(field.state.value || []).includes(species.id!)}
+                          onCheckedChange={() => handleSpeciesChange(species.id!)}
+                        />
+                        <Label
+                          htmlFor={`species-${species.id}`}
+                          className={`text-sm cursor-pointer ${cardTextColorClass}`}
+                        >
+                          {species.name}
+                        </Label>
+                      </div>
+                    ))
+                  ) : (
+                    <p className={`col-span-full text-center ${cardMutedTextColorClass}`}>Brak dostępnych gatunków</p>
                   )}
-                  {isErrorSpecies && (
-                    <p className={`col-span-full text-sm text-destructive ${cardMutedTextColorClass}`}>
-                      Nie udało się załadować gatunków ryb.
-                    </p>
-                  )}
-                  {fishSpeciesPaginatedData && fishSpeciesPaginatedData.length === 0 && (
-                    <p className={`col-span-full text-sm ${cardMutedTextColorClass}`}>Brak dostępnych gatunków ryb.</p>
-                  )}
-                  {fishSpeciesPaginatedData?.map((species: FishSpeciesDto) => (
-                    <div key={species.id} className="flex items-center space-x-2">
-                      <Checkbox
-                        id={`species-${species.id}`}
-                        checked={(field.state.value ?? []).includes(species.id!)}
-                        onCheckedChange={() => handleSpeciesChange(species.id!)}
-                        className="border-border data-[state=checked]:border-primary"
-                      />
-                      <Label htmlFor={`species-${species.id}`} className="text-sm font-normal cursor-pointer">
-                        {species.name}
-                      </Label>
-                    </div>
-                  ))}
                 </div>
                 <p className={`text-xs mt-1 ${cardMutedTextColorClass}`}>Zaznacz gatunki występujące na tym łowisku.</p>
                 <FieldInfo field={field} />
@@ -296,70 +261,22 @@ export default function EditFisheryPage() {
         </div>
 
         {/* --- Sekcja Zdjęcia Łowiska (Opcjonalne) --- */}
-        <div>
-          <form.Field name="image">
-            {(field) => (
-              <>
-                <Label
-                  htmlFor="fishery-photo-input"
-                  className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-2`}
-                >
-                  <ImagePlus className="mr-2 h-5 w-5" /> Zdjęcie Łowiska (Opcjonalne)
-                </Label>
-                <label
-                  htmlFor="fishery-photo-input"
-                  className="mt-1 flex justify-center rounded-md border-2 border-dashed border-border px-6 pt-5 pb-6 hover:border-primary transition-colors cursor-pointer"
-                >
-                  <div className="space-y-1 text-center">
-                    {selectedImagePreview ? (
-                      <div className="relative">
-                        <img
-                          src={selectedImagePreview}
-                          alt="Podgląd zdjęcia łowiska"
-                          className="mx-auto h-32 w-auto rounded-md object-contain"
-                        />
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="sm"
-                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 hover:cursor-pointer"
-                          onClick={handleRemoveImageClick}
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <ImagePlus className={`mx-auto h-12 w-12 ${cardMutedTextColorClass}`} />
-                    )}
+        <ImageUpload
+          id="fishery-photo-input"
+          label="Zdjęcie Łowiska (Opcjonalne)"
+          currentImageUrl={fishery.imageUrl}
+          folderName="fisheries"
+          onImageChange={handleImageChange}
+        />
 
-                    <div className="flex text-sm text-muted-foreground justify-center">
-                      <span className="font-medium text-primary">
-                        {selectedImagePreview ? 'Zmień zdjęcie' : 'Załaduj plik'}
-                      </span>
-                      {!selectedImagePreview && <p className="pl-1">lub przeciągnij i upuść</p>}
-                    </div>
-                    <p className="text-xs text-muted-foreground">PNG, JPG, GIF do 10MB</p>
-                  </div>
-                  <input
-                    id="fishery-photo-input"
-                    name={field.name}
-                    type="file"
-                    className="sr-only"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    onBlur={field.handleBlur}
-                  />
-                </label>
-                <FieldInfo field={field} />
-              </>
-            )}
-          </form.Field>
-        </div>
-
-        {/* --- Przycisk Zapisu --- */}
+        {/* --- Przycisk Submit --- */}
         <div className="pt-2">
-          <Button type="submit" className="w-full" disabled={isPending}>
-            {isPending ? 'Aktualizowanie...' : 'Zaktualizuj Łowisko'}
+          <Button
+            type="submit"
+            className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+            disabled={isPending}
+          >
+            {isPending ? 'Zapisywanie...' : 'Zapisz Zmiany'}
           </Button>
         </div>
       </form>
