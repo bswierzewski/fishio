@@ -4,6 +4,7 @@ public class Fishery : BaseAuditableEntity
 {
     public string Name { get; private set; } = string.Empty;
     public string? ImageUrl { get; private set; }
+    public string? ImagePublicId { get; private set; } // Cloudinary PublicId for image management
     public string? Location { get; private set; }
 
     public int? UserId { get; private set; } // Creator/Maintainer
@@ -17,7 +18,7 @@ public class Fishery : BaseAuditableEntity
 
     private Fishery() { }
 
-    public Fishery(int? userId, string name, string? location, string? imageUrl) // UserId może być null, jeśli łowisko globalne
+    public Fishery(int? userId, string name, string? location, string? imageUrl, string? imagePublicId = null) // UserId może być null, jeśli łowisko globalne
     {
         Guard.Against.NullOrWhiteSpace(name, nameof(name), "Nazwa łowiska jest wymagana.");
 
@@ -25,15 +26,36 @@ public class Fishery : BaseAuditableEntity
         UserId = userId;
         Location = location;
         ImageUrl = imageUrl;
+        ImagePublicId = imagePublicId;
     }
 
-    public void UpdateDetails(string name, string? location, string? imageUrl /*, User modifyingUser */)
+    public void UpdateDetails(string name, string? location, string? imageUrl, string? imagePublicId = null /*, User modifyingUser */)
     {
         // TODO: Dodać walidację uprawnień modifyingUser
         Guard.Against.NullOrWhiteSpace(name, nameof(name));
         Name = name;
         Location = location;
         ImageUrl = imageUrl;
+        ImagePublicId = imagePublicId;
+    }
+
+    /// <summary>
+    /// Clears the image URL and PublicId (for image removal scenarios)
+    /// </summary>
+    public void ClearImage()
+    {
+        ImageUrl = null;
+        ImagePublicId = null;
+    }
+
+    /// <summary>
+    /// Sets new image metadata
+    /// </summary>
+    public void SetImage(string imageUrl, string? imagePublicId = null)
+    {
+        Guard.Against.NullOrWhiteSpace(imageUrl, nameof(imageUrl));
+        ImageUrl = imageUrl;
+        ImagePublicId = imagePublicId;
     }
 
     public void AddSpecies(FishSpecies species /*, User modifyingUser */)

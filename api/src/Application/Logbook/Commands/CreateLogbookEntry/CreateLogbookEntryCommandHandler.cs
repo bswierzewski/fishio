@@ -1,5 +1,4 @@
-﻿using Application.Common.Interfaces.Services;
-using Fishio.Domain.ValueObjects; // Dla FishLength, FishWeight
+﻿using Fishio.Domain.ValueObjects; // Dla FishLength, FishWeight
 
 namespace Fishio.Application.LogbookEntries.Commands.CreateLogbookEntry;
 
@@ -7,16 +6,13 @@ public class CreateLogbookEntryCommandHandler : IRequestHandler<CreateLogbookEnt
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
-    private readonly IImageStorageService _imageStorageService;
 
     public CreateLogbookEntryCommandHandler(
         IApplicationDbContext context,
-        ICurrentUserService currentUserService,
-        IImageStorageService imageStorageService)
+        ICurrentUserService currentUserService)
     {
         _context = context;
         _currentUserService = currentUserService;
-        _imageStorageService = imageStorageService;
     }
 
     public async Task<int> Handle(CreateLogbookEntryCommand request, CancellationToken cancellationToken)
@@ -32,22 +28,6 @@ public class CreateLogbookEntryCommandHandler : IRequestHandler<CreateLogbookEnt
             throw new UnauthorizedAccessException("Nie udało się zidentyfikować użytkownika domenowego.");
         }
 
-        ImageUploadResult imageResult;
-        await using (var memoryStream = new MemoryStream())
-        {
-            await request.Image.CopyToAsync(memoryStream, cancellationToken);
-            memoryStream.Position = 0;
-            imageResult = await _imageStorageService.UploadImageAsync(
-                memoryStream,
-                request.Image.FileName,
-                $"logbook/{domainUserId.Value}"); // Używamy domainUserId.Value
-        }
-
-        if (!imageResult.Success || string.IsNullOrEmpty(imageResult.Url))
-        {
-            throw new ApplicationException($"Nie udało się przesłać zdjęcia dla wpisu w dzienniku: {imageResult.ErrorMessage}");
-        }
-
         FishLength? length = request.LengthInCm.HasValue ? new FishLength(request.LengthInCm.Value) : null;
         FishWeight? weight = request.WeightInKg.HasValue ? new FishWeight(request.WeightInKg.Value) : null;
 
@@ -55,8 +35,8 @@ public class CreateLogbookEntryCommandHandler : IRequestHandler<CreateLogbookEnt
         var catchTimeUtc = request.CatchTime?.ToUniversalTime();
 
         var logbookEntry = new LogbookEntry(
-            userId: domainUserId.Value, // Używamy domainUserId.Value
-            imageUrl: imageResult.Url,
+            userId: domainUserId.Value,
+            imageUrl: request.ImageUrl,
             catchTime: catchTimeUtc,
             length: length,
             weight: weight,
@@ -66,7 +46,7 @@ public class CreateLogbookEntryCommandHandler : IRequestHandler<CreateLogbookEnt
         );
 
         _context.LogbookEntries.Add(logbookEntry);
-        await _context.SaveChangesAsync(cancellationToken); // Interceptory zajmą się Created, CreatedBy itp.
+        await _context.SaveChangesAsync(cancellationToken);
 
         return logbookEntry.Id;
     }

@@ -1,11 +1,10 @@
-﻿using Microsoft.AspNetCore.Http; // Dla IFormFile
-
-namespace Fishio.Application.LogbookEntries.Commands.UpdateLogbookEntry;
+﻿namespace Fishio.Application.LogbookEntries.Commands.UpdateLogbookEntry;
 
 public class UpdateLogbookEntryCommand : IRequest<bool> // Zwraca bool wskazujący sukces
 {
     public int Id { get; set; } // ID wpisu do aktualizacji
-    public IFormFile? Image { get; set; } // Nowe zdjęcie (opcjonalne)
+    public string? ImageUrl { get; set; } // Nowy URL zdjęcia (opcjonalny)
+    public string? ImagePublicId { get; set; } // Nowy PublicId zdjęcia (opcjonalny)
     public bool RemoveCurrentImage { get; set; } = false;
     public DateTimeOffset? CatchTime { get; set; }
     public decimal? LengthInCm { get; set; }
@@ -22,10 +21,10 @@ public class UpdateLogbookEntryCommandValidator : AbstractValidator<UpdateLogboo
         RuleFor(x => x.Id)
             .NotEmpty().WithMessage("ID wpisu jest wymagane.");
 
-        When(x => x.Image != null, () =>
+        When(x => !string.IsNullOrEmpty(x.ImageUrl), () =>
         {
-            RuleFor(x => x.Image)
-                .Must(BeAValidImage).WithMessage("Nieprawidłowy format zdjęcia lub za duży plik (max 5MB).");
+            RuleFor(x => x.ImageUrl)
+                .Must(BeValidUrl).WithMessage("Nieprawidłowy URL zdjęcia.");
         });
 
         RuleFor(x => x.CatchTime)
@@ -63,11 +62,9 @@ public class UpdateLogbookEntryCommandValidator : AbstractValidator<UpdateLogboo
         });
     }
 
-    private bool BeAValidImage(IFormFile? file)
+    private bool BeValidUrl(string? url)
     {
-        if (file == null || file.Length == 0) return true; // Opcjonalne, jeśli null - nie waliduj
-        if (file.Length > 5 * 1024 * 1024) return false; // Max 5MB
-        var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" };
-        return allowedTypes.Contains(file.ContentType.ToLower());
+        if (string.IsNullOrEmpty(url)) return true;
+        return Uri.TryCreate(url, UriKind.Absolute, out _);
     }
 }

@@ -8,6 +8,7 @@ public class Competition : BaseAuditableEntity
     public CompetitionType Type { get; private set; }
     public CompetitionStatus Status { get; private set; }
     public string? ImageUrl { get; private set; }
+    public string? ImagePublicId { get; private set; } // Cloudinary PublicId for image management
     public string ResultsToken { get; private set; } = string.Empty;
 
     public int OrganizerId { get; private set; }
@@ -35,7 +36,8 @@ public class Competition : BaseAuditableEntity
         User organizer,
         Fishery fishery,
         string? rules = null,
-        string? imageUrl = null)
+        string? imageUrl = null,
+        string? imagePublicId = null)
     {
         Guard.Against.NullOrWhiteSpace(name, nameof(name));
         Guard.Against.Null(schedule, nameof(schedule));
@@ -51,6 +53,7 @@ public class Competition : BaseAuditableEntity
         Fishery = fishery;
         Rules = rules;
         ImageUrl = imageUrl;
+        ImagePublicId = imagePublicId;
         Status = CompetitionStatus.AcceptingRegistrations;
         ResultsToken = Guid.NewGuid().ToString("N");
 
@@ -63,7 +66,8 @@ public class Competition : BaseAuditableEntity
         DateTimeRange schedule,
         CompetitionType type,
         string? rules,
-        string? imageUrl)
+        string? imageUrl,
+        string? imagePublicId = null)
     {
         Guard.Against.NullOrWhiteSpace(name, nameof(name));
         Guard.Against.Null(schedule, nameof(schedule));
@@ -78,6 +82,26 @@ public class Competition : BaseAuditableEntity
         Type = type;
         Rules = rules;
         ImageUrl = imageUrl;
+        ImagePublicId = imagePublicId;
+    }
+
+    /// <summary>
+    /// Clears the image URL and PublicId (for image removal scenarios)
+    /// </summary>
+    public void ClearImage()
+    {
+        ImageUrl = null;
+        ImagePublicId = null;
+    }
+
+    /// <summary>
+    /// Sets new image metadata
+    /// </summary>
+    public void SetImage(string imageUrl, string? imagePublicId = null)
+    {
+        Guard.Against.NullOrWhiteSpace(imageUrl, nameof(imageUrl));
+        ImageUrl = imageUrl;
+        ImagePublicId = imagePublicId;
     }
 
     // --- Zarządzanie Statusem ---

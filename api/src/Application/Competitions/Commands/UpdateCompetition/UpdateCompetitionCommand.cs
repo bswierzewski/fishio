@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-
-namespace Fishio.Application.Competitions.Commands.UpdateCompetition;
+﻿namespace Fishio.Application.Competitions.Commands.UpdateCompetition;
 
 public class UpdateCompetitionCommand : IRequest<bool>
 {
@@ -11,7 +9,8 @@ public class UpdateCompetitionCommand : IRequest<bool>
     public int FisheryId { get; set; }
     public string? Rules { get; set; }
     public CompetitionType Type { get; set; }
-    public IFormFile? Image { get; set; }
+    public string? ImageUrl { get; set; } // Nowy URL zdjęcia (opcjonalny)
+    public string? ImagePublicId { get; set; } // Nowy PublicId zdjęcia (opcjonalny)
     public bool RemoveCurrentImage { get; set; } = false;
 
     // Na razie nie pozwalamy na zmianę kategorii przez ten endpoint,
@@ -62,10 +61,10 @@ public class UpdateCompetitionCommandValidator : AbstractValidator<UpdateCompeti
         RuleFor(v => v.Type)
             .IsInEnum().WithMessage("Nieprawidłowy typ zawodów.");
 
-        When(x => x.Image != null, () =>
+        When(x => !string.IsNullOrEmpty(x.ImageUrl), () =>
         {
-            RuleFor(x => x.Image)
-                .Must(BeAValidImage).WithMessage("Nieprawidłowy format zdjęcia lub za duży plik (max 5MB).");
+            RuleFor(x => x.ImageUrl)
+                .Must(BeValidUrl).WithMessage("Nieprawidłowy URL zdjęcia.");
         });
     }
 
@@ -90,11 +89,9 @@ public class UpdateCompetitionCommandValidator : AbstractValidator<UpdateCompeti
         return await _context.Fisheries.AnyAsync(f => f.Id == fisheryId, cancellationToken);
     }
 
-    private bool BeAValidImage(IFormFile? file)
+    private bool BeValidUrl(string? url)
     {
-        if (file == null || file.Length == 0) return true;
-        if (file.Length > 5 * 1024 * 1024) return false;
-        var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" };
-        return allowedTypes.Contains(file.ContentType.ToLower());
+        if (string.IsNullOrEmpty(url)) return true;
+        return Uri.TryCreate(url, UriKind.Absolute, out _);
     }
 }

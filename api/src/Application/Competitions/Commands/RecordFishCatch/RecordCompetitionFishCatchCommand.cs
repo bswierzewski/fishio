@@ -1,16 +1,16 @@
-﻿using Microsoft.AspNetCore.Http;
-
-namespace Fishio.Application.Competitions.Commands.RecordFishCatch;
+﻿namespace Fishio.Application.Competitions.Commands.RecordFishCatch;
 
 public class RecordCompetitionFishCatchCommand : IRequest<int> // Zwraca ID zarejestrowanego połowu
 {
     public int CompetitionId { get; set; }
     public int ParticipantEntryId { get; set; } // ID wpisu CompetitionParticipant dla zawodnika
     public int FishSpeciesId { get; set; }
-    public IFormFile Image { get; set; } = null!; // Zdjęcie jest wymagane
+    public string ImageUrl { get; set; } = string.Empty; // URL zdjęcia jest wymagany
+    public string? ImagePublicId { get; set; } // PublicId zdjęcia (opcjonalny)
     public DateTimeOffset CatchTime { get; set; } // Czas złowienia, ustawiany przez sędziego
     public decimal? LengthInCm { get; set; }
     public decimal? WeightInKg { get; set; }
+    public string? Notes { get; set; } // Notatki sędziego
 }
 
 public class RecordCompetitionFishCatchCommandValidator : AbstractValidator<RecordCompetitionFishCatchCommand>
@@ -31,25 +31,30 @@ public class RecordCompetitionFishCatchCommandValidator : AbstractValidator<Reco
             .GreaterThan(0).WithMessage("Nieprawidłowe ID gatunku ryby.")
             .MustAsync(FishSpeciesMustExist).WithMessage("Wybrany gatunek ryby nie istnieje.");
 
-        RuleFor(x => x.Image)
-            .NotEmpty().WithMessage("Zdjęcie jest wymagane.")
-            .Must(BeAValidImage).WithMessage("Nieprawidłowy format zdjęcia lub za duży plik (max 5MB).");
+        RuleFor(x => x.ImageUrl)
+            .NotEmpty().WithMessage("URL zdjęcia jest wymagany.")
+            .Must(BeValidUrl).WithMessage("Nieprawidłowy URL zdjęcia.");
 
         RuleFor(v => v.CatchTime)
             .NotEmpty().WithMessage("Czas połowu jest wymagany.")
             .MustAsync(BeWithinCompetitionTime).WithMessage("Czas połowu musi mieścić się w czasie trwania zawodów.");
 
-        When(x => x.LengthInCm.HasValue, () => {
+        When(x => x.LengthInCm.HasValue, () =>
+        {
             RuleFor(x => x.LengthInCm)
                 .GreaterThan(0).WithMessage("Długość musi być wartością dodatnią.")
                 .LessThanOrEqualTo(500).WithMessage("Długość nie może przekraczać 500 cm.");
         });
 
-        When(x => x.WeightInKg.HasValue, () => {
+        When(x => x.WeightInKg.HasValue, () =>
+        {
             RuleFor(x => x.WeightInKg)
                 .GreaterThan(0).WithMessage("Waga musi być wartością dodatnią.")
                 .LessThanOrEqualTo(200).WithMessage("Waga nie może przekraczać 200 kg.");
         });
+
+        RuleFor(x => x.Notes)
+            .MaximumLength(2000).WithMessage("Notatki nie mogą przekraczać 2000 znaków.");
 
         RuleFor(x => x) // Walidacja na poziomie całego obiektu
             .Must(HaveAtLeastOneMeasurement)
@@ -61,12 +66,9 @@ public class RecordCompetitionFishCatchCommandValidator : AbstractValidator<Reco
         return await _context.FishSpecies.AnyAsync(fs => fs.Id == fishSpeciesId, cancellationToken);
     }
 
-    private bool BeAValidImage(IFormFile image)
+    private bool BeValidUrl(string url)
     {
-        if (image == null || image.Length == 0) return false;
-        if (image.Length > 5 * 1024 * 1024) return false;
-        var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" };
-        return allowedTypes.Contains(image.ContentType.ToLower());
+        return Uri.TryCreate(url, UriKind.Absolute, out _);
     }
 
     private async Task<bool> BeWithinCompetitionTime(RecordCompetitionFishCatchCommand command, DateTimeOffset catchTime, CancellationToken cancellationToken)
@@ -80,7 +82,7 @@ public class RecordCompetitionFishCatchCommandValidator : AbstractValidator<Reco
 
         // Czas połowu musi być w trakcie trwania zawodów
         // I zawody muszą być w statusie Ongoing
-        return competition.Status == Fishio.Domain.Enums.CompetitionStatus.Ongoing &&
+        return competition.Status == CompetitionStatus.Ongoing &&
                catchTime >= competition.Schedule.Start &&
                catchTime <= competition.Schedule.End;
     }

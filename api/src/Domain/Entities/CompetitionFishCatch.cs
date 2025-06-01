@@ -17,6 +17,7 @@ public class CompetitionFishCatch : BaseAuditableEntity
     public FishLength? Length { get; private set; }
     public FishWeight? Weight { get; private set; }
     public string ImageUrl { get; private set; } = string.Empty;
+    public string? ImagePublicId { get; private set; } // Cloudinary PublicId for image management
     public DateTimeOffset CatchTime { get; private set; } = DateTimeOffset.UtcNow;
 
     private CompetitionFishCatch() { }
@@ -30,7 +31,8 @@ public class CompetitionFishCatch : BaseAuditableEntity
         string imageUrl,
         DateTimeOffset catchTime,
         FishLength? length = null,
-        FishWeight? weight = null)
+        FishWeight? weight = null,
+        string? imagePublicId = null)
     {
         Guard.Against.Null(competition, nameof(competition));
         Guard.Against.Null(participant, nameof(participant));
@@ -51,6 +53,7 @@ public class CompetitionFishCatch : BaseAuditableEntity
         FishSpeciesId = fishSpecies.Id;
         FishSpecies = fishSpecies;
         ImageUrl = imageUrl;
+        ImagePublicId = imagePublicId;
         CatchTime = catchTime;
         Length = length;
         Weight = weight;
@@ -95,5 +98,19 @@ public class CompetitionFishCatch : BaseAuditableEntity
         Length = length;
         Weight = weight;
         // AddDomainEvent(new FishCatchMeasurementsUpdatedEvent(this, modifyingUser));
+    }
+
+    /// <summary>
+    /// Updates the image metadata for this fish catch
+    /// </summary>
+    public void UpdateImage(string imageUrl, string? imagePublicId = null, User modifyingUser = null!)
+    {
+        if (modifyingUser != null && !CanBeModifiedBy(modifyingUser))
+            throw new InvalidOperationException("Brak uprawnień do modyfikacji tego połowu lub zawody są zakończone.");
+
+        Guard.Against.NullOrWhiteSpace(imageUrl, nameof(imageUrl));
+        ImageUrl = imageUrl;
+        ImagePublicId = imagePublicId;
+        // AddDomainEvent(new FishCatchImageUpdatedEvent(this, modifyingUser));
     }
 }

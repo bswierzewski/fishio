@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http; // Dla IFormFile
-
-namespace Fishio.Application.Fisheries.Commands.UpdateFishery;
+﻿namespace Fishio.Application.Fisheries.Commands.UpdateFishery;
 
 // Używamy class dla komendy, aby umożliwić np. logikę w setterach, jeśli byłaby potrzebna,
 // lub jeśli preferujemy tradycyjne klasy dla komend.
@@ -10,7 +8,8 @@ public class UpdateFisheryCommand : IRequest<bool> // Zwraca bool wskazujący su
     public int Id { get; set; } // ID łowiska do aktualizacji
     public string Name { get; set; } = string.Empty;
     public string? Location { get; set; }
-    public IFormFile? Image { get; set; } // Nowe zdjęcie (opcjonalne, jeśli null - nie zmieniaj)
+    public string? ImageUrl { get; set; } // Nowy URL zdjęcia (opcjonalny)
+    public string? ImagePublicId { get; set; } // Nowy PublicId zdjęcia (opcjonalny)
     public bool RemoveCurrentImage { get; set; } = false; // Flaga do usunięcia obecnego zdjęcia
     public List<int>? FishSpeciesIds { get; set; } // Pełna lista ID gatunków dla tego łowiska
 }
@@ -37,10 +36,10 @@ public class UpdateFisheryCommandValidator : AbstractValidator<UpdateFisheryComm
         RuleForEach(x => x.FishSpeciesIds)
             .GreaterThan(0).When(x => x != null).WithMessage("Nieprawidłowe ID gatunku ryby.");
 
-        When(x => x.Image != null, () =>
+        When(x => !string.IsNullOrEmpty(x.ImageUrl), () =>
         {
-            RuleFor(x => x.Image)
-                .Must(BeAValidImage).WithMessage("Nieprawidłowy format zdjęcia lub za duży plik (max 5MB).");
+            RuleFor(x => x.ImageUrl)
+                .Must(BeValidUrl).WithMessage("Nieprawidłowy URL zdjęcia.");
         });
     }
 
@@ -51,12 +50,9 @@ public class UpdateFisheryCommandValidator : AbstractValidator<UpdateFisheryComm
             .AnyAsync(f => f.Id != command.Id && f.Name == name, cancellationToken);
     }
 
-    private bool BeAValidImage(IFormFile? file)
+    private bool BeValidUrl(string? url)
     {
-        if (file == null) return true;
-        if (file.Length == 0) return true;
-        if (file.Length > 5 * 1024 * 1024) return false;
-        var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" };
-        return allowedTypes.Contains(file.ContentType.ToLower());
+        if (string.IsNullOrEmpty(url)) return true;
+        return Uri.TryCreate(url, UriKind.Absolute, out _);
     }
 }

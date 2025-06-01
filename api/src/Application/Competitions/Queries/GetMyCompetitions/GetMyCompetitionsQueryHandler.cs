@@ -1,6 +1,4 @@
-﻿using Fishio.Application.Competitions.Queries.GetOpenCompetitions;
-
-namespace Fishio.Application.Competitions.Queries.GetMyCompetitions;
+﻿namespace Fishio.Application.Competitions.Queries.GetMyCompetitions;
 
 public class GetMyCompetitionsQueryHandler : IRequestHandler<GetMyCompetitionsQuery, PaginatedList<MyCompetitionSummaryDto>>
 {

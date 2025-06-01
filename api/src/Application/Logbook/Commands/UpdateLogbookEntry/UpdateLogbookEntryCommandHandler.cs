@@ -1,6 +1,5 @@
-﻿using Application.Common.Interfaces.Services;
-using Fishio.Application.Common.Exceptions; // Dla NotFoundException, ForbiddenAccessException
-using Fishio.Domain.ValueObjects;
+﻿using Fishio.Application.Common.Exceptions;
+using Fishio.Domain.ValueObjects; // Dla FishLength, FishWeight
 
 namespace Fishio.Application.LogbookEntries.Commands.UpdateLogbookEntry;
 
@@ -8,16 +7,13 @@ public class UpdateLogbookEntryCommandHandler : IRequestHandler<UpdateLogbookEnt
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
-    private readonly IImageStorageService _imageStorageService;
 
     public UpdateLogbookEntryCommandHandler(
         IApplicationDbContext context,
-        ICurrentUserService currentUserService,
-        IImageStorageService imageStorageService)
+        ICurrentUserService currentUserService)
     {
         _context = context;
         _currentUserService = currentUserService;
-        _imageStorageService = imageStorageService;
     }
 
     public async Task<bool> Handle(UpdateLogbookEntryCommand request, CancellationToken cancellationToken)
@@ -41,46 +37,12 @@ public class UpdateLogbookEntryCommandHandler : IRequestHandler<UpdateLogbookEnt
             throw new ForbiddenAccessException();
         }
 
-        string newImageUrl = logbookEntry.ImageUrl; // Domyślnie stary URL
+        // Use the provided image URL if specified
+        string? newImageUrl = request.ImageUrl ?? logbookEntry.ImageUrl;
 
-        // TODO: Potrzebujemy przechowywać ImagePublicId w LogbookEntry, aby móc usuwać z Cloudinary
-        // string? oldImagePublicId = logbookEntry.ImagePublicId;
-
-        if (request.RemoveCurrentImage && !string.IsNullOrEmpty(logbookEntry.ImageUrl))
+        if (request.RemoveCurrentImage)
         {
-            // if (!string.IsNullOrEmpty(oldImagePublicId))
-            // {
-            //     await _imageStorageService.DeleteImageAsync(oldImagePublicId);
-            // }
-            newImageUrl = string.Empty; // Ustawiamy na pusty string lub null, w zależności od logiki
-            // logbookEntry.ImagePublicId = null;
-        }
-
-        if (request.Image != null && request.Image.Length > 0)
-        {
-            // Jeśli jest nowe zdjęcie, usuń stare (jeśli istniało i nie zostało już usunięte)
-            // if (!request.RemoveCurrentImage && !string.IsNullOrEmpty(oldImagePublicId))
-            // {
-            //     await _imageStorageService.DeleteImageAsync(oldImagePublicId);
-            // }
-
-            ImageUploadResult imageResult;
-            await using (var memoryStream = new MemoryStream())
-            {
-                await request.Image.CopyToAsync(memoryStream, cancellationToken);
-                memoryStream.Position = 0;
-                imageResult = await _imageStorageService.UploadImageAsync(
-                    memoryStream,
-                    request.Image.FileName,
-                    $"logbook/{domainUserId.Value}");
-            }
-
-            if (!imageResult.Success || string.IsNullOrEmpty(imageResult.Url))
-            {
-                throw new ApplicationException($"Nie udało się przesłać nowego zdjęcia: {imageResult.ErrorMessage}");
-            }
-            newImageUrl = imageResult.Url;
-            // logbookEntry.ImagePublicId = imageResult.PublicId; // Zapisz nowy PublicId
+            newImageUrl = null;
         }
 
         FishLength? length = request.LengthInCm.HasValue ? new FishLength(request.LengthInCm.Value) : null;
@@ -89,15 +51,14 @@ public class UpdateLogbookEntryCommandHandler : IRequestHandler<UpdateLogbookEnt
         // Convert to UTC to avoid PostgreSQL timezone issues
         var catchTimeUtc = request.CatchTime?.ToUniversalTime();
 
-        // Użyj metody domenowej do aktualizacji (lub zaktualizuj pola bezpośrednio, jeśli nie ma metody)
         logbookEntry.UpdateDetails(
-            imageUrl: newImageUrl, // Przekazujemy zaktualizowany URL
-            catchTime: catchTimeUtc ?? logbookEntry.CatchTime, // Jeśli null, zostaw stare
-            length: length, // Przekazujemy nowe lub null
-            weight: weight, // Przekazujemy nowe lub null
-            notes: request.Notes, // Może być null, aby wyczyścić
-            fishSpeciesId: request.FishSpeciesId, // Może być null
-            fisheryId: request.FisheryId // Może być null
+            imageUrl: newImageUrl,
+            catchTime: catchTimeUtc,
+            length: length,
+            weight: weight,
+            notes: request.Notes,
+            fishSpeciesId: request.FishSpeciesId,
+            fisheryId: request.FisheryId
         );
 
         await _context.SaveChangesAsync(cancellationToken);

@@ -1,21 +1,16 @@
-﻿using Application.Common.Interfaces.Services;
-
-namespace Fishio.Application.Fisheries.Commands.CreateFishery;
+﻿namespace Fishio.Application.Fisheries.Commands.CreateFishery;
 
 public class CreateFisheryCommandHandler : IRequestHandler<CreateFisheryCommand, int>
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
-    private readonly IImageStorageService _imageStorageService;
 
     public CreateFisheryCommandHandler(
         IApplicationDbContext context,
-        ICurrentUserService currentUserService,
-        IImageStorageService imageStorageService)
+        ICurrentUserService currentUserService)
     {
         _context = context;
         _currentUserService = currentUserService;
-        _imageStorageService = imageStorageService;
     }
 
     public async Task<int> Handle(CreateFisheryCommand request, CancellationToken cancellationToken)
@@ -26,41 +21,21 @@ public class CreateFisheryCommandHandler : IRequestHandler<CreateFisheryCommand,
             throw new UnauthorizedAccessException("Użytkownik musi być zalogowany, aby dodać łowisko.");
         }
 
-        string? imageUrl = null;
-        if (request.Image != null && request.Image.Length > 0)
-        {
-            ImageUploadResult imageResult;
-            await using (var memoryStream = new MemoryStream())
-            {
-                await request.Image.CopyToAsync(memoryStream, cancellationToken);
-                memoryStream.Position = 0;
-                imageResult = await _imageStorageService.UploadImageAsync(
-                    memoryStream,
-                    request.Image.FileName,
-                    $"fisheries/{currentUser.Id}");
-            }
-
-            if (!imageResult.Success || string.IsNullOrEmpty(imageResult.Url))
-            {
-                throw new ApplicationException($"Nie udało się przesłać zdjęcia dla łowiska: {imageResult.ErrorMessage}");
-            }
-            imageUrl = imageResult.Url;
-        }
-
+        // Create the fishery with the provided image URL (if any)
         var fishery = new Fishery(
-            userId: currentUser.Id,
-            name: request.Name,
-            location: request.Location,
-            imageUrl: imageUrl
-        );
+            currentUser.Id,
+            request.Name,
+            request.Location,
+            request.ImageUrl);
 
-        if (request.FishSpeciesIds != null && request.FishSpeciesIds.Any())
+        // Add fish species if provided
+        if (request.FishSpeciesIds.Any())
         {
-            var speciesToAdd = await _context.FishSpecies
+            var fishSpecies = await _context.FishSpecies
                 .Where(fs => request.FishSpeciesIds.Contains(fs.Id))
                 .ToListAsync(cancellationToken);
 
-            foreach (var species in speciesToAdd)
+            foreach (var species in fishSpecies)
             {
                 fishery.AddSpecies(species);
             }

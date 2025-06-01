@@ -1,5 +1,4 @@
-﻿using Application.Common.Interfaces.Services;
-using Fishio.Application.Common.Exceptions;
+﻿using Fishio.Application.Common.Exceptions;
 
 namespace Fishio.Application.Fisheries.Commands.UpdateFishery;
 
@@ -7,16 +6,13 @@ public class UpdateFisheryCommandHandler : IRequestHandler<UpdateFisheryCommand,
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
-    private readonly IImageStorageService _imageStorageService;
 
     public UpdateFisheryCommandHandler(
         IApplicationDbContext context,
-        ICurrentUserService currentUserService,
-        IImageStorageService imageStorageService)
+        ICurrentUserService currentUserService)
     {
         _context = context;
         _currentUserService = currentUserService;
-        _imageStorageService = imageStorageService;
     }
 
     public async Task<bool> Handle(UpdateFisheryCommand request, CancellationToken cancellationToken)
@@ -42,66 +38,43 @@ public class UpdateFisheryCommandHandler : IRequestHandler<UpdateFisheryCommand,
 
         if (request.RemoveCurrentImage && !string.IsNullOrEmpty(fisheryToUpdate.ImageUrl))
         {
-            // TODO: Implementacja logiki usuwania starego zdjęcia z IImageStorageService
+            // TODO: Implementacja logiki usuwania starego zdjęcia z Cloudinary
             // Potrzebny byłby PublicId zdjęcia, jeśli Cloudinary go zwraca i jest przechowywany.
             // Na razie zakładamy, że usunięcie oznacza wyczyszczenie ImageUrl.
-            // await _imageStorageService.DeleteImageAsync(fisheryToUpdate.ImagePublicId);
             newImageUrl = null;
         }
 
-        if (request.Image != null && request.Image.Length > 0)
+        if (!string.IsNullOrEmpty(request.ImageUrl))
         {
-            // Jeśli jest nowe zdjęcie, usuń stare (jeśli istniało i nie zostało już usunięte)
-            if (!request.RemoveCurrentImage && !string.IsNullOrEmpty(fisheryToUpdate.ImageUrl))
-            {
-                // await _imageStorageService.DeleteImageAsync(fisheryToUpdate.ImagePublicId);
-            }
-
-            ImageUploadResult imageResult;
-            await using (var memoryStream = new MemoryStream())
-            {
-                await request.Image.CopyToAsync(memoryStream, cancellationToken);
-                memoryStream.Position = 0;
-                imageResult = await _imageStorageService.UploadImageAsync(
-                    memoryStream,
-                    request.Image.FileName,
-                    $"fisheries/{currentUser.Id}"); // lub fisheryToUpdate.Id
-            }
-
-            if (!imageResult.Success || string.IsNullOrEmpty(imageResult.Url))
-            {
-                throw new ApplicationException($"Nie udało się przesłać nowego zdjęcia dla łowiska: {imageResult.ErrorMessage}");
-            }
-            newImageUrl = imageResult.Url;
+            // Use the provided image URL
+            newImageUrl = request.ImageUrl;
         }
 
-        // Użyj metody domenowej do aktualizacji szczegółów
+        // Aktualizuj podstawowe informacje
         fisheryToUpdate.UpdateDetails(request.Name, request.Location, newImageUrl);
 
-        // Zarządzanie gatunkami ryb - pełna aktualizacja listy
-        // Usuń wszystkie obecne gatunki i dodaj te z request.FishSpeciesIds
-        // To jest proste podejście; bardziej zaawansowane mogłoby wykrywać różnice.
-        var existingSpecies = fisheryToUpdate.FishSpecies.ToList(); // Kopia do iteracji
-        foreach (var species in existingSpecies)
-        {
-            fisheryToUpdate.RemoveSpecies(species);
-        }
-
+        // Aktualizuj gatunki ryb
         if (request.FishSpeciesIds != null && request.FishSpeciesIds.Any())
         {
-            var speciesToAdd = await _context.FishSpecies
+            // Usuń wszystkie obecne gatunki
+            var existingSpecies = fisheryToUpdate.FishSpecies.ToList();
+            foreach (var species in existingSpecies)
+            {
+                fisheryToUpdate.RemoveSpecies(species);
+            }
+
+            // Dodaj nowe gatunki
+            var fishSpecies = await _context.FishSpecies
                 .Where(fs => request.FishSpeciesIds.Contains(fs.Id))
                 .ToListAsync(cancellationToken);
 
-            foreach (var species in speciesToAdd)
+            foreach (var species in fishSpecies)
             {
                 fisheryToUpdate.AddSpecies(species);
             }
         }
 
-        // _context.Fisheries.Update(fisheryToUpdate); // Nie jest potrzebne, jeśli encja jest śledzona
         await _context.SaveChangesAsync(cancellationToken);
-
         return true;
     }
 }

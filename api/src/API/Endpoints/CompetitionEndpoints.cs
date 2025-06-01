@@ -21,7 +21,6 @@ using Fishio.Application.Competitions.Commands.UpdateCompetitionCategory;
 using Fishio.Application.Competitions.Queries.GetCompetitionDetails;
 using Fishio.Application.Competitions.Queries.GetMyCompetitions;
 using Fishio.Application.Competitions.Queries.GetOpenCompetitions;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Fishio.API.Endpoints;
 
@@ -38,8 +37,7 @@ public static class CompetitionsEndpoints
             .WithName(nameof(CreateNewCompetition))
             .Produces<object>(StatusCodes.Status201Created).ProducesValidationProblem().ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized).ProducesProblem(StatusCodes.Status500InternalServerError)
-            .RequireAuthorization()
-            .DisableAntiforgery();
+            .RequireAuthorization();
 
         competitionsGroup.MapGet("/open", GetOpenCompetitionsList)
             .WithName(nameof(GetOpenCompetitionsList))
@@ -61,8 +59,7 @@ public static class CompetitionsEndpoints
             .Produces(StatusCodes.Status204NoContent).ProducesValidationProblem().ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound).ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)
-            .RequireAuthorization()
-            .DisableAntiforgery();
+            .RequireAuthorization();
 
         // --- Status Management ---
         var statusGroup = competitionsGroup.MapGroup("/{competitionId:int}/status")
@@ -183,8 +180,7 @@ public static class CompetitionsEndpoints
             .Produces<object>(StatusCodes.Status201Created) // Zwraca { fishCatchId = newId }
             .ProducesValidationProblem().ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound).ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status403Forbidden)
-            .DisableAntiforgery();
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         // --- Category Management in Competition ---
         var categoryManagementGroup = competitionsGroup.MapGroup("/{competitionId:int}/categories")
@@ -220,7 +216,7 @@ public static class CompetitionsEndpoints
         return TypedResults.NoContent();
     }
 
-    private static async Task<IResult> CreateNewCompetition(ISender sender, [FromForm] CreateCompetitionCommand command, CancellationToken ct)
+    private static async Task<IResult> CreateNewCompetition(ISender sender, CreateCompetitionCommand command, CancellationToken ct)
     {
         var competitionId = await sender.Send(command, ct);
         return TypedResults.Created($"/api/competitions/{competitionId}", new { Id = competitionId });
@@ -244,7 +240,7 @@ public static class CompetitionsEndpoints
         return competition != null ? TypedResults.Ok(competition) : TypedResults.NotFound();
     }
 
-    private static async Task<IResult> UpdateExistingCompetition(ISender sender, int id, [FromForm] UpdateCompetitionCommand command, CancellationToken ct)
+    private static async Task<IResult> UpdateExistingCompetition(ISender sender, int id, UpdateCompetitionCommand command, CancellationToken ct)
     {
         if (id != command.Id) return TypedResults.BadRequest("ID mismatch.");
         await sender.Send(command, ct);
@@ -286,7 +282,7 @@ public static class CompetitionsEndpoints
         return TypedResults.NoContent();
     }
 
-    private static async Task<IResult> JudgeRecordsFishCatch(ISender sender, int competitionId, [FromForm] RecordCompetitionFishCatchCommand command, CancellationToken ct)
+    private static async Task<IResult> JudgeRecordsFishCatch(ISender sender, int competitionId, RecordCompetitionFishCatchCommand command, CancellationToken ct)
     {
         command.CompetitionId = competitionId; // Ustawiamy ID zawodów z trasy
         var fishCatchId = await sender.Send(command, ct);

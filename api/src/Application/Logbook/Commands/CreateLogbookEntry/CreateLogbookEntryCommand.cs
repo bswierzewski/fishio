@@ -1,10 +1,9 @@
-﻿using Microsoft.AspNetCore.Http; // Dla IFormFile
-
-namespace Fishio.Application.LogbookEntries.Commands.CreateLogbookEntry;
+﻿namespace Fishio.Application.LogbookEntries.Commands.CreateLogbookEntry;
 
 public class CreateLogbookEntryCommand : IRequest<int> // Zwraca ID nowego wpisu
 {
-    public IFormFile Image { get; set; } = null!; // Zdjęcie jest wymagane
+    public string ImageUrl { get; set; } = string.Empty; // Zdjęcie jest wymagane
+    public string? ImagePublicId { get; set; }
     public DateTimeOffset? CatchTime { get; set; }
     public decimal? LengthInCm { get; set; }
     public decimal? WeightInKg { get; set; }
@@ -18,9 +17,9 @@ public class CreateLogbookEntryCommandValidator : AbstractValidator<CreateLogboo
     // Nie potrzebujemy tutaj IApplicationDbContext, jeśli walidacja nie odwołuje się do bazy
     public CreateLogbookEntryCommandValidator()
     {
-        RuleFor(x => x.Image)
-            .NotEmpty().WithMessage("Zdjęcie jest wymagane.")
-            .Must(BeAValidImage).WithMessage("Nieprawidłowy format zdjęcia lub za duży plik (max 5MB).");
+        RuleFor(x => x.ImageUrl)
+            .NotEmpty().WithMessage("URL zdjęcia jest wymagane.")
+            .Must(BeValidUrl).WithMessage("Nieprawidłowy URL zdjęcia.");
 
         RuleFor(x => x.CatchTime)
             .LessThanOrEqualTo(DateTimeOffset.UtcNow.AddHours(1))
@@ -56,14 +55,8 @@ public class CreateLogbookEntryCommandValidator : AbstractValidator<CreateLogboo
         });
     }
 
-    private bool BeAValidImage(IFormFile file) // IFormFile nie jest już nullable tutaj
+    private bool BeValidUrl(string url)
     {
-        // file.NotEmpty() już to sprawdza, ale dla pewności
-        if (file == null || file.Length == 0) return false;
-
-        if (file.Length > 5 * 1024 * 1024) return false; // Max 5MB
-
-        var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" };
-        return allowedTypes.Contains(file.ContentType.ToLower());
+        return Uri.TryCreate(url, UriKind.Absolute, out _);
     }
 }

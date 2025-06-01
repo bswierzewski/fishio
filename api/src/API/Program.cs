@@ -36,6 +36,7 @@ app.MapAboutEndpoints();
 app.MapCompetitionEndpoints();
 app.MapDashboardEndpoints();
 app.MapFisheriesEndpoints();
+app.MapImageEndpoints();
 app.MapLogbookEndpoints();
 app.MapLookupDataEndpoints();
 app.MapPublicResultsEndpoints();

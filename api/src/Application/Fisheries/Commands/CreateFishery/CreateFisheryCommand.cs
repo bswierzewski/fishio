@@ -1,13 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
-
-namespace Fishio.Application.Fisheries.Commands.CreateFishery;
+﻿namespace Fishio.Application.Fisheries.Commands.CreateFishery;
 
 public record CreateFisheryCommand : IRequest<int>
 {
     public string Name { get; init; } = string.Empty;
     public string Description { get; init; } = string.Empty;
     public string Location { get; init; } = string.Empty;
-    public IFormFile? Image { get; set; }
+    public string? ImageUrl { get; init; }
+    public string? ImagePublicId { get; init; }
     public List<int> FishSpeciesIds { get; init; } = new();
 }
 
@@ -28,12 +27,12 @@ public class CreateFisheryCommandValidator : AbstractValidator<CreateFisheryComm
             .MaximumLength(1000).WithMessage("Lokalizacja nie może przekraczać 1000 znaków.");
 
         RuleForEach(x => x.FishSpeciesIds)
-                    .GreaterThan(0).When(x => x != null).WithMessage("Nieprawidłowe ID gatunku ryby.");
+            .GreaterThan(0).When(x => x != null).WithMessage("Nieprawidłowe ID gatunku ryby.");
 
-        When(x => x.Image != null, () =>
+        When(x => !string.IsNullOrEmpty(x.ImageUrl), () =>
         {
-            RuleFor(x => x.Image)
-                .Must(BeAValidImage).WithMessage("Nieprawidłowy format zdjęcia lub za duży plik (max 5MB).");
+            RuleFor(x => x.ImageUrl)
+                .Must(BeValidUrl).WithMessage("Nieprawidłowy URL zdjęcia.");
         });
     }
 
@@ -42,14 +41,9 @@ public class CreateFisheryCommandValidator : AbstractValidator<CreateFisheryComm
         return !await _context.Fisheries.AnyAsync(f => f.Name == name, cancellationToken);
     }
 
-    private bool BeAValidImage(IFormFile? file)
+    private bool BeValidUrl(string? url)
     {
-        if (file == null) return true;
-        if (file.Length == 0) return true;
-
-        if (file.Length > 5 * 1024 * 1024) return false;
-
-        var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" };
-        return allowedTypes.Contains(file.ContentType.ToLower());
+        if (string.IsNullOrEmpty(url)) return true;
+        return Uri.TryCreate(url, UriKind.Absolute, out _);
     }
 }

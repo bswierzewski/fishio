@@ -1,5 +1,4 @@
-﻿using Application.Common.Interfaces.Services;
-using Fishio.Application.Common.Exceptions;
+﻿using Fishio.Application.Common.Exceptions;
 
 namespace Fishio.Application.LogbookEntries.Commands.DeleteLogbookEntry;
 
@@ -7,16 +6,13 @@ public class DeleteLogbookEntryCommandHandler : IRequestHandler<DeleteLogbookEnt
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserService _currentUserService;
-    private readonly IImageStorageService _imageStorageService; // Do usunięcia zdjęcia
 
     public DeleteLogbookEntryCommandHandler(
         IApplicationDbContext context,
-        ICurrentUserService currentUserService,
-        IImageStorageService imageStorageService)
+        ICurrentUserService currentUserService)
     {
         _context = context;
         _currentUserService = currentUserService;
-        _imageStorageService = imageStorageService;
     }
 
     public async Task<bool> Handle(DeleteLogbookEntryCommand request, CancellationToken cancellationToken)
@@ -40,12 +36,8 @@ public class DeleteLogbookEntryCommandHandler : IRequestHandler<DeleteLogbookEnt
             throw new ForbiddenAccessException();
         }
 
-        // Opcjonalnie: usuń zdjęcie z IImageStorageService, jeśli istnieje
-        // TODO: Potrzebujemy przechowywać ImagePublicId w LogbookEntry
-        // if (!string.IsNullOrEmpty(logbookEntry.ImagePublicId)) // Zakładając, że mamy ImagePublicId
-        // {
-        //     await _imageStorageService.DeleteImageAsync(logbookEntry.ImagePublicId);
-        // }
+        // TODO: Optionally delete image from Cloudinary using ImagePublicId
+        // This could be implemented as a background job or through a proper service
 
         _context.LogbookEntries.Remove(logbookEntry);
         var result = await _context.SaveChangesAsync(cancellationToken);

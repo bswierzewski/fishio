@@ -1,11 +1,4 @@
-﻿using Fishio.Application.Common.Interfaces; // Dla IApplicationDbContext
-using Fishio.Domain.Enums; // Dla CompetitionType
-using FluentValidation;
-using MediatR;
-using Microsoft.AspNetCore.Http; // Dla IFormFile
-using Microsoft.EntityFrameworkCore; // Dla AnyAsync
-
-namespace Fishio.Application.Competitions.Commands.CreateCompetition;
+﻿namespace Fishio.Application.Competitions.Commands.CreateCompetition;
 
 public class CreateCompetitionCommand : IRequest<int> // Zwraca ID nowych zawodów
 {
@@ -15,7 +8,8 @@ public class CreateCompetitionCommand : IRequest<int> // Zwraca ID nowych zawod�
     public int FisheryId { get; set; } // Lokalizacja będzie pobierana z łowiska
     public string? Rules { get; set; }
     public CompetitionType Type { get; set; } // Otwarte (Public) lub Zamknięte (Private)
-    public IFormFile? Image { get; set; } // Opcjonalne zdjęcie zawodów
+    public string? ImageUrl { get; set; } // Opcjonalne zdjęcie zawodów
+    public string? ImagePublicId { get; set; }
 
     // Kategorie
     public int PrimaryScoringCategoryDefinitionId { get; set; } // ID definicji głównej kategorii
@@ -42,71 +36,68 @@ public class CreateCompetitionCommandValidator : AbstractValidator<CreateCompeti
     {
         _context = context;
         _timeProvider = timeProvider;
-        var now = _timeProvider.GetUtcNow();
 
         RuleFor(v => v.Name)
             .NotEmpty().WithMessage("Nazwa zawodów jest wymagana.")
-            .MaximumLength(250).WithMessage("Nazwa zawodów nie może przekraczać 250 znaków.");
-        // Można dodać walidację unikalności nazwy zawodów, jeśli potrzebne
+            .MaximumLength(255).WithMessage("Nazwa zawodów nie może przekraczać 255 znaków.");
 
         RuleFor(v => v.StartTime)
-            .NotEmpty().WithMessage("Czas rozpoczęcia jest wymagany.")
-            .GreaterThan(now.AddMinutes(5)).WithMessage("Czas rozpoczęcia musi być w przyszłości (minimum 5 minut od teraz).");
+            .Must(BeInFuture).WithMessage("Czas rozpoczęcia musi być w przyszłości.");
 
         RuleFor(v => v.EndTime)
-            .NotEmpty().WithMessage("Czas zakończenia jest wymagany.")
-            .GreaterThan(v => v.StartTime.AddMinutes(30)) // Zawody muszą trwać minimum 30 minut
-            .WithMessage("Czas zakończenia musi być późniejszy niż czas rozpoczęcia (minimum o 30 minut).");
+            .GreaterThan(v => v.StartTime).WithMessage("Czas zakończenia musi być późniejszy niż czas rozpoczęcia.");
 
         RuleFor(v => v.FisheryId)
             .NotEmpty().WithMessage("ID łowiska jest wymagane.")
-            .GreaterThan(0).WithMessage("Nieprawidłowe ID łowiska.")
             .MustAsync(FisheryMustExist).WithMessage("Wybrane łowisko nie istnieje.");
 
         RuleFor(v => v.Rules)
-            .MaximumLength(10000).WithMessage("Regulamin nie może przekraczać 10000 znaków."); // Duża pojemność
+            .MaximumLength(5000).WithMessage("Regulamin nie może przekraczać 5000 znaków.");
 
         RuleFor(v => v.Type)
             .IsInEnum().WithMessage("Nieprawidłowy typ zawodów.");
 
-        When(x => x.Image != null, () =>
-        {
-            RuleFor(x => x.Image)
-                .Must(BeAValidImage).WithMessage("Nieprawidłowy format zdjęcia lub za duży plik (max 5MB).");
-        });
-
-        // Walidacja kategorii
         RuleFor(v => v.PrimaryScoringCategoryDefinitionId)
-            .NotEmpty().WithMessage("ID głównej kategorii punktacyjnej jest wymagane.")
-            .GreaterThan(0).WithMessage("Nieprawidłowe ID głównej kategorii punktacyjnej.")
-            .MustAsync(CategoryDefinitionMustExist).WithMessage("Wybrana główna kategoria punktacyjna nie istnieje lub nie jest odpowiednia.");
+            .NotEmpty().WithMessage("Główna kategoria punktacji jest wymagana.")
+            .MustAsync(CategoryDefinitionMustExist).WithMessage("Wybrana definicja kategorii nie istnieje.");
 
-        When(v => v.PrimaryScoringFishSpeciesId.HasValue, () => {
+        When(v => v.PrimaryScoringFishSpeciesId.HasValue, () =>
+        {
             RuleFor(v => v.PrimaryScoringFishSpeciesId)
-                .GreaterThan(0).WithMessage("Nieprawidłowe ID gatunku ryby dla głównej kategorii.")
-                .MustAsync(FishSpeciesMustExist).WithMessage("Wybrany gatunek ryby dla głównej kategorii nie istnieje.");
+                .MustAsync(FishSpeciesMustExist).WithMessage("Wybrany gatunek ryby nie istnieje.");
         });
 
-
-        RuleForEach(v => v.SpecialCategories).ChildRules(category =>
+        When(x => !string.IsNullOrEmpty(x.ImageUrl), () =>
         {
-            if (category != null) // FluentValidation może przekazać null dla elementów kolekcji
-            {
-                category.RuleFor(c => c.CategoryDefinitionId)
-                    .NotEmpty().WithMessage("ID definicji kategorii specjalnej jest wymagane.")
-                    .GreaterThan(0).WithMessage("Nieprawidłowe ID definicji kategorii specjalnej.")
-                    .MustAsync(CategoryDefinitionMustExist).WithMessage("Wybrana definicja kategorii specjalnej nie istnieje lub nie jest odpowiednia.");
+            RuleFor(x => x.ImageUrl)
+                .Must(BeValidUrl).WithMessage("Nieprawidłowy URL zdjęcia.");
+        });
 
-                category.When(c => c.FishSpeciesId.HasValue, () => {
-                    category.RuleFor(c => c.FishSpeciesId)
-                        .GreaterThan(0).WithMessage("Nieprawidłowe ID gatunku ryby dla kategorii specjalnej.")
-                        .MustAsync(FishSpeciesMustExist).WithMessage("Wybrany gatunek ryby dla kategorii specjalnej nie istnieje.");
+        // Walidacja kategorii specjalnych
+        When(v => v.SpecialCategories != null && v.SpecialCategories.Any(), () =>
+        {
+            RuleForEach(v => v.SpecialCategories)
+                .ChildRules(category =>
+                {
+                    category.RuleFor(c => c.CategoryDefinitionId)
+                        .NotEmpty().WithMessage("ID definicji kategorii specjalnej jest wymagane.")
+                        .MustAsync(CategoryDefinitionMustExist).WithMessage("Definicja kategorii specjalnej nie istnieje.");
+
+                    category.When(c => c.FishSpeciesId.HasValue, () =>
+                    {
+                        category.RuleFor(c => c.FishSpeciesId)
+                            .MustAsync(FishSpeciesMustExist).WithMessage("Gatunek ryby dla kategorii specjalnej nie istnieje.");
+                    });
+
+                    category.RuleFor(c => c.CustomNameOverride)
+                        .MaximumLength(255).WithMessage("Niestandardowa nazwa kategorii nie może przekraczać 255 znaków.");
                 });
+        });
+    }
 
-                category.RuleFor(c => c.CustomNameOverride)
-                    .MaximumLength(150).WithMessage("Niestandardowa nazwa kategorii nie może przekraczać 150 znaków.");
-            }
-        }).When(v => v.SpecialCategories != null);
+    private bool BeInFuture(DateTimeOffset startTime)
+    {
+        return startTime > _timeProvider.GetUtcNow().AddMinutes(5); // Mały bufor na różnice czasowe
     }
 
     private async Task<bool> FisheryMustExist(int fisheryId, CancellationToken cancellationToken)
@@ -116,7 +107,6 @@ public class CreateCompetitionCommandValidator : AbstractValidator<CreateCompeti
 
     private async Task<bool> CategoryDefinitionMustExist(int categoryDefinitionId, CancellationToken cancellationToken)
     {
-        // Można dodać bardziej szczegółową walidację, np. czy definicja jest typu 'MainScoring' lub 'SpecialAchievement'
         return await _context.CategoryDefinitions.AnyAsync(cd => cd.Id == categoryDefinitionId, cancellationToken);
     }
 
@@ -126,11 +116,9 @@ public class CreateCompetitionCommandValidator : AbstractValidator<CreateCompeti
         return await _context.FishSpecies.AnyAsync(fs => fs.Id == fishSpeciesId.Value, cancellationToken);
     }
 
-    private bool BeAValidImage(IFormFile? file)
+    private bool BeValidUrl(string? url)
     {
-        if (file == null || file.Length == 0) return true; // Opcjonalne
-        if (file.Length > 5 * 1024 * 1024) return false; // Max 5MB
-        var allowedTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" };
-        return allowedTypes.Contains(file.ContentType.ToLower());
+        if (string.IsNullOrEmpty(url)) return true;
+        return Uri.TryCreate(url, UriKind.Absolute, out _);
     }
 }
