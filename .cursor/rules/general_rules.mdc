@@ -52,7 +52,28 @@ alwaysApply: true
     *   Optimize database queries and client-side operations to ensure good application performance.
     *   Pay attention to frontend bundle sizes and load times.
 
-## 🛠️ 3. Key Technologies (General Overview)
+## 🌍 3. Language and Localization Rules
+
+**CRITICAL RULE: All user-facing error messages and validation messages MUST be in Polish. All logging and technical messages MUST remain in English.**
+
+1.  **User-Facing Messages (Polish):**
+    *   All error messages displayed to users must be in Polish.
+    *   All validation messages must be in Polish.
+    *   All toast notifications and user feedback must be in Polish.
+    *   All form field labels and help text must be in Polish.
+
+2.  **Technical/Logging Messages (English):**
+    *   All logging messages must remain in English for technical debugging.
+    *   All console.log, console.error messages must be in English.
+    *   All technical exception details for developers must be in English.
+    *   All code comments should be in English.
+
+3.  **Implementation Guidelines:**
+    *   When implementing error handling, separate user-facing messages (Polish) from technical logging (English).
+    *   Use consistent Polish terminology across the application.
+    *   Maintain English for all developer-facing documentation and technical details.
+
+## 🛠️ 4. Key Technologies (General Overview)
 
 1.  **Backend (API):**
     *   **.NET 9 (Minimal API)**
@@ -69,7 +90,7 @@ alwaysApply: true
 3.  **Authentication (Shared):**
     *   **Clerk**
 
-## 💡 4. General Instructions for Cursor
+## 💡 5. General Instructions for Cursor
 
 1.  **Context Differentiation:** Always try to understand whether the current task concerns the **backend (API)** or the **frontend (Client)**. This affects the technologies, patterns, and conventions to be used.
 2.  **Using Specific Rules:**
