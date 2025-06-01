@@ -30,6 +30,7 @@ public record FisheryFishSpeciesDto
 {
     public int Id { get; init; }
     public string Name { get; init; } = string.Empty;
+    public string? ImageUrl { get; init; }
     public int CatchesCount { get; init; }
     public decimal? AverageLength { get; init; }
     public decimal? AverageWeight { get; init; }

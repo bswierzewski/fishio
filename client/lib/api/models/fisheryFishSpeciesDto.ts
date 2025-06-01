@@ -9,6 +9,8 @@ export interface FisheryFishSpeciesDto {
   id?: number;
   /** @nullable */
   name?: string | null;
+  /** @nullable */
+  imageUrl?: string | null;
   catchesCount?: number;
   /** @nullable */
   averageLength?: number | null;

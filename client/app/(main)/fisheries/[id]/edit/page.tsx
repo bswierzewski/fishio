@@ -1,10 +1,11 @@
 'use client';
 
 import { useForm } from '@tanstack/react-form';
-import { ArrowLeft, FileText, Fish, MapPin } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
+import { ArrowLeft, Check, FileText, Fish, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
 import { useGetFisheryById, useUpdateExistingFishery } from '@/lib/api/endpoints/fisheries';
@@ -15,7 +16,7 @@ import type { ImageUploadResult } from '@/hooks/use-image-upload';
 
 import FieldInfo from '@/components/FieldInfo';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+import { FishImage } from '@/components/ui/fish-image';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,7 +30,10 @@ const cardMutedTextColorClass = 'text-muted-foreground';
 export default function EditFisheryPage() {
   const router = useRouter();
   const params = useParams();
-  const fisheryId = parseInt(params.id as string);
+  const fisheryId = parseInt(params.id as string, 10);
+  const queryClient = useQueryClient();
+
+  const [removeCurrentImageFlag, setRemoveCurrentImageFlag] = useState(false);
 
   const { data: fishery, isLoading: isLoadingFishery } = useGetFisheryById(fisheryId);
   const { data: fishSpecies, isLoading: isLoadingSpecies } = useGetAllFishSpecies();
@@ -37,6 +41,8 @@ export default function EditFisheryPage() {
     mutation: {
       onSuccess: () => {
         toast.success('Łowisko zostało zaktualizowane pomyślnie!');
+        queryClient.invalidateQueries({ queryKey: ['/api/fisheries'] });
+        queryClient.invalidateQueries({ queryKey: [`/api/fisheries/${fisheryId}`] });
         router.push('/fisheries');
       },
       onError: (error) => {
@@ -45,8 +51,6 @@ export default function EditFisheryPage() {
       }
     }
   });
-
-  const [removeCurrentImageFlag, setRemoveCurrentImageFlag] = useState(false);
 
   const form = useForm({
     defaultValues: {
@@ -59,11 +63,11 @@ export default function EditFisheryPage() {
       removeCurrentImage: false
     } as UpdateFisheryCommand,
     onSubmit: async ({ value }) => {
-      const updateData = {
+      const payload = {
         ...value,
         removeCurrentImage: removeCurrentImageFlag
       };
-      mutate({ id: fisheryId, data: updateData });
+      mutate({ id: fisheryId, data: payload });
     },
     validators: {
       onSubmit: ({ value }) => {
@@ -90,9 +94,9 @@ export default function EditFisheryPage() {
       );
       setRemoveCurrentImageFlag(false);
     }
-  }, [fishery, form]);
+  }, [fishery]);
 
-  const handleImageChange = (result: ImageUploadResult | null) => {
+  const handleImageChange = useCallback((result: ImageUploadResult | null) => {
     if (result) {
       form.setFieldValue('imageUrl', result.imageUrl);
       form.setFieldValue('imagePublicId', result.imagePublicId);
@@ -102,15 +106,15 @@ export default function EditFisheryPage() {
       form.setFieldValue('imagePublicId', null);
       setRemoveCurrentImageFlag(true);
     }
-  };
+  }, []);
 
-  const handleSpeciesChange = (speciesId: number) => {
+  const handleSpeciesChange = useCallback((speciesId: number) => {
     const currentSpecies = form.getFieldValue('fishSpeciesIds') || [];
     const newSpecies = currentSpecies.includes(speciesId)
       ? currentSpecies.filter((id) => id !== speciesId)
       : [...currentSpecies, speciesId];
     form.setFieldValue('fishSpeciesIds', newSpecies);
-  };
+  }, []);
 
   // Loading state
   if (isLoadingFishery) {
@@ -227,33 +231,78 @@ export default function EditFisheryPage() {
           <form.Field name="fishSpeciesIds">
             {(field) => (
               <>
-                <Label className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-2`}>
+                <Label className={`text-sm font-medium ${cardTextColorClass} flex items-center mb-3`}>
                   <Fish className="mr-2 h-5 w-5" /> Gatunki Ryb (Opcjonalne)
                 </Label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto border border-border rounded-md p-3 bg-card">
+                <div className="border border-border rounded-lg p-4 bg-card">
                   {isLoadingSpecies ? (
-                    <p className={`col-span-full text-center ${cardMutedTextColorClass}`}>Ładowanie gatunków...</p>
-                  ) : fishSpecies && fishSpecies.length > 0 ? (
-                    fishSpecies.map((species: FishSpeciesDto) => (
-                      <div key={species.id} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`species-${species.id}`}
-                          checked={(field.state.value || []).includes(species.id!)}
-                          onCheckedChange={() => handleSpeciesChange(species.id!)}
-                        />
-                        <Label
-                          htmlFor={`species-${species.id}`}
-                          className={`text-sm cursor-pointer ${cardTextColorClass}`}
-                        >
-                          {species.name}
-                        </Label>
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-pulse flex items-center space-x-2">
+                        <div className="w-4 h-4 bg-gray-300 rounded-full"></div>
+                        <span className={cardMutedTextColorClass}>Ładowanie gatunków...</span>
                       </div>
-                    ))
+                    </div>
+                  ) : fishSpecies && fishSpecies.length > 0 ? (
+                    <>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-96 overflow-y-auto">
+                        {fishSpecies.map((species: FishSpeciesDto) => {
+                          const isSelected = (field.state.value || []).includes(species.id!);
+                          return (
+                            <div
+                              key={species.id}
+                              className={`relative border rounded-lg p-3 cursor-pointer transition-all duration-200 hover:shadow-md ${
+                                isSelected
+                                  ? 'border-primary bg-primary/5 shadow-sm'
+                                  : 'border-border bg-card hover:border-primary/50'
+                              }`}
+                              onClick={() => handleSpeciesChange(species.id!)}
+                            >
+                              <div className="flex items-center space-x-3">
+                                <div
+                                  className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                                    isSelected ? 'bg-primary border-primary' : 'border-border bg-background'
+                                  }`}
+                                >
+                                  {isSelected && <Check className="h-3 w-3 text-primary-foreground" />}
+                                </div>
+                                <div className="flex-shrink-0 flex items-center">
+                                  <FishImage
+                                    src={species.imageUrl}
+                                    alt={species.name || 'Ryba'}
+                                    className="w-12 h-12 rounded-md"
+                                    width={48}
+                                    height={48}
+                                  />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <Label
+                                    htmlFor={`species-${species.id}`}
+                                    className={`text-sm font-medium cursor-pointer block truncate ${
+                                      isSelected ? 'text-primary' : cardTextColorClass
+                                    }`}
+                                  >
+                                    {species.name}
+                                  </Label>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div className="mt-3 pt-3 border-t border-border">
+                        <p className={`text-xs ${cardMutedTextColorClass}`}>
+                          Zaznacz gatunki występujące na tym łowisku. Wybrano: {(field.state.value || []).length} z{' '}
+                          {fishSpecies.length}
+                        </p>
+                      </div>
+                    </>
                   ) : (
-                    <p className={`col-span-full text-center ${cardMutedTextColorClass}`}>Brak dostępnych gatunków</p>
+                    <div className="text-center py-8">
+                      <Fish className={`mx-auto h-12 w-12 ${cardMutedTextColorClass} mb-2`} />
+                      <p className={`${cardMutedTextColorClass}`}>Brak dostępnych gatunków</p>
+                    </div>
                   )}
                 </div>
-                <p className={`text-xs mt-1 ${cardMutedTextColorClass}`}>Zaznacz gatunki występujące na tym łowisku.</p>
                 <FieldInfo field={field} />
               </>
             )}

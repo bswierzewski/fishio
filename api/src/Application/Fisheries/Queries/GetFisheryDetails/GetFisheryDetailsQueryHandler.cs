@@ -37,6 +37,7 @@ public class GetFisheryDetailsQueryHandler : IRequestHandler<GetFisheryDetailsQu
             {
                 Id = definedSpecies.Id,
                 Name = definedSpecies.Name,
+                ImageUrl = definedSpecies.ImageUrl,
                 CatchesCount = catchesOfThisSpecies.Count,
                 AverageLength = catchesOfThisSpecies.Any(c => c.Length != null)
                     ? Math.Round(catchesOfThisSpecies.Average(c => c.Length?.Value ?? 0), 2)

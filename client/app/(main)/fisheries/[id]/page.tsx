@@ -11,10 +11,12 @@ import { useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 
 import { useDeleteExistingFishery, useGetFisheryById } from '@/lib/api/endpoints/fisheries';
+import { useGetAllFishSpecies } from '@/lib/api/endpoints/lookup-data';
 
 import { useCurrentUser } from '@/hooks/use-current-user';
 
 import { Button } from '@/components/ui/button';
+import { FishImage } from '@/components/ui/fish-image';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const formatDateInternal = (dateInput: Date | string | number) => {
@@ -48,6 +50,9 @@ export default function FisheryDetailPage() {
     query: { enabled: !isNaN(fisheryId) }
   });
 
+  // Fetch all fish species to get image URLs
+  const { data: allFishSpecies } = useGetAllFishSpecies();
+
   // Delete mutation
   const deleteFisheryMutation = useDeleteExistingFishery();
 
@@ -60,6 +65,12 @@ export default function FisheryDetailPage() {
       notFound();
     }
   }, [isLoading, isError, fishery, fisheryId]);
+
+  // Helper function to get fish species image URL by ID
+  const getFishSpeciesImageUrl = (speciesId: number) => {
+    const species = allFishSpecies?.find((s) => s.id === speciesId);
+    return species?.imageUrl || null;
+  };
 
   if (isLoading || isNaN(fisheryId)) {
     return (
@@ -330,21 +341,38 @@ export default function FisheryDetailPage() {
             </div>
             <div className="p-4">
               {definedSpeciesForDisplay.length > 0 ? (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {enhancedFishSpecies.map((species) => (
                     <div
                       key={species.id}
-                      className="flex items-center justify-between p-2 rounded-md bg-muted/50 hover:bg-muted transition-colors"
+                      className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
                     >
-                      <div className="flex items-center gap-2">
-                        <FishIcon className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        <span className="text-sm font-medium">{species.name}</span>
+                      <div className="flex-shrink-0 flex items-center">
+                        <FishImage
+                          src={species.imageUrl}
+                          alt={species.name || 'Ryba'}
+                          className="w-10 h-10 rounded-md"
+                          width={40}
+                          height={40}
+                        />
                       </div>
-                      {species.catchesCount !== undefined && (
-                        <div className="text-xs text-muted-foreground">
-                          {species.catchesCount} {species.catchesCount === 1 ? 'połów' : 'połowów'}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium truncate">{species.name}</span>
+                          {species.catchesCount !== undefined && (
+                            <div className="text-xs text-muted-foreground ml-2 flex-shrink-0">
+                              {species.catchesCount} {species.catchesCount === 1 ? 'połów' : 'połowów'}
+                            </div>
+                          )}
                         </div>
-                      )}
+                        {(species.averageLength || species.averageWeight) && (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {species.averageLength && `Śr. długość: ${species.averageLength} cm`}
+                            {species.averageLength && species.averageWeight && ' • '}
+                            {species.averageWeight && `Śr. waga: ${species.averageWeight} kg`}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

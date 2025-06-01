@@ -20,7 +20,7 @@ export function FishImage({ src, alt, className, width = 400, height = 300, prio
   const imageSrc = imageError || !src ? '/images/fish/default-fish.svg' : src;
 
   return (
-    <div className={cn('relative overflow-hidden bg-gray-100 rounded-lg', className)}>
+    <div className={cn('relative overflow-hidden bg-gray-100 rounded-lg flex items-center justify-center', className)}>
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
           <div className="animate-pulse">
@@ -34,7 +34,7 @@ export function FishImage({ src, alt, className, width = 400, height = 300, prio
         width={width}
         height={height}
         priority={priority}
-        className={cn('object-cover transition-opacity duration-300', isLoading ? 'opacity-0' : 'opacity-100')}
+        className={cn('object-contain transition-opacity duration-300', isLoading ? 'opacity-0' : 'opacity-100')}
         onLoad={() => setIsLoading(false)}
         onError={() => {
           setImageError(true);
