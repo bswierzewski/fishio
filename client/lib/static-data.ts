@@ -1,7 +1,6 @@
 // lib/static-data.ts
 import {
   Competition,
-  FishSpecies,
   Fishery,
   LogbookEntry,
   ResultEntry,
@@ -10,20 +9,8 @@ import {
   SpecialCategoryResult
 } from './definitions';
 
-// --- Dostępne Gatunki Ryb ---
-export const availableFishSpecies: FishSpecies[] = [
-  { id: 1, name: 'Szczupak' },
-  { id: 2, name: 'Okoń' },
-  { id: 3, name: 'Leszcz' },
-  { id: 4, name: 'Płoć' },
-  { id: 5, name: 'Karp' },
-  { id: 6, name: 'Amur' },
-  { id: 7, name: 'Sandacz' },
-  { id: 8, name: 'Pstrąg potokowy' },
-  { id: 9, name: 'Lipień' },
-  { id: 10, name: 'Sum' }
-  // Dodaj więcej według potrzeb
-];
+// Note: Fish species data is now fetched from the API via GetFishSpeciesQuery
+// No longer using static data for fish species
 
 // --- Dostępne Kategorie Punktacji ---
 export const availableMainScoringCategories: ScoringCategoryOption[] = [

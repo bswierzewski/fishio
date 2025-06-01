@@ -14,9 +14,9 @@ public class GetFishSpeciesQueryHandler : IRequestHandler<GetFishSpeciesQuery, I
         var fishSpeciesList = await _context.FishSpecies
                     .AsNoTracking()
                     .OrderBy(fs => fs.Name)
-                    .Select(fs => new FishSpeciesDto(fs.Id, fs.Name))
+                    .Select(fs => new FishSpeciesDto(fs.Id, fs.Name, fs.ImageUrl))
                     .ToListAsync(cancellationToken);
 
         return fishSpeciesList;
     }
-} 
+}

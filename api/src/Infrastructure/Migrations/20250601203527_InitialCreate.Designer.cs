@@ -3,17 +3,20 @@ using System;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Infrastructure.Persistence.Migrations
+namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250601203527_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -509,6 +512,10 @@ namespace Infrastructure.Persistence.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("ImageUrl")
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -525,77 +532,200 @@ namespace Infrastructure.Persistence.Migrations
                         new
                         {
                             Id = 1,
-                            Name = "Szczupak"
+                            ImageUrl = "/images/fish/amur-bialy.gif",
+                            Name = "Amur biały"
                         },
                         new
                         {
                             Id = 2,
-                            Name = "Okoń"
+                            ImageUrl = "/images/fish/bolen.gif",
+                            Name = "Boleń"
                         },
                         new
                         {
                             Id = 3,
-                            Name = "Płoć"
+                            ImageUrl = "/images/fish/brzana.gif",
+                            Name = "Brzana"
                         },
                         new
                         {
                             Id = 4,
-                            Name = "Leszcz"
+                            ImageUrl = "/images/fish/certa.gif",
+                            Name = "Certa"
                         },
                         new
                         {
                             Id = 5,
-                            Name = "Sandacz"
+                            ImageUrl = "/images/fish/jaz.gif",
+                            Name = "Jaź"
                         },
                         new
                         {
                             Id = 6,
-                            Name = "Węgorz"
+                            ImageUrl = "/images/fish/jelec.gif",
+                            Name = "Jelec"
                         },
                         new
                         {
                             Id = 7,
+                            ImageUrl = "/images/fish/karas.gif",
                             Name = "Karaś"
                         },
                         new
                         {
                             Id = 8,
-                            Name = "Lin"
+                            ImageUrl = "/images/fish/karas-srebrzysty.gif",
+                            Name = "Karaś srebrzysty"
                         },
                         new
                         {
                             Id = 9,
+                            ImageUrl = "/images/fish/karp.gif",
                             Name = "Karp"
                         },
                         new
                         {
                             Id = 10,
-                            Name = "Pstrąg"
+                            ImageUrl = "/images/fish/kielb.gif",
+                            Name = "Kiełb"
                         },
                         new
                         {
                             Id = 11,
-                            Name = "Jaź"
+                            ImageUrl = "/images/fish/klen.gif",
+                            Name = "Kleń"
                         },
                         new
                         {
                             Id = 12,
-                            Name = "Ukleja"
+                            ImageUrl = "/images/fish/koza.gif",
+                            Name = "Koza"
                         },
                         new
                         {
                             Id = 13,
-                            Name = "Sum"
+                            ImageUrl = "/images/fish/krap.gif",
+                            Name = "Krap"
                         },
                         new
                         {
                             Id = 14,
-                            Name = "Wzdręga"
+                            ImageUrl = "/images/fish/leszcz.gif",
+                            Name = "Leszcz"
                         },
                         new
                         {
                             Id = 15,
-                            Name = "Boleń"
+                            ImageUrl = "/images/fish/lin.gif",
+                            Name = "Lin"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            ImageUrl = "/images/fish/lipien.gif",
+                            Name = "Lipień"
+                        },
+                        new
+                        {
+                            Id = 17,
+                            ImageUrl = "/images/fish/mietus.gif",
+                            Name = "Miętus"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            ImageUrl = "/images/fish/okon.gif",
+                            Name = "Okoń"
+                        },
+                        new
+                        {
+                            Id = 19,
+                            ImageUrl = "/images/fish/piskorz.gif",
+                            Name = "Piskorz"
+                        },
+                        new
+                        {
+                            Id = 20,
+                            ImageUrl = "/images/fish/ploc.gif",
+                            Name = "Płoć"
+                        },
+                        new
+                        {
+                            Id = 21,
+                            ImageUrl = "/images/fish/pstrag-potokowy.gif",
+                            Name = "Pstrąg potokowy"
+                        },
+                        new
+                        {
+                            Id = 22,
+                            ImageUrl = "/images/fish/pstrag-zrodlany.gif",
+                            Name = "Pstrąg źródlany"
+                        },
+                        new
+                        {
+                            Id = 23,
+                            ImageUrl = "/images/fish/rozanka.gif",
+                            Name = "Różanka"
+                        },
+                        new
+                        {
+                            Id = 24,
+                            ImageUrl = "/images/fish/sandacz.gif",
+                            Name = "Sandacz"
+                        },
+                        new
+                        {
+                            Id = 25,
+                            ImageUrl = "/images/fish/sliz.gif",
+                            Name = "Śliż"
+                        },
+                        new
+                        {
+                            Id = 26,
+                            ImageUrl = "/images/fish/strzebla-potokowa.gif",
+                            Name = "Strzebla potokowa"
+                        },
+                        new
+                        {
+                            Id = 27,
+                            ImageUrl = "/images/fish/sum.gif",
+                            Name = "Sum"
+                        },
+                        new
+                        {
+                            Id = 28,
+                            ImageUrl = "/images/fish/swinka.gif",
+                            Name = "Świńka"
+                        },
+                        new
+                        {
+                            Id = 29,
+                            ImageUrl = "/images/fish/szczupak.gif",
+                            Name = "Szczupak"
+                        },
+                        new
+                        {
+                            Id = 30,
+                            ImageUrl = "/images/fish/tolpyga-biala.gif",
+                            Name = "Tołpyga biała"
+                        },
+                        new
+                        {
+                            Id = 31,
+                            ImageUrl = "/images/fish/ukleja.gif",
+                            Name = "Ukleja"
+                        },
+                        new
+                        {
+                            Id = 32,
+                            ImageUrl = "/images/fish/wegorz-europejski.gif",
+                            Name = "Węgorz europejski"
+                        },
+                        new
+                        {
+                            Id = 33,
+                            ImageUrl = "/images/fish/wzdrega.gif",
+                            Name = "Wzdręga"
                         });
                 });
 

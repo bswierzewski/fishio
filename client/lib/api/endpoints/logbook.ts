@@ -40,34 +40,14 @@ export const createNewLogbookEntry = (
   options?: SecondParameter<typeof customInstance>,
   signal?: AbortSignal
 ) => {
-  const formData = new FormData();
-  if (createLogbookEntryCommand.imageUrl !== undefined && createLogbookEntryCommand.imageUrl !== null) {
-    formData.append(`imageUrl`, createLogbookEntryCommand.imageUrl);
-  }
-  if (createLogbookEntryCommand.imagePublicId !== undefined && createLogbookEntryCommand.imagePublicId !== null) {
-    formData.append(`imagePublicId`, createLogbookEntryCommand.imagePublicId);
-  }
-  if (createLogbookEntryCommand.catchTime !== undefined && createLogbookEntryCommand.catchTime !== null) {
-    formData.append(`catchTime`, createLogbookEntryCommand.catchTime);
-  }
-  if (createLogbookEntryCommand.lengthInCm !== undefined && createLogbookEntryCommand.lengthInCm !== null) {
-    formData.append(`lengthInCm`, createLogbookEntryCommand.lengthInCm.toString());
-  }
-  if (createLogbookEntryCommand.weightInKg !== undefined && createLogbookEntryCommand.weightInKg !== null) {
-    formData.append(`weightInKg`, createLogbookEntryCommand.weightInKg.toString());
-  }
-  if (createLogbookEntryCommand.notes !== undefined && createLogbookEntryCommand.notes !== null) {
-    formData.append(`notes`, createLogbookEntryCommand.notes);
-  }
-  if (createLogbookEntryCommand.fishSpeciesId !== undefined && createLogbookEntryCommand.fishSpeciesId !== null) {
-    formData.append(`fishSpeciesId`, createLogbookEntryCommand.fishSpeciesId.toString());
-  }
-  if (createLogbookEntryCommand.fisheryId !== undefined && createLogbookEntryCommand.fisheryId !== null) {
-    formData.append(`fisheryId`, createLogbookEntryCommand.fisheryId.toString());
-  }
-
   return customInstance<unknown>(
-    { url: `/api/logbook`, method: 'POST', headers: { 'Content-Type': 'multipart/form-data' }, data: formData, signal },
+    {
+      url: `/api/logbook`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: createLogbookEntryCommand,
+      signal
+    },
     options
   );
 };
@@ -479,40 +459,13 @@ export const updateExistingLogbookEntry = (
   updateLogbookEntryCommand: UpdateLogbookEntryCommand,
   options?: SecondParameter<typeof customInstance>
 ) => {
-  const formData = new FormData();
-  if (updateLogbookEntryCommand.id !== undefined) {
-    formData.append(`id`, updateLogbookEntryCommand.id.toString());
-  }
-  if (updateLogbookEntryCommand.imageUrl !== undefined && updateLogbookEntryCommand.imageUrl !== null) {
-    formData.append(`imageUrl`, updateLogbookEntryCommand.imageUrl);
-  }
-  if (updateLogbookEntryCommand.imagePublicId !== undefined && updateLogbookEntryCommand.imagePublicId !== null) {
-    formData.append(`imagePublicId`, updateLogbookEntryCommand.imagePublicId);
-  }
-  if (updateLogbookEntryCommand.removeCurrentImage !== undefined) {
-    formData.append(`removeCurrentImage`, updateLogbookEntryCommand.removeCurrentImage.toString());
-  }
-  if (updateLogbookEntryCommand.catchTime !== undefined && updateLogbookEntryCommand.catchTime !== null) {
-    formData.append(`catchTime`, updateLogbookEntryCommand.catchTime);
-  }
-  if (updateLogbookEntryCommand.lengthInCm !== undefined && updateLogbookEntryCommand.lengthInCm !== null) {
-    formData.append(`lengthInCm`, updateLogbookEntryCommand.lengthInCm.toString());
-  }
-  if (updateLogbookEntryCommand.weightInKg !== undefined && updateLogbookEntryCommand.weightInKg !== null) {
-    formData.append(`weightInKg`, updateLogbookEntryCommand.weightInKg.toString());
-  }
-  if (updateLogbookEntryCommand.notes !== undefined && updateLogbookEntryCommand.notes !== null) {
-    formData.append(`notes`, updateLogbookEntryCommand.notes);
-  }
-  if (updateLogbookEntryCommand.fishSpeciesId !== undefined && updateLogbookEntryCommand.fishSpeciesId !== null) {
-    formData.append(`fishSpeciesId`, updateLogbookEntryCommand.fishSpeciesId.toString());
-  }
-  if (updateLogbookEntryCommand.fisheryId !== undefined && updateLogbookEntryCommand.fisheryId !== null) {
-    formData.append(`fisheryId`, updateLogbookEntryCommand.fisheryId.toString());
-  }
-
   return customInstance<void>(
-    { url: `/api/logbook/${id}`, method: 'PUT', headers: { 'Content-Type': 'multipart/form-data' }, data: formData },
+    {
+      url: `/api/logbook/${id}`,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: updateLogbookEntryCommand
+    },
     options
   );
 };

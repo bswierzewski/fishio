@@ -42,6 +42,7 @@ export interface LogbookEntry {
 export interface FishSpecies {
   id: number; // Lub number, jeśli używasz SERIAL
   name: string;
+  imageUrl?: string | null;
 }
 
 export interface Fishery {

@@ -1,14 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 #pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
 
-namespace Infrastructure.Persistence.Migrations
+namespace Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -44,7 +45,8 @@ namespace Infrastructure.Persistence.Migrations
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
+                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    ImageUrl = table.Column<string>(type: "character varying(2048)", maxLength: 2048, nullable: true)
                 },
                 constraints: table =>
                 {
@@ -79,6 +81,7 @@ namespace Infrastructure.Persistence.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     ImageUrl = table.Column<string>(type: "character varying(2048)", maxLength: 2048, nullable: true),
+                    ImagePublicId = table.Column<string>(type: "text", nullable: true),
                     Location = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     UserId = table.Column<int>(type: "integer", nullable: true),
                     Created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
@@ -110,6 +113,7 @@ namespace Infrastructure.Persistence.Migrations
                     Type = table.Column<string>(type: "text", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false),
                     ImageUrl = table.Column<string>(type: "character varying(2048)", maxLength: 2048, nullable: true),
+                    ImagePublicId = table.Column<string>(type: "text", nullable: true),
                     ResultsToken = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
                     OrganizerId = table.Column<int>(type: "integer", nullable: false),
                     FisheryId = table.Column<int>(type: "integer", nullable: false),
@@ -167,6 +171,7 @@ namespace Infrastructure.Persistence.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     UserId = table.Column<int>(type: "integer", nullable: false),
                     ImageUrl = table.Column<string>(type: "character varying(2048)", maxLength: 2048, nullable: false),
+                    ImagePublicId = table.Column<string>(type: "text", nullable: true),
                     CatchTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     LengthCm = table.Column<decimal>(type: "numeric(7,2)", precision: 7, scale: 2, nullable: true),
                     WeightKg = table.Column<decimal>(type: "numeric(7,3)", precision: 7, scale: 3, nullable: true),
@@ -291,6 +296,7 @@ namespace Infrastructure.Persistence.Migrations
                     LengthCm = table.Column<decimal>(type: "numeric(7,2)", precision: 7, scale: 2, nullable: true),
                     WeightKg = table.Column<decimal>(type: "numeric(7,3)", precision: 7, scale: 3, nullable: true),
                     ImageUrl = table.Column<string>(type: "character varying(2048)", maxLength: 2048, nullable: false),
+                    ImagePublicId = table.Column<string>(type: "text", nullable: true),
                     CatchTime = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     Created = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false),
                     CreatedBy = table.Column<int>(type: "integer", nullable: true),
@@ -345,24 +351,42 @@ namespace Infrastructure.Persistence.Migrations
 
             migrationBuilder.InsertData(
                 table: "FishSpecies",
-                columns: new[] { "Id", "Name" },
+                columns: new[] { "Id", "ImageUrl", "Name" },
                 values: new object[,]
                 {
-                    { 1, "Szczupak" },
-                    { 2, "Okoń" },
-                    { 3, "Płoć" },
-                    { 4, "Leszcz" },
-                    { 5, "Sandacz" },
-                    { 6, "Węgorz" },
-                    { 7, "Karaś" },
-                    { 8, "Lin" },
-                    { 9, "Karp" },
-                    { 10, "Pstrąg" },
-                    { 11, "Jaź" },
-                    { 12, "Ukleja" },
-                    { 13, "Sum" },
-                    { 14, "Wzdręga" },
-                    { 15, "Boleń" }
+                    { 1, "/images/fish/amur-bialy.gif", "Amur biały" },
+                    { 2, "/images/fish/bolen.gif", "Boleń" },
+                    { 3, "/images/fish/brzana.gif", "Brzana" },
+                    { 4, "/images/fish/certa.gif", "Certa" },
+                    { 5, "/images/fish/jaz.gif", "Jaź" },
+                    { 6, "/images/fish/jelec.gif", "Jelec" },
+                    { 7, "/images/fish/karas.gif", "Karaś" },
+                    { 8, "/images/fish/karas-srebrzysty.gif", "Karaś srebrzysty" },
+                    { 9, "/images/fish/karp.gif", "Karp" },
+                    { 10, "/images/fish/kielb.gif", "Kiełb" },
+                    { 11, "/images/fish/klen.gif", "Kleń" },
+                    { 12, "/images/fish/koza.gif", "Koza" },
+                    { 13, "/images/fish/krap.gif", "Krap" },
+                    { 14, "/images/fish/leszcz.gif", "Leszcz" },
+                    { 15, "/images/fish/lin.gif", "Lin" },
+                    { 16, "/images/fish/lipien.gif", "Lipień" },
+                    { 17, "/images/fish/mietus.gif", "Miętus" },
+                    { 18, "/images/fish/okon.gif", "Okoń" },
+                    { 19, "/images/fish/piskorz.gif", "Piskorz" },
+                    { 20, "/images/fish/ploc.gif", "Płoć" },
+                    { 21, "/images/fish/pstrag-potokowy.gif", "Pstrąg potokowy" },
+                    { 22, "/images/fish/pstrag-zrodlany.gif", "Pstrąg źródlany" },
+                    { 23, "/images/fish/rozanka.gif", "Różanka" },
+                    { 24, "/images/fish/sandacz.gif", "Sandacz" },
+                    { 25, "/images/fish/sliz.gif", "Śliż" },
+                    { 26, "/images/fish/strzebla-potokowa.gif", "Strzebla potokowa" },
+                    { 27, "/images/fish/sum.gif", "Sum" },
+                    { 28, "/images/fish/swinka.gif", "Świńka" },
+                    { 29, "/images/fish/szczupak.gif", "Szczupak" },
+                    { 30, "/images/fish/tolpyga-biala.gif", "Tołpyga biała" },
+                    { 31, "/images/fish/ukleja.gif", "Ukleja" },
+                    { 32, "/images/fish/wegorz-europejski.gif", "Węgorz europejski" },
+                    { 33, "/images/fish/wzdrega.gif", "Wzdręga" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -413,9 +437,9 @@ namespace Infrastructure.Persistence.Migrations
                 filter: "\"GuestIdentifier\" IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CompetitionParticipants_CompetitionId_UserId",
+                name: "IX_CompetitionParticipants_CompetitionId_UserId_Role",
                 table: "CompetitionParticipants",
-                columns: new[] { "CompetitionId", "UserId" },
+                columns: new[] { "CompetitionId", "UserId", "Role" },
                 unique: true,
                 filter: "\"UserId\" IS NOT NULL");
 

@@ -9,4 +9,6 @@ export interface FishSpeciesDto {
   id?: number;
   /** @nullable */
   name?: string | null;
+  /** @nullable */
+  imageUrl?: string | null;
 }

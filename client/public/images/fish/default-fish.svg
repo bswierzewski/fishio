@@ -1,0 +1,23 @@
+<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="400" height="300" fill="#f8fafc"/>
+  
+  <!-- Fish silhouette -->
+  <path d="M100 150 C100 120, 140 100, 200 100 C260 100, 300 120, 300 150 C300 180, 260 200, 200 200 C140 200, 100 180, 100 150 Z" fill="#64748b"/>
+  
+  <!-- Fish tail -->
+  <path d="M300 150 L350 130 L360 150 L350 170 Z" fill="#64748b"/>
+  
+  <!-- Fish eye -->
+  <circle cx="170" cy="140" r="8" fill="#ffffff"/>
+  <circle cx="172" cy="138" r="4" fill="#1e293b"/>
+  
+  <!-- Fish fins -->
+  <path d="M150 180 C140 190, 130 195, 125 200 C130 205, 140 210, 150 220" stroke="#64748b" stroke-width="3" fill="none"/>
+  <path d="M180 110 C175 100, 170 95, 165 90 C170 85, 175 80, 180 70" stroke="#64748b" stroke-width="3" fill="none"/>
+  
+  <!-- Text -->
+  <text x="200" y="250" text-anchor="middle" fill="#64748b" font-family="Arial, sans-serif" font-size="16" font-weight="500">
+    Brak zdjęcia
+  </text>
+</svg> 
