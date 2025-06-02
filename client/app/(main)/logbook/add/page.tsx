@@ -2,6 +2,7 @@
 
 import { formatDateTimeLocal } from '@/lib/utils';
 import { useForm } from '@tanstack/react-form';
+import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Calendar, FileText, Fish, MapPin, Ruler, Weight } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -31,6 +32,7 @@ const cardMutedTextColorClass = 'text-muted-foreground';
 export default function AddLogbookEntryPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const preselectedFisheryId = searchParams.get('fisheryId');
 
   const [selectedImageData, setSelectedImageData] = useState<DeferredImageData | null>(null);
@@ -46,6 +48,9 @@ export default function AddLogbookEntryPage() {
     mutation: {
       onSuccess: () => {
         toast.success('Wpis został dodany do dziennika!');
+        queryClient.invalidateQueries({
+          queryKey: ['/api/logbook']
+        });
         router.push('/logbook');
       },
       onError: (error) => {
