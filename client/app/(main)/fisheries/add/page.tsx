@@ -12,12 +12,12 @@ import { useCreateFishery } from '@/lib/api/endpoints/fisheries';
 import { useGetAllFishSpecies } from '@/lib/api/endpoints/lookup-data';
 import type { CreateFisheryCommand, FishSpeciesDto } from '@/lib/api/models';
 
-import type { ImageUploadResult } from '@/hooks/use-image-upload';
+import { type DeferredImageData, type ImageUploadResult } from '@/hooks/use-image-upload';
 
 import FieldInfo from '@/components/FieldInfo';
 import { Button } from '@/components/ui/button';
 import { FishImage } from '@/components/ui/fish-image';
-import { ImageUpload } from '@/components/ui/image-upload';
+import { DeferredImageUpload } from '@/components/ui/image-upload';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -31,6 +31,12 @@ export default function AddFisheryPage() {
   const router = useRouter();
   const { data: fishSpecies, isLoading: isLoadingSpecies } = useGetAllFishSpecies();
   const queryClient = useQueryClient();
+
+  const [selectedImageData, setSelectedImageData] = useState<DeferredImageData | null>(null);
+  const [uploadImageFunction, setUploadImageFunction] = useState<(() => Promise<ImageUploadResult | null>) | null>(
+    null
+  );
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const { mutate, isPending } = useCreateFishery({
     mutation: {
@@ -51,12 +57,35 @@ export default function AddFisheryPage() {
       name: '',
       location: '',
       description: '',
-      fishSpeciesIds: [] as number[],
-      imageUrl: null as string | null,
-      imagePublicId: null as string | null
-    } as CreateFisheryCommand,
+      fishSpeciesIds: [] as number[]
+    },
     onSubmit: async ({ value }) => {
-      mutate({ data: value });
+      // First upload the image if one is selected
+      let imageUrl: string | null = null;
+      let imagePublicId: string | null = null;
+
+      if (selectedImageData && uploadImageFunction) {
+        setIsUploadingImage(true);
+        try {
+          const uploadResult = await uploadImageFunction();
+          if (!uploadResult) {
+            toast.error('Nie udało się przesłać zdjęcia');
+            return;
+          }
+          imageUrl = uploadResult.imageUrl;
+          imagePublicId = uploadResult.imagePublicId;
+        } finally {
+          setIsUploadingImage(false);
+        }
+      }
+
+      const command: CreateFisheryCommand = {
+        ...value,
+        imageUrl,
+        imagePublicId
+      };
+
+      mutate({ data: command });
     },
     validators: {
       onSubmit: ({ value }) => {
@@ -72,16 +101,6 @@ export default function AddFisheryPage() {
     }
   });
 
-  const handleImageChange = useCallback((result: ImageUploadResult | null) => {
-    if (result) {
-      form.setFieldValue('imageUrl', result.imageUrl);
-      form.setFieldValue('imagePublicId', result.imagePublicId);
-    } else {
-      form.setFieldValue('imageUrl', null);
-      form.setFieldValue('imagePublicId', null);
-    }
-  }, []);
-
   const handleSpeciesChange = useCallback((speciesId: number) => {
     const currentSpecies = form.getFieldValue('fishSpeciesIds') || [];
     const newSpecies = currentSpecies.includes(speciesId)
@@ -89,6 +108,8 @@ export default function AddFisheryPage() {
       : [...currentSpecies, speciesId];
     form.setFieldValue('fishSpeciesIds', newSpecies);
   }, []);
+
+  const isSubmitting = isPending || isUploadingImage;
 
   return (
     <div className="space-y-6">
@@ -272,21 +293,28 @@ export default function AddFisheryPage() {
         </div>
 
         {/* --- Sekcja Zdjęcia Łowiska (Opcjonalne) --- */}
-        <ImageUpload
-          id="fishery-photo-input"
-          label="Zdjęcie Łowiska (Opcjonalne)"
-          folderName="fisheries"
-          onImageChange={handleImageChange}
-        />
+        <div>
+          <DeferredImageUpload
+            id="fishery-photo-input"
+            label="Zdjęcie Łowiska (Opcjonalne)"
+            folderName="fisheries"
+            onImageSelect={(imageData) => {
+              setSelectedImageData(imageData);
+            }}
+            onUploadReady={(uploadFn) => {
+              setUploadImageFunction(() => uploadFn);
+            }}
+          />
+        </div>
 
         {/* --- Przycisk Submit --- */}
         <div className="pt-2">
           <Button
             type="submit"
             className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-            disabled={isPending}
+            disabled={isSubmitting}
           >
-            {isPending ? 'Dodawanie...' : 'Dodaj Łowisko'}
+            {isUploadingImage ? 'Przesyłanie zdjęcia...' : isPending ? 'Dodawanie...' : 'Dodaj Łowisko'}
           </Button>
         </div>
       </form>

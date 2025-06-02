@@ -18,6 +18,19 @@ const nextConfig: NextConfig = {
         hostname: 'res.cloudinary.com', // Hostname, z którego chcesz ładować obrazy
         port: '', // Zostaw puste dla standardowych portów (80, 443)
         pathname: '/djmnsaieb/**' // Dostosuj do swojej nazwy chmury
+      },
+      // Clerk image domains for user profile pictures
+      {
+        protocol: 'https',
+        hostname: 'img.clerk.com',
+        port: '',
+        pathname: '/**'
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.clerk.dev',
+        port: '',
+        pathname: '/**'
       }
     ]
   }

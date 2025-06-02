@@ -57,7 +57,7 @@ export default function Navbar() {
           </div>
         </SidebarDrawer>
 
-        <span className="font-bold uppercase text-background tracking-widest">{pageTitle}</span>
+        <span className="font-bold uppercase text-background">{pageTitle}</span>
 
         <ClerkLoading>
           <div className="h-7 w-7 animate-pulse rounded-full bg-secondary" />

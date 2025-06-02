@@ -1,8 +1,8 @@
 'use client';
 
-import { ClerkLoaded, ClerkLoading } from '@clerk/clerk-react';
-import { UserButton } from '@clerk/nextjs';
+import { useClerk } from '@clerk/nextjs';
 import {
+  ArrowRightOnRectangleIcon,
   BookOpenIcon,
   CalendarIcon,
   HomeIcon,
@@ -12,6 +12,7 @@ import {
   TrophyIcon
 } from '@heroicons/react/24/solid';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
@@ -40,7 +41,8 @@ interface NavigationSection {
 
 export default function SidebarDrawer({ children }: SidebarDrawerProps) {
   const pathname = usePathname();
-  const { name, email } = useCurrentUser();
+  const { name, email, imageUrl } = useCurrentUser();
+  const { signOut } = useClerk();
   const [open, setOpen] = useState(false);
 
   const navigationSections: NavigationSection[] = [
@@ -164,25 +166,24 @@ export default function SidebarDrawer({ children }: SidebarDrawerProps) {
           <SheetTitle>Menu nawigacyjne</SheetTitle>
         </VisuallyHidden>
         <div className="flex h-full flex-col bg-background">
-          {/* Header with user info */}
-          <div className="bg-slate-800 text-slate-100 p-6">
-            <div className="flex items-center space-x-4">
-              <ClerkLoading>
-                <div className="h-10 w-10 animate-pulse rounded-full bg-slate-600" />
-              </ClerkLoading>
-              <ClerkLoaded>
-                <UserButton />
-              </ClerkLoaded>
+          {/* Logo and app header */}
+          <div className="bg-gradient-to-b from-slate-800 to-slate-700 text-white p-6">
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                  <Image src="/logo.svg" alt="Fishio Logo" width={24} height={24} className="text-white" />
+                </div>
+              </div>
               <div className="flex-1 min-w-0">
-                <h2 className="text-left text-lg font-semibold truncate text-slate-100">{name || 'Użytkownik'}</h2>
-                {email && <p className="text-sm text-slate-300 truncate">{email}</p>}
+                <h1 className="text-xl font-bold text-white">Fishio</h1>
+                <p className="text-sm text-blue-100 truncate">Twoja pasja, nasze narzędzia</p>
               </div>
             </div>
           </div>
 
-          {/* Navigation content */}
-          <div className="flex-1 overflow-y-auto pt-1">
-            {navigationSections.map((section, sectionIndex) => (
+          {/* Navigation content - scrollable */}
+          <div className="flex-1 overflow-y-auto">
+            {navigationSections.map((section: NavigationSection, sectionIndex: number) => (
               <div key={section.title}>
                 {/* Section header with black background spanning full width */}
                 <div className="bg-slate-800 text-slate-100 relative flex h-10 flex-shrink-0 items-center space-x-2 px-6">
@@ -193,7 +194,7 @@ export default function SidebarDrawer({ children }: SidebarDrawerProps) {
 
                 {/* Section items */}
                 <div className="px-4 py-3 space-y-1">
-                  {section.items.map((item) => {
+                  {section.items.map((item: NavigationItem) => {
                     const IconComponent = item.icon;
                     const active = isActive(item.href);
 
@@ -222,6 +223,43 @@ export default function SidebarDrawer({ children }: SidebarDrawerProps) {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Fixed bottom section with user info */}
+          <div className="border-t bg-slate-800 text-slate-100 p-6">
+            <div className="flex items-center space-x-4 mb-4">
+              {/* User Avatar */}
+              <div className="h-10 w-10 rounded-full bg-slate-600 overflow-hidden flex items-center justify-center">
+                {imageUrl ? (
+                  <Image
+                    src={imageUrl}
+                    alt={name || 'Użytkownik'}
+                    width={40}
+                    height={40}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-slate-300 text-lg font-semibold">
+                    {name ? name.charAt(0).toUpperCase() : 'U'}
+                  </span>
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-left text-lg font-semibold truncate text-slate-100">{name || 'Użytkownik'}</h2>
+                {email && <p className="text-sm text-slate-300 truncate">{email}</p>}
+              </div>
+            </div>
+
+            {/* Logout button */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => signOut()}
+              className="w-full bg-transparent border-slate-600 text-slate-100 hover:bg-slate-700 hover:text-white"
+            >
+              <ArrowRightOnRectangleIcon className="h-4 w-4 mr-2" />
+              Wyloguj się
+            </Button>
           </div>
         </div>
       </SheetContent>
