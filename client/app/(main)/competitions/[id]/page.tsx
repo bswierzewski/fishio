@@ -10,6 +10,7 @@ import {
   CalendarDays,
   Clock,
   FileText,
+  Fish,
   Hourglass,
   Info,
   ListChecks,
@@ -419,11 +420,20 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
                 <div className="space-y-3">
                   {/* Primary Scoring Category */}
                   {competition.primaryScoringInfo && (
-                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                    <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
                       <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-medium text-blue-900 text-sm">{competition.primaryScoringInfo}</h4>
+                        <h4 className="font-medium text-amber-900 text-sm">
+                          {competition.primaryScoringInfo}
+                          {competition.categories &&
+                            competition.categories.find((c) => c.isPrimaryScoring)?.fishSpeciesName && (
+                              <span className="text-amber-700/80 font-normal">
+                                {' '}
+                                ({competition.categories.find((c) => c.isPrimaryScoring)?.fishSpeciesName})
+                              </span>
+                            )}
+                        </h4>
                       </div>
-                      <p className="text-xs text-blue-700/80 italic">Decyduje o głównym rankingu zawodów</p>
+                      <p className="text-xs text-amber-700/80 italic">Decyduje o głównym rankingu zawodów</p>
                     </div>
                   )}
 
@@ -434,7 +444,12 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
                         .filter((category) => !category.isPrimaryScoring)
                         .map((category, index) => (
                           <div key={index} className="p-3 bg-muted/50 rounded-md">
-                            <h4 className="font-medium text-foreground text-sm">{category.name}</h4>
+                            <h4 className="font-medium text-foreground text-sm">
+                              {category.name}
+                              {category.fishSpeciesName && (
+                                <span className="text-muted-foreground font-normal"> ({category.fishSpeciesName})</span>
+                              )}
+                            </h4>
                             {category.description && (
                               <p className="text-xs text-muted-foreground italic mt-1 leading-relaxed">
                                 {category.description}
