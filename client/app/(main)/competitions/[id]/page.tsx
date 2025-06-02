@@ -9,6 +9,7 @@ import {
   BarChart3,
   CalendarDays,
   Clock,
+  FileText,
   Hourglass,
   Info,
   ListChecks,
@@ -44,7 +45,6 @@ import { CompetitionStatus, CompetitionType, ParticipantRole } from '@/lib/api/m
 
 import { useCurrentUser } from '@/hooks/use-current-user';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -403,55 +403,74 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
             </div>
             <div className="p-4 space-y-4">
               <div>
-                <h3 className="font-semibold mb-1 text-foreground">Organizator:</h3>
+                <h3 className="font-semibold mb-1 text-foreground flex items-center">
+                  <UserCheck className="mr-2 h-4 w-4 text-green-600" />
+                  Organizator:
+                </h3>
                 <p className="text-sm text-muted-foreground">{competition.organizerName || 'Nieznany organizator'}</p>
               </div>
 
-              {competition.primaryScoringInfo && (
-                <div>
-                  <h3 className="font-semibold mb-1 text-foreground flex items-center">
-                    <ListChecks className="mr-2 h-4 w-4 text-primary" />
-                    Główna Kategoria Punktacji:
-                  </h3>
-                  <p className="text-sm text-muted-foreground">{competition.primaryScoringInfo}</p>
-                </div>
-              )}
-
-              {/* Additional Categories Section */}
+              {/* Categories Section */}
               <div>
-                <h3 className="font-semibold mb-1 text-foreground flex items-center">
-                  <Award className="mr-2 h-4 w-4 text-amber-500" />
-                  Dodatkowe Kategorie:
+                <h3 className="font-semibold mb-3 text-foreground flex items-center">
+                  <Trophy className="mr-2 h-4 w-4 text-primary" />
+                  Kategorie Zawodów:
                 </h3>
-                {competition.categories && competition.categories.filter((c) => !c.isPrimaryScoring).length > 0 ? (
-                  <div className="space-y-2">
-                    {competition.categories
-                      .filter((category) => !category.isPrimaryScoring)
-                      .map((category, index) => (
-                        <div key={index} className="flex items-start gap-2 p-2 bg-muted/50 rounded-md">
-                          <Badge variant="secondary" className="flex-shrink-0">
-                            {category.name}
-                          </Badge>
-                          {category.description && (
-                            <p className="text-xs text-muted-foreground leading-relaxed">{category.description}</p>
-                          )}
-                        </div>
-                      ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">Brak dodatkowych kategorii w tych zawodach.</p>
-                )}
+                <div className="space-y-3">
+                  {/* Primary Scoring Category */}
+                  {competition.primaryScoringInfo && (
+                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="font-medium text-blue-900 text-sm">{competition.primaryScoringInfo}</h4>
+                      </div>
+                      <p className="text-xs text-blue-700/80 italic">Decyduje o głównym rankingu zawodów</p>
+                    </div>
+                  )}
+
+                  {/* Additional Categories */}
+                  {competition.categories && competition.categories.filter((c) => !c.isPrimaryScoring).length > 0 && (
+                    <>
+                      {competition.categories
+                        .filter((category) => !category.isPrimaryScoring)
+                        .map((category, index) => (
+                          <div key={index} className="p-3 bg-muted/50 rounded-md">
+                            <h4 className="font-medium text-foreground text-sm">{category.name}</h4>
+                            {category.description && (
+                              <p className="text-xs text-muted-foreground italic mt-1 leading-relaxed">
+                                {category.description}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                    </>
+                  )}
+
+                  {/* No additional categories message */}
+                  {(!competition.categories ||
+                    competition.categories.filter((c) => !c.isPrimaryScoring).length === 0) &&
+                    competition.primaryScoringInfo && (
+                      <p className="text-xs text-muted-foreground italic">
+                        Brak dodatkowych kategorii w tych zawodach.
+                      </p>
+                    )}
+                </div>
               </div>
 
               <div>
-                <h3 className="font-semibold mb-1 text-foreground">Regulamin:</h3>
+                <h3 className="font-semibold mb-1 text-foreground flex items-center">
+                  <FileText className="mr-2 h-4 w-4 text-blue-600" />
+                  Regulamin:
+                </h3>
                 <p className="text-sm whitespace-pre-wrap text-muted-foreground">
                   {competition.rules || 'Brak szczegółowego regulaminu.'}
                 </p>
               </div>
 
               <div>
-                <h3 className="font-semibold mb-1 text-foreground">Czas trwania:</h3>
+                <h3 className="font-semibold mb-1 text-foreground flex items-center">
+                  <Clock className="mr-2 h-4 w-4 text-purple-600" />
+                  Czas trwania:
+                </h3>
                 <p className="text-sm text-muted-foreground">
                   Od: {formatDateTime(competition.startTime!)}
                   <br />
