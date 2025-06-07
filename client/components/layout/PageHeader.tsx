@@ -12,6 +12,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 
@@ -89,14 +90,23 @@ export function PageHeader({ title, description, actions, showBackButton = true,
 
   const pageTitle = getCurrentPageTitle();
 
+  // Separate destructive actions from regular ones
+  const regularActions = actions?.filter((action) => action.variant !== 'destructive') || [];
+  const destructiveActions = actions?.filter((action) => action.variant === 'destructive') || [];
+
   return (
     <div className="flex items-center justify-between gap-4 mb-6">
       {/* Left Section - Back Button */}
       <div className="flex-shrink-0 w-20">
         {showBackButton && (
-          <Button variant="ghost" size="sm" onClick={handleBack} className="p-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleBack}
+            className="p-2 hover:bg-accent/50 transition-colors shadow"
+          >
             <ArrowLeft className="h-4 w-4" />
-            <span className="hidden md:inline">Powrót</span>
+            <span className="hidden md:inline ml-1">Powrót</span>
           </Button>
         )}
       </div>
@@ -112,23 +122,47 @@ export function PageHeader({ title, description, actions, showBackButton = true,
         {actions && actions.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="p-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 px-3 hover:bg-accent/50 transition-colors duration-200 border border-transparent hover:border-border/50 rounded-md shadow"
+              >
                 <MoreVertical className="h-4 w-4" />
-                <span className="hidden sm:ml-2 sm:inline">Akcje</span>
+                <span className="hidden sm:ml-2 sm:inline text-sm font-medium">Akcje</span>
                 <span className="sr-only">Więcej opcji</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              {actions.map((action, index) => (
+            <DropdownMenuContent
+              align="end"
+              className="w-52 rounded-lg border-border/50 shadow-xl backdrop-blur-sm bg-popover/95 p-1.5"
+              sideOffset={8}
+            >
+              {regularActions.map((action, index) => (
                 <DropdownMenuItem
                   key={index}
                   onClick={() => handleActionClick(action)}
                   disabled={action.disabled}
-                  variant={action.variant}
-                  className="cursor-pointer"
+                  className="cursor-pointer px-3 py-2.5 rounded-md transition-colors duration-150 hover:bg-accent/80 focus:bg-accent/80 data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed gap-3"
                 >
-                  {action.icon && <span className="mr-2">{action.icon}</span>}
-                  {action.label}
+                  {action.icon && <span className="flex-shrink-0 text-muted-foreground">{action.icon}</span>}
+                  <span className="text-sm font-medium text-foreground truncate">{action.label}</span>
+                </DropdownMenuItem>
+              ))}
+
+              {/* Add separator if both regular and destructive actions exist */}
+              {regularActions.length > 0 && destructiveActions.length > 0 && (
+                <DropdownMenuSeparator className="my-1.5 bg-border/60" />
+              )}
+
+              {destructiveActions.map((action, index) => (
+                <DropdownMenuItem
+                  key={`destructive-${index}`}
+                  onClick={() => handleActionClick(action)}
+                  disabled={action.disabled}
+                  className="cursor-pointer px-3 py-2.5 rounded-md transition-colors duration-150 hover:bg-destructive/10 focus:bg-destructive/10 data-[disabled]:opacity-50 data-[disabled]:cursor-not-allowed gap-3 text-destructive"
+                >
+                  {action.icon && <span className="flex-shrink-0 text-destructive">{action.icon}</span>}
+                  <span className="text-sm font-medium text-destructive truncate">{action.label}</span>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
