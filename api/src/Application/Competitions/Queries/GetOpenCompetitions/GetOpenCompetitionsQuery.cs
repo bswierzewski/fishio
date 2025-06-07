@@ -48,6 +48,7 @@ public record CompetitionSummaryDto
 // DTO dla szczegółów zawodów
 public record CompetitionDetailsDto : CompetitionSummaryDto // Dziedziczy podstawowe info
 {
+    public int FisheryId { get; init; }
     public string? OrganizerName { get; init; }
     public int OrganizerId { get; init; }
     public string? Rules { get; init; }

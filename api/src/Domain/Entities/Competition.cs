@@ -65,12 +65,14 @@ public class Competition : BaseAuditableEntity
         string name,
         DateTimeRange schedule,
         CompetitionType type,
+        Fishery fishery,
         string? rules,
         string? imageUrl,
         string? imagePublicId = null)
     {
         Guard.Against.NullOrWhiteSpace(name, nameof(name));
         Guard.Against.Null(schedule, nameof(schedule));
+        Guard.Against.Null(fishery, nameof(fishery));
         // TODO: Dodać walidację, czy można modyfikować (np. status Draft lub Upcoming)
         if (Status != CompetitionStatus.Draft && Status != CompetitionStatus.Upcoming && Status != CompetitionStatus.AcceptingRegistrations)
         {
@@ -80,6 +82,8 @@ public class Competition : BaseAuditableEntity
         Name = name;
         Schedule = schedule;
         Type = type;
+        FisheryId = fishery.Id;
+        Fishery = fishery;
         Rules = rules;
         ImageUrl = imageUrl;
         ImagePublicId = imagePublicId;

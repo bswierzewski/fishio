@@ -24,6 +24,7 @@ export interface CompetitionDetailsDto {
   participantsCount?: number;
   /** @nullable */
   primaryScoringInfo?: string | null;
+  fisheryId?: number;
   /** @nullable */
   organizerName?: string | null;
   organizerId?: number;

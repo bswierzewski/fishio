@@ -68,6 +68,7 @@ public class UpdateCompetitionCommandHandler : IRequestHandler<UpdateCompetition
             name: request.Name,
             schedule: newSchedule,
             type: request.Type,
+            fishery: fishery,
             rules: request.Rules,
             imageUrl: newImageUrl
         );

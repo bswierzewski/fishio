@@ -41,6 +41,7 @@ public class GetCompetitionDetailsQueryHandler : IRequestHandler<GetCompetitionD
             EndTime = competition.Schedule.End,
             Status = competition.Status,
             Type = competition.Type,
+            FisheryId = competition.FisheryId,
             FisheryName = competition.Fishery?.Name,
             FisheryLocation = competition.Fishery?.Location,
             ImageUrl = competition.ImageUrl,
