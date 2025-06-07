@@ -16,6 +16,7 @@ import type { CompetitionType, UpdateCompetitionCommand } from '@/lib/api/models
 import { type DeferredImageData, type ImageUploadResult } from '@/hooks/use-image-upload';
 
 import FieldInfo from '@/components/FieldInfo';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { DeferredImageUpload } from '@/components/ui/image-upload';
 import { Input } from '@/components/ui/input';
@@ -212,15 +213,7 @@ export default function EditCompetitionPage({ params }: { params: Promise<{ id: 
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <Link href={`/competitions/${competitionId}`}>
-          <Button variant="outline" size="sm">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Wróć do Zawodów
-          </Button>
-        </Link>
-        <h1 className={`text-xl sm:text-2xl font-bold ${cardTextColorClass}`}>Edytuj Zawody</h1>
-        <div></div>
-      </div>
+      <PageHeader onBack={() => router.push(`/competitions/${competitionId}`)} />
 
       <form
         onSubmit={(e) => {
@@ -423,11 +416,7 @@ export default function EditCompetitionPage({ params }: { params: Promise<{ id: 
 function EditCompetitionSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-9 w-40" />
-        <Skeleton className="h-8 w-48" />
-        <div></div>
-      </div>
+      <PageHeader showBackButton={false} />
       <div className={`p-4 sm:p-6 rounded-lg border border-border shadow ${cardBodyBgClass} space-y-6`}>
         {Array.from({ length: 6 }).map((_, i) => (
           <Skeleton key={i} className="h-16 w-full" />

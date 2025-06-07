@@ -15,6 +15,7 @@ import { useGetAllFishSpecies } from '@/lib/api/endpoints/lookup-data';
 
 import { useCurrentUser } from '@/hooks/use-current-user';
 
+import { PageHeader, PageHeaderAction } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { FishImage } from '@/components/ui/fish-image';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -139,8 +140,38 @@ export default function FisheryDetailPage() {
     }
   };
 
+  const pageActions: PageHeaderAction[] = [];
+
+  if (canEdit) {
+    pageActions.push({
+      label: 'Edytuj',
+      href: `/fisheries/${fishery.id}/edit`,
+      icon: <Edit className="h-4 w-4" />
+    });
+  }
+
+  if (canDelete) {
+    pageActions.push({
+      label: deleteFisheryMutation.isPending ? 'Usuwanie...' : 'Usuń',
+      onClick: handleDeleteFishery,
+      icon: deleteFisheryMutation.isPending ? undefined : <Trash2 className="h-4 w-4" />,
+      variant: 'destructive' as const,
+      disabled: deleteFisheryMutation.isPending
+    });
+  }
+
+  if (canAddCatchHere) {
+    pageActions.push({
+      label: 'Dodaj Połów',
+      href: `/logbook/add?fisheryId=${fishery.id}`,
+      icon: <Plus className="h-4 w-4" />
+    });
+  }
+
   return (
     <div className="space-y-6">
+      <PageHeader actions={pageActions.length > 0 ? pageActions : undefined} />
+
       {/* Hero Section with Fishery Image and Basic Info */}
       <div className="relative overflow-hidden rounded-lg shadow-lg">
         {fishery.imageUrl ? (
@@ -185,46 +216,6 @@ export default function FisheryDetailPage() {
               </div>
             )}
           </div>
-        )}
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex flex-wrap gap-3">
-        {/* Owner-only buttons */}
-        <div className="flex gap-3 flex-1">
-          {canEdit && (
-            <Link href={`/fisheries/${fishery.id}/edit`}>
-              <Button variant="outline" className="flex items-center gap-2">
-                <Edit className="h-4 w-4" />
-                Edytuj Łowisko
-              </Button>
-            </Link>
-          )}
-          {canDelete && (
-            <Button
-              variant="destructive"
-              className="flex items-center gap-2"
-              onClick={handleDeleteFishery}
-              disabled={deleteFisheryMutation.isPending}
-            >
-              {deleteFisheryMutation.isPending ? (
-                <span className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
-              ) : (
-                <Trash2 className="h-4 w-4" />
-              )}
-              {deleteFisheryMutation.isPending ? 'Usuwanie...' : 'Usuń Łowisko'}
-            </Button>
-          )}
-        </div>
-
-        {/* Public buttons */}
-        {canAddCatchHere && (
-          <Link href={`/logbook/add?fisheryId=${fishery.id}`}>
-            <Button className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Dodaj Połów
-            </Button>
-          </Link>
         )}
       </div>
 

@@ -15,6 +15,7 @@ import type { FishSpeciesDto, UpdateFisheryCommand } from '@/lib/api/models';
 import type { ImageUploadResult } from '@/hooks/use-image-upload';
 
 import FieldInfo from '@/components/FieldInfo';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { FishImage } from '@/components/ui/fish-image';
 import { ImageUpload } from '@/components/ui/image-upload';
@@ -120,11 +121,7 @@ export default function EditFisheryPage() {
   if (isLoadingFishery) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-10 w-48" />
-          <Skeleton className="h-8 w-64" />
-          <div />
-        </div>
+        <PageHeader onBack={() => router.push('/fisheries')} />
         <div className={`p-4 sm:p-6 rounded-lg border border-border shadow ${cardBodyBgClass} space-y-6`}>
           <Skeleton className="h-20 w-full" />
           <Skeleton className="h-20 w-full" />
@@ -138,15 +135,7 @@ export default function EditFisheryPage() {
   if (!fishery) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <Link href="/fisheries">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="mr-2 h-4 w-4" /> Wróć do Listy Łowisk
-            </Button>
-          </Link>
-          <h1 className={`text-xl sm:text-2xl font-bold ${cardTextColorClass}`}>Łowisko nie znalezione</h1>
-          <div></div>
-        </div>
+        <PageHeader onBack={() => router.push('/fisheries')} />
         <div className={`p-4 sm:p-6 rounded-lg border border-border shadow ${cardBodyBgClass}`}>
           <p className={cardMutedTextColorClass}>Nie udało się załadować danych łowiska.</p>
         </div>
@@ -156,15 +145,7 @@ export default function EditFisheryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <Link href="/fisheries">
-          <Button variant="outline" size="sm">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Wróć do Listy Łowisk
-          </Button>
-        </Link>
-        <h1 className={`text-xl sm:text-2xl font-bold ${cardTextColorClass}`}>Edytuj Łowisko</h1>
-        <div></div>
-      </div>
+      <PageHeader onBack={() => router.push('/fisheries')} />
 
       <form
         onSubmit={(e) => {

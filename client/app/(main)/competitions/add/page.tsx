@@ -24,6 +24,7 @@ import type {
 import { type DeferredImageData, type ImageUploadResult } from '@/hooks/use-image-upload';
 
 import FieldInfo from '@/components/FieldInfo';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { FishImage } from '@/components/ui/fish-image';
@@ -175,15 +176,7 @@ export default function AddCompetitionPage() {
   if (isLoadingFisheries || isLoadingCategories || isLoadingSpecialCategories) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <Link href="/competitions">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="mr-2 h-4 w-4" /> Wróć do Listy Zawodów
-            </Button>
-          </Link>
-          <h1 className={`text-xl sm:text-2xl font-bold ${cardTextColorClass}`}>Stwórz Nowe Zawody</h1>
-          <div></div>
-        </div>
+        <PageHeader onBack={() => router.push('/competitions')} />
         <div className={`p-4 sm:p-6 rounded-lg border border-border shadow ${cardBodyBgClass} space-y-6`}>
           {Array.from({ length: 8 }).map((_, i) => (
             <Skeleton key={i} className="h-16 w-full" />
@@ -195,15 +188,7 @@ export default function AddCompetitionPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <Link href="/competitions">
-          <Button variant="outline" size="sm">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Wróć do Listy Zawodów
-          </Button>
-        </Link>
-        <h1 className={`text-xl sm:text-2xl font-bold ${cardTextColorClass}`}>Stwórz Nowe Zawody</h1>
-        <div></div>
-      </div>
+      <PageHeader onBack={() => router.push('/competitions')} />
 
       <form
         onSubmit={(e) => {

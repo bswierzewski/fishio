@@ -8,6 +8,7 @@ import { useState } from 'react';
 
 import { useGetLogbookStatistics } from '@/lib/api/endpoints/logbook';
 
+import { PageHeader } from '@/components/layout/PageHeader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -57,13 +58,22 @@ export default function LogbookStatisticsPage() {
   if (statistics.totalCatches === 0) {
     return (
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Statystyki Połowów</h1>
-            <p className="text-muted-foreground">Analiza twoich wyników wędkarskich</p>
+        <div className="flex items-center justify-between gap-4 mb-6">
+          {/* Left Section - Back Button */}
+          <div className="flex-shrink-0 w-20">
+            <Button variant="ghost" size="sm" onClick={() => window.history.back()} className="p-2">
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden md:inline">Powrót</span>
+            </Button>
           </div>
-          <div className="flex items-center space-x-2">
+
+          {/* Center Section - Page Title */}
+          <div className="flex-1 text-center">
+            <h1 className="text-xl font-bold text-foreground">Statystyki</h1>
+          </div>
+
+          {/* Right Section - Year Filter */}
+          <div className="flex-shrink-0 w-auto flex justify-end">
             <Select value={selectedYear} onValueChange={setSelectedYear}>
               <SelectTrigger className="w-[140px]">
                 <Calendar className="mr-2 h-4 w-4" />
@@ -76,12 +86,6 @@ export default function LogbookStatisticsPage() {
                 <SelectItem value="2022">2022</SelectItem>
               </SelectContent>
             </Select>
-            <Link href="/logbook">
-              <Button variant="outline">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Powrót
-              </Button>
-            </Link>
           </div>
         </div>
 
@@ -104,13 +108,22 @@ export default function LogbookStatisticsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Statystyki Połowów</h1>
-          <p className="text-muted-foreground">Analiza twoich wyników wędkarskich</p>
+      <div className="flex items-center justify-between gap-4 mb-6">
+        {/* Left Section - Back Button */}
+        <div className="flex-shrink-0 w-20">
+          <Button variant="ghost" size="sm" onClick={() => window.history.back()} className="p-2">
+            <ArrowLeft className="h-4 w-4" />
+            <span className="hidden md:inline">Powrót</span>
+          </Button>
         </div>
-        <div className="flex items-center space-x-2">
+
+        {/* Center Section - Page Title */}
+        <div className="flex-1 text-center">
+          <h1 className="text-xl font-bold text-foreground">Statystyki</h1>
+        </div>
+
+        {/* Right Section - Year Filter */}
+        <div className="flex-shrink-0 w-auto flex justify-end">
           <Select value={selectedYear} onValueChange={setSelectedYear}>
             <SelectTrigger className="w-[140px]">
               <Calendar className="mr-2 h-4 w-4" />
@@ -123,12 +136,6 @@ export default function LogbookStatisticsPage() {
               <SelectItem value="2022">2022</SelectItem>
             </SelectContent>
           </Select>
-          <Link href="/logbook">
-            <Button variant="outline">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Powrót
-            </Button>
-          </Link>
         </div>
       </div>
 

@@ -16,10 +16,11 @@ import { toast } from 'react-hot-toast';
 import { useDeleteExistingLogbookEntry, useGetLogbookEntryDetailsById } from '@/lib/api/endpoints/logbook';
 import { HttpValidationProblemDetails, LogbookEntryDto, ProblemDetails } from '@/lib/api/models';
 
-// For loading state
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 // Import useQueryClient
 
+import { PageHeader, PageHeaderAction } from '@/components/layout/PageHeader';
+// For loading state
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -62,17 +63,11 @@ export default function LogbookEntryDetailPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-9 w-36" /> {/* Back button placeholder */}
-          <div className="flex gap-2">
-            <Skeleton className="h-9 w-9" /> {/* Edit button placeholder */}
-            <Skeleton className="h-9 w-9" /> {/* Delete button placeholder */}
-          </div>
-        </div>
+        <PageHeader />
         <div className={`overflow-hidden rounded-lg border border-border shadow ${cardBodyBgClass}`}>
-          <Skeleton className="relative w-full aspect-[4/3] sm:aspect-video bg-muted" /> {/* Image placeholder */}
+          <Skeleton className="relative w-full aspect-[4/3] sm:aspect-video bg-muted" />
           <div className="p-4 sm:p-6 space-y-4">
-            <Skeleton className="h-8 w-3/4" /> {/* Species name placeholder */}
+            <Skeleton className="h-8 w-3/4" />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Skeleton className="h-5 w-full" />
               <Skeleton className="h-5 w-full" />
@@ -80,12 +75,11 @@ export default function LogbookEntryDetailPage() {
               <Skeleton className="h-5 w-full" />
             </div>
             <div>
-              <Skeleton className="h-6 w-1/4 mb-1" /> {/* Notes title placeholder */}
-              <Skeleton className="h-10 w-full" /> {/* Notes content placeholder */}
+              <Skeleton className="h-6 w-1/4 mb-1" />
+              <Skeleton className="h-10 w-full" />
             </div>
           </div>
         </div>
-        {/* Footer card skeleton */}
         <div className={`overflow-hidden rounded-lg border border-border shadow ${cardBodyBgClass}`}>
           <div className={`${cardHeaderBgClass} p-3 flex items-center space-x-2`}>
             <Skeleton className="h-4 w-4" />
@@ -161,43 +155,27 @@ export default function LogbookEntryDetailPage() {
   // Logika warunkowa dla przycisków (na razie uproszczona)
   const canEditOrDelete = true; // Załóżmy, że użytkownik jest właścicielem wpisu
 
+  const pageActions: PageHeaderAction[] = [];
+
+  if (canEditOrDelete && entry) {
+    pageActions.push({
+      label: 'Edytuj',
+      href: `/logbook/${entry.id}/edit`,
+      icon: <Edit className="h-4 w-4" />
+    });
+
+    pageActions.push({
+      label: isDeletingEntry ? 'Usuwanie...' : 'Usuń',
+      onClick: handleDeleteEntry,
+      icon: isDeletingEntry ? undefined : <Trash2 className="h-4 w-4" />,
+      variant: 'destructive' as const,
+      disabled: isDeletingEntry || isLoading
+    });
+  }
+
   return (
     <div className="space-y-6">
-      {/* Przycisk Powrotu i Tytuł */}
-      <div className="flex items-center justify-between">
-        <Link href="/logbook">
-          <Button className="shadow" variant="outline" size="icon">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
-        <h1 className={`text-2xl sm:text-3xl font-bold ${cardTextColorClass}`}>
-          {entry.fishSpeciesName || 'Nieznany gatunek'}
-        </h1>
-        {/* Opcjonalnie: przyciski edycji/usuwania */}
-        {canEditOrDelete && (
-          <div className="flex gap-2">
-            <Link href={`/logbook/${entry.id}/edit`}>
-              <Button variant="outline" size="icon">
-                <Edit className="h-4 w-4" />
-                <span className="sr-only">Edytuj</span>
-              </Button>
-            </Link>
-            <Button
-              variant="destructive"
-              size="icon"
-              onClick={handleDeleteEntry}
-              disabled={isDeletingEntry || isLoading} // Disable if deleting or initial load in progress
-            >
-              {isDeletingEntry ? (
-                <span className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
-              ) : (
-                <Trash2 className="h-4 w-4" />
-              )}
-              <span className="sr-only">Usuń</span>
-            </Button>
-          </div>
-        )}
-      </div>
+      <PageHeader onBack={() => router.push('/logbook')} actions={pageActions.length > 0 ? pageActions : undefined} />
 
       {/* Zdjęcie Ryby */}
       <div className={`overflow-hidden rounded-lg border border-border shadow ${cardBodyBgClass}`}>
@@ -219,6 +197,21 @@ export default function LogbookEntryDetailPage() {
           <span className="text-sm font-medium">Szczegóły połowu</span>
         </div>
         <div className={`p-4 ${cardBodyBgClass} space-y-4`}>
+          {/* Gatunek ryby */}
+          <div className="flex items-center space-x-3">
+            <Fish className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <div>
+              <p className="text-xs text-muted-foreground">Gatunek</p>
+              <p
+                className={`text-sm font-medium ${entry.fishSpeciesName ? cardTextColorClass : cardMutedTextColorClass}`}
+              >
+                {entry.fishSpeciesName || 'Nie podano'}
+              </p>
+            </div>
+          </div>
+
+          <hr className="border-border" />
+
           {/* Data połowu */}
           <div className="flex items-center space-x-3">
             <CalendarDays className="h-4 w-4 text-muted-foreground flex-shrink-0" />

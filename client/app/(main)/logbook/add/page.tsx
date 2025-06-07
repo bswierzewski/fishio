@@ -17,6 +17,7 @@ import type { CreateLogbookEntryCommand, FishSpeciesDto } from '@/lib/api/models
 import { type DeferredImageData, type ImageUploadResult } from '@/hooks/use-image-upload';
 
 import FieldInfo from '@/components/FieldInfo';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { DeferredImageUpload } from '@/components/ui/image-upload';
 import { Input } from '@/components/ui/input';
@@ -117,15 +118,7 @@ export default function AddLogbookEntryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <Link href="/logbook">
-          <Button variant="outline" size="sm">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Wróć do Dziennika
-          </Button>
-        </Link>
-        <h1 className={`text-xl sm:text-2xl font-bold ${cardTextColorClass}`}>Dodaj Nowy Wpis</h1>
-        <div></div>
-      </div>
+      <PageHeader onBack={() => router.push('/logbook')} />
 
       <form
         onSubmit={(e) => {

@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useGetAllFisheries } from '@/lib/api/endpoints/fisheries';
 import { FisheryDto as Fishery } from '@/lib/api/models';
 
+import { PageHeader, PageHeaderAction } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -23,25 +24,19 @@ export default function FisheriesPage() {
 
   const fisheries = fisheriesResponse?.items || [];
 
+  const pageActions: PageHeaderAction[] = [
+    {
+      label: 'Dodaj Łowisko',
+      href: '/fisheries/add',
+      icon: <Plus className="h-4 w-4" />
+    }
+  ];
+
   // TODO: Dodać logikę wyszukiwania i filtrowania
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Łowiska</h1>
-          <p className="text-muted-foreground">Przeglądaj dostępne łowiska i znajdź idealne miejsce na wędkowanie</p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Link href="/fisheries/add">
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Dodaj Łowisko
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <PageHeader actions={pageActions} />
 
       {/* Pasek Wyszukiwania i Filtrowania (Opcjonalny) */}
       <div className="flex flex-col sm:flex-row gap-2">
@@ -54,7 +49,8 @@ export default function FisheriesPage() {
           />
         </div>
         <Button variant="outline">
-          <Filter className="mr-2 h-4 w-4" /> Filtruj
+          <Filter className="h-4 w-4 md:mr-2" />
+          <span className="hidden md:inline">Filtruj</span>
         </Button>
       </div>
 

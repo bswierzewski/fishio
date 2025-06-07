@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import { useGetOpenCompetitionsList } from '@/lib/api/endpoints/competitions';
 import { CompetitionSummaryDto } from '@/lib/api/models';
 
+import { PageHeader, PageHeaderAction } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -49,31 +50,24 @@ export default function CompetitionsPage() {
     }
   };
 
+  const pageActions: PageHeaderAction[] = [
+    {
+      label: 'Utwórz Zawody',
+      href: '/competitions/add',
+      icon: <Plus className="h-4 w-4" />
+    },
+    {
+      label: 'Moje Zawody',
+      href: '/my-competitions',
+      icon: <Trophy className="h-4 w-4" />
+    }
+  ];
+
   // Loading state
   if (isLoading) {
     return (
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Zawody</h1>
-            <p className="text-muted-foreground">Przeglądaj i dołączaj do otwartych zawodów wędkarskich</p>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Link href="/competitions/add">
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Utwórz Zawody
-              </Button>
-            </Link>
-            <Link href="/my-competitions">
-              <Button variant="outline">
-                <Trophy className="mr-2 h-4 w-4" />
-                Moje Zawody
-              </Button>
-            </Link>
-          </div>
-        </div>
+        <PageHeader description="Przeglądaj i dołączaj do otwartych zawodów wędkarskich" actions={pageActions} />
 
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative flex-grow">
@@ -86,7 +80,8 @@ export default function CompetitionsPage() {
             />
           </div>
           <Button variant="outline" disabled>
-            <Filter className="mr-2 h-4 w-4" /> Filtruj
+            <Filter className="h-4 w-4 md:mr-2" />
+            <span className="hidden md:inline">Filtruj</span>
           </Button>
         </div>
 
@@ -112,27 +107,7 @@ export default function CompetitionsPage() {
   if (error) {
     return (
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Zawody</h1>
-            <p className="text-muted-foreground">Przeglądaj i dołączaj do otwartych zawodów wędkarskich</p>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Link href="/competitions/add">
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Utwórz Zawody
-              </Button>
-            </Link>
-            <Link href="/my-competitions">
-              <Button variant="outline">
-                <Trophy className="mr-2 h-4 w-4" />
-                Moje Zawody
-              </Button>
-            </Link>
-          </div>
-        </div>
+        <PageHeader actions={pageActions} />
 
         <div className="mt-8 rounded-lg border border-destructive bg-destructive/10 p-8 text-center">
           <p className="text-destructive mb-4">Wystąpił błąd podczas ładowania zawodów.</p>
@@ -146,27 +121,7 @@ export default function CompetitionsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Zawody</h1>
-          <p className="text-muted-foreground">Przeglądaj i dołączaj do otwartych zawodów wędkarskich</p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Link href="/competitions/add">
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Utwórz Zawody
-            </Button>
-          </Link>
-          <Link href="/my-competitions">
-            <Button variant="outline">
-              <Trophy className="mr-2 h-4 w-4" />
-              Moje Zawody
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <PageHeader description="Przeglądaj i dołączaj do otwartych zawodów wędkarskich" actions={pageActions} />
 
       {/* Pasek Wyszukiwania i Filtrowania */}
       <div className="flex flex-col sm:flex-row gap-2">
@@ -179,7 +134,8 @@ export default function CompetitionsPage() {
           />
         </div>
         <Button variant="outline">
-          <Filter className="mr-2 h-4 w-4" /> Filtruj
+          <Filter className="h-4 w-4 md:mr-2" />
+          <span className="hidden md:inline">Filtruj</span>
         </Button>
       </div>
 

@@ -13,6 +13,7 @@ import { MyCompetitionFilter } from '@/lib/api/models/myCompetitionFilter';
 import { MyCompetitionSummaryDto } from '@/lib/api/models/myCompetitionSummaryDto';
 import { ParticipantRole } from '@/lib/api/models/participantRole';
 
+import { PageHeader, PageHeaderAction } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -36,20 +37,29 @@ export default function MyCompetitionsPage() {
     error,
     refetch
   } = useGetUserCompetitionsList({
-    PageNumber: pageNumber,
-    PageSize: pageSize,
+    SearchTerm: searchTerm || undefined,
     Filter: filter,
-    SearchTerm: searchTerm || undefined
+    PageNumber: pageNumber,
+    PageSize: pageSize
   });
 
   const competitions = competitionsData?.items || [];
 
+  const pageActions: PageHeaderAction[] = [
+    {
+      label: 'Utwórz Zawody',
+      href: '/competitions/add',
+      icon: <Plus className="h-4 w-4" />
+    },
+    {
+      label: 'Wszystkie Zawody',
+      href: '/competitions',
+      icon: <Trophy className="h-4 w-4" />
+    }
+  ];
+
   const getStatusLabel = (status?: CompetitionStatus) => {
     switch (status) {
-      case CompetitionStatus.AcceptingRegistrations:
-        return 'Przyjmuje zgłoszenia';
-      case CompetitionStatus.Scheduled:
-        return 'Zaplanowane';
       case CompetitionStatus.Upcoming:
         return 'Nadchodzące';
       case CompetitionStatus.Ongoing:
@@ -58,17 +68,17 @@ export default function MyCompetitionsPage() {
         return 'Zakończone';
       case CompetitionStatus.Cancelled:
         return 'Anulowane';
-      case CompetitionStatus.Draft:
-        return 'Szkic';
-      case CompetitionStatus.PendingApproval:
-        return 'Oczekuje na zatwierdzenie';
+      case CompetitionStatus.AcceptingRegistrations:
+        return 'Rejestracja';
+      case CompetitionStatus.Scheduled:
+        return 'Zaplanowane';
       default:
         return 'Nieznany';
     }
   };
 
   const getRoleIconAndLabel = (competition: MyCompetitionSummaryDto) => {
-    // Check if user is organizer first
+    // First check if user is organizer
     if (competition.isOrganizer) {
       return { icon: <Edit className="h-3 w-3" />, label: 'Organizator' };
     }
@@ -93,27 +103,7 @@ export default function MyCompetitionsPage() {
   if (error) {
     return (
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Moje Zawody</h1>
-            <p className="text-muted-foreground">Zarządzaj zawodami, które organizujesz lub w których uczestniczysz</p>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Link href="/competitions/add">
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Utwórz Zawody
-              </Button>
-            </Link>
-            <Link href="/competitions">
-              <Button variant="outline">
-                <Trophy className="mr-2 h-4 w-4" />
-                Wszystkie Zawody
-              </Button>
-            </Link>
-          </div>
-        </div>
+        <PageHeader actions={pageActions} />
 
         <div className="rounded-lg border border-destructive bg-destructive/10 p-4 text-center">
           <p className="text-destructive">Wystąpił błąd podczas ładowania zawodów.</p>
@@ -127,27 +117,7 @@ export default function MyCompetitionsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Moje Zawody</h1>
-          <p className="text-muted-foreground">Zarządzaj zawodami, które organizujesz lub w których uczestniczysz</p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Link href="/competitions/add">
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Utwórz Zawody
-            </Button>
-          </Link>
-          <Link href="/competitions">
-            <Button variant="outline">
-              <Trophy className="mr-2 h-4 w-4" />
-              Wszystkie Zawody
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <PageHeader actions={pageActions} />
 
       {/* Pasek Wyszukiwania i Filtrowania */}
       <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2">
@@ -162,7 +132,8 @@ export default function MyCompetitionsPage() {
           />
         </div>
         <Button type="submit" variant="outline">
-          <Search className="mr-2 h-4 w-4" /> Szukaj
+          <Search className="h-4 w-4 md:mr-2" />
+          <span className="hidden md:inline">Szukaj</span>
         </Button>
         <Select
           value={filter}
@@ -171,8 +142,8 @@ export default function MyCompetitionsPage() {
             setPageNumber(1);
           }}
         >
-          <SelectTrigger className="w-[180px]">
-            <Filter className="mr-2 h-4 w-4" />
+          <SelectTrigger className="w-[140px] md:w-[180px]">
+            <Filter className="h-4 w-4 md:mr-2" />
             <SelectValue placeholder="Filtruj" />
           </SelectTrigger>
           <SelectContent>
@@ -296,7 +267,7 @@ export default function MyCompetitionsPage() {
           <Button
             variant="outline"
             onClick={() => setPageNumber(Math.min(competitionsData.totalPages || 1, pageNumber + 1))}
-            disabled={pageNumber === (competitionsData.totalPages || 1)}
+            disabled={pageNumber === competitionsData.totalPages}
           >
             Następna
           </Button>

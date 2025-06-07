@@ -16,6 +16,7 @@ import type { FishSpeciesDto, UpdateLogbookEntryCommand } from '@/lib/api/models
 import type { ImageUploadResult } from '@/hooks/use-image-upload';
 
 import FieldInfo from '@/components/FieldInfo';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { Input } from '@/components/ui/input';
@@ -120,11 +121,7 @@ export default function EditLogbookEntryPage() {
   if (isLoadingEntry) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <Skeleton className="h-10 w-48" />
-          <Skeleton className="h-8 w-64" />
-          <div />
-        </div>
+        <PageHeader onBack={() => router.push('/logbook')} />
         <div className={`p-4 sm:p-6 rounded-lg border border-border shadow ${cardBodyBgClass} space-y-6`}>
           <Skeleton className="h-32 w-full" />
           <Skeleton className="h-20 w-full" />
@@ -138,15 +135,7 @@ export default function EditLogbookEntryPage() {
   if (errorLoadingEntry || !logbookEntry) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <Link href="/logbook">
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="mr-2 h-4 w-4" /> Wróć do Dziennika
-            </Button>
-          </Link>
-          <h1 className={`text-xl sm:text-2xl font-bold ${cardTextColorClass}`}>Wpis nie znaleziony</h1>
-          <div></div>
-        </div>
+        <PageHeader onBack={() => router.push('/logbook')} />
         <div className={`p-4 sm:p-6 rounded-lg border border-border shadow ${cardBodyBgClass}`}>
           <p className={cardMutedTextColorClass}>Nie udało się załadować wpisu z dziennika.</p>
         </div>
@@ -156,15 +145,7 @@ export default function EditLogbookEntryPage() {
 
   return (
     <div className="space-y-6 pb-16">
-      <div className="flex items-center justify-between">
-        <Link href="/logbook">
-          <Button variant="outline" size="sm">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Wróć do Dziennika
-          </Button>
-        </Link>
-        <h1 className={`text-xl sm:text-2xl font-bold ${cardTextColorClass}`}>Edytuj Wpis</h1>
-        <div></div>
-      </div>
+      <PageHeader onBack={() => router.push('/logbook')} />
 
       <form
         onSubmit={(e) => {

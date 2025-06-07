@@ -15,6 +15,7 @@ import type { CreateFisheryCommand, FishSpeciesDto } from '@/lib/api/models';
 import { type DeferredImageData, type ImageUploadResult } from '@/hooks/use-image-upload';
 
 import FieldInfo from '@/components/FieldInfo';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { FishImage } from '@/components/ui/fish-image';
 import { DeferredImageUpload } from '@/components/ui/image-upload';
@@ -113,15 +114,7 @@ export default function AddFisheryPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <Link href="/fisheries">
-          <Button variant="outline" size="sm">
-            <ArrowLeft className="mr-2 h-4 w-4" /> Wróć do Listy Łowisk
-          </Button>
-        </Link>
-        <h1 className={`text-xl sm:text-2xl font-bold ${cardTextColorClass}`}>Dodaj Nowe Łowisko</h1>
-        <div></div>
-      </div>
+      <PageHeader onBack={() => router.push('/fisheries')} />
 
       <form
         onSubmit={(e) => {

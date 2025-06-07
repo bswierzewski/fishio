@@ -15,6 +15,7 @@ import type { FishSpeciesDto, RecordCompetitionFishCatchCommand } from '@/lib/ap
 import type { ImageUploadResult } from '@/hooks/use-image-upload';
 
 import FieldInfo from '@/components/FieldInfo';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ImageUpload } from '@/components/ui/image-upload';
@@ -149,15 +150,7 @@ export default function NewCatchPage({ params }: { params: Promise<{ id: string 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-2xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <Link href={`/competitions/${competitionId}`}>
-            <Button variant="outline" size="sm">
-              <ArrowLeft className="mr-2 h-4 w-4" /> Wróć do Zawodów
-            </Button>
-          </Link>
-          <h1 className={`text-xl sm:text-2xl font-bold ${cardTextColorClass}`}>Zarejestruj Połów</h1>
-          <div></div>
-        </div>
+        <PageHeader onBack={() => router.push(`/competitions/${competitionId}`)} />
 
         <Card className={cardBodyBgClass}>
           <CardHeader>

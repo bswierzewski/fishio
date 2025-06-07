@@ -54,6 +54,7 @@ import { type AddParticipantCommand, CompetitionStatus, ParticipantRole, type Us
 
 import { useCurrentUser } from '@/hooks/use-current-user';
 
+import { PageHeader, PageHeaderAction } from '@/components/layout/PageHeader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -414,29 +415,17 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
     }
   };
 
+  const pageActions: PageHeaderAction[] = [
+    {
+      label: 'Ustawienia',
+      href: `/competitions/${competitionId}/edit`,
+      icon: <Settings className="h-4 w-4" />
+    }
+  ];
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Zarządzanie Zawodami</h1>
-          <p className="text-muted-foreground">{competition.name}</p>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Link href={`/competitions/${competitionId}/edit`}>
-            <Button variant="outline">
-              <Settings className="mr-2 h-4 w-4" />
-              Ustawienia
-            </Button>
-          </Link>
-          <Link href={`/competitions/${competitionId}`}>
-            <Button variant="outline">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Powrót
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <PageHeader actions={pageActions} onBack={() => (window.location.href = `/competitions/${competitionId}`)} />
 
       {/* Quick Stats */}
       <div className="overflow-hidden rounded-lg bg-card shadow">
@@ -1090,16 +1079,7 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
 function ManagementSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="space-y-2">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-4 w-48" />
-        </div>
-        <div className="flex space-x-2">
-          <Skeleton className="h-10 w-24" />
-          <Skeleton className="h-10 w-24" />
-        </div>
-      </div>
+      <PageHeader showBackButton={false} />
 
       <div className="overflow-hidden rounded-lg bg-card shadow">
         <div className="bg-slate-800 h-10"></div>

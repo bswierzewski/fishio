@@ -46,6 +46,7 @@ import { CompetitionStatus, CompetitionType, ParticipantRole } from '@/lib/api/m
 
 import { useCurrentUser } from '@/hooks/use-current-user';
 
+import { PageHeader, PageHeaderAction } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -226,50 +227,20 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
     }
   };
 
-  const handleStartCompetition = async () => {
-    if (!competitionId) return;
+  const pageActions: PageHeaderAction[] = [];
 
-    try {
-      await startCompetitionMutation.mutateAsync({ competitionId });
-      toast.success('Zawody zostały rozpoczęte!');
-      refetch();
-    } catch (error) {
-      toast.error('Nie udało się rozpocząć zawodów');
-    }
-  };
-
-  const handleFinishCompetition = async () => {
-    if (!competitionId) return;
-
-    try {
-      await finishCompetitionMutation.mutateAsync({ competitionId });
-      toast.success('Zawody zostały zakończone!');
-      refetch();
-    } catch (error) {
-      toast.error('Nie udało się zakończyć zawodów');
-    }
-  };
-
-  const handleCancelCompetition = async () => {
-    if (!competitionId) return;
-
-    const reason = prompt('Podaj powód anulowania zawodów:');
-    if (!reason) return;
-
-    try {
-      await cancelCompetitionMutation.mutateAsync({
-        competitionId,
-        data: { reason }
-      });
-      toast.success('Zawody zostały anulowane!');
-      refetch();
-    } catch (error) {
-      toast.error('Nie udało się anulować zawodów');
-    }
-  };
+  if (canManage) {
+    pageActions.push({
+      label: 'Zarządzaj',
+      href: `/competitions/${competitionId}/manage`,
+      icon: <ListChecks className="h-4 w-4" />
+    });
+  }
 
   return (
     <div className="space-y-6">
+      <PageHeader actions={pageActions.length > 0 ? pageActions : undefined} />
+
       {/* Header with image and text overlay */}
       <div className="relative overflow-hidden rounded-lg border border-border shadow">
         {competition.imageUrl ? (
@@ -353,58 +324,6 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
                 <span className="hidden sm:inline">Zarejestruj Połów</span>
               </Button>
             </Link>
-          )}
-
-          {canManage && (
-            <Link href={`/competitions/${competitionId}/manage`}>
-              <Button variant="secondary" className="flex-shrink-0" size="sm">
-                <ListChecks className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Zarządzaj</span>
-              </Button>
-            </Link>
-          )}
-
-          {canStartCompetition && (
-            <Button
-              onClick={handleStartCompetition}
-              disabled={startCompetitionMutation.isPending}
-              className="bg-green-600 text-white hover:bg-green-700 flex-shrink-0"
-              size="sm"
-            >
-              <Play className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">
-                {startCompetitionMutation.isPending ? 'Rozpoczynanie...' : 'Rozpocznij'}
-              </span>
-            </Button>
-          )}
-
-          {canFinishCompetition && (
-            <Button
-              onClick={handleFinishCompetition}
-              disabled={finishCompetitionMutation.isPending}
-              className="bg-orange-600 text-white hover:bg-orange-700 flex-shrink-0"
-              size="sm"
-            >
-              <Square className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">
-                {finishCompetitionMutation.isPending ? 'Kończenie...' : 'Zakończ'}
-              </span>
-            </Button>
-          )}
-
-          {canCancelCompetition && (
-            <Button
-              onClick={handleCancelCompetition}
-              disabled={cancelCompetitionMutation.isPending}
-              variant="destructive"
-              className="flex-shrink-0"
-              size="sm"
-            >
-              <Ban className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">
-                {cancelCompetitionMutation.isPending ? 'Anulowanie...' : 'Anuluj'}
-              </span>
-            </Button>
           )}
         </div>
       </div>
