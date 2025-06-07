@@ -329,65 +329,84 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
         )}
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex flex-wrap gap-2">
-        {canJoin && (
-          <Button
-            onClick={handleJoinCompetition}
-            disabled={joinCompetitionMutation.isPending}
-            className="bg-accent text-accent-foreground hover:bg-accent/90"
-          >
-            <UserPlus className="mr-2 h-4 w-4" />
-            {joinCompetitionMutation.isPending ? 'Dołączanie...' : 'Dołącz do Zawodów'}
-          </Button>
-        )}
-
-        {canRegisterCatch && (
-          <Link href={`/competitions/${competitionId}/catch/new`}>
-            <Button className="bg-blue-600 text-white hover:bg-blue-700">
-              <Plus className="mr-2 h-4 w-4" /> Zarejestruj Połów
+      {/* Action Buttons - Mobile: Icons only, Desktop: Full text */}
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border p-3 -mx-4 sm:-mx-6 mb-6">
+        <div className="flex items-center justify-center gap-2 overflow-x-auto pb-1">
+          {canJoin && (
+            <Button
+              onClick={handleJoinCompetition}
+              disabled={joinCompetitionMutation.isPending}
+              className="bg-accent text-accent-foreground hover:bg-accent/90 flex-shrink-0"
+              size="sm"
+            >
+              <UserPlus className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">
+                {joinCompetitionMutation.isPending ? 'Dołączanie...' : 'Dołącz do Zawodów'}
+              </span>
             </Button>
-          </Link>
-        )}
+          )}
 
-        {canManage && (
-          <Link href={`/competitions/${competitionId}/manage`}>
-            <Button variant="secondary">Zarządzaj Zawodami</Button>
-          </Link>
-        )}
+          {canRegisterCatch && (
+            <Link href={`/competitions/${competitionId}/catch/new`}>
+              <Button className="bg-blue-600 text-white hover:bg-blue-700 flex-shrink-0" size="sm">
+                <Plus className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Zarejestruj Połów</span>
+              </Button>
+            </Link>
+          )}
 
-        {canStartCompetition && (
-          <Button
-            onClick={handleStartCompetition}
-            disabled={startCompetitionMutation.isPending}
-            className="bg-green-600 text-white hover:bg-green-700"
-          >
-            <Play className="mr-2 h-4 w-4" />
-            {startCompetitionMutation.isPending ? 'Rozpoczynanie...' : 'Rozpocznij Zawody'}
-          </Button>
-        )}
+          {canManage && (
+            <Link href={`/competitions/${competitionId}/manage`}>
+              <Button variant="secondary" className="flex-shrink-0" size="sm">
+                <ListChecks className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Zarządzaj</span>
+              </Button>
+            </Link>
+          )}
 
-        {canFinishCompetition && (
-          <Button
-            onClick={handleFinishCompetition}
-            disabled={finishCompetitionMutation.isPending}
-            className="bg-orange-600 text-white hover:bg-orange-700"
-          >
-            <Square className="mr-2 h-4 w-4" />
-            {finishCompetitionMutation.isPending ? 'Kończenie...' : 'Zakończ Zawody'}
-          </Button>
-        )}
+          {canStartCompetition && (
+            <Button
+              onClick={handleStartCompetition}
+              disabled={startCompetitionMutation.isPending}
+              className="bg-green-600 text-white hover:bg-green-700 flex-shrink-0"
+              size="sm"
+            >
+              <Play className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">
+                {startCompetitionMutation.isPending ? 'Rozpoczynanie...' : 'Rozpocznij'}
+              </span>
+            </Button>
+          )}
 
-        {canCancelCompetition && (
-          <Button
-            onClick={handleCancelCompetition}
-            disabled={cancelCompetitionMutation.isPending}
-            variant="destructive"
-          >
-            <Ban className="mr-2 h-4 w-4" />
-            {cancelCompetitionMutation.isPending ? 'Anulowanie...' : 'Anuluj Zawody'}
-          </Button>
-        )}
+          {canFinishCompetition && (
+            <Button
+              onClick={handleFinishCompetition}
+              disabled={finishCompetitionMutation.isPending}
+              className="bg-orange-600 text-white hover:bg-orange-700 flex-shrink-0"
+              size="sm"
+            >
+              <Square className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">
+                {finishCompetitionMutation.isPending ? 'Kończenie...' : 'Zakończ'}
+              </span>
+            </Button>
+          )}
+
+          {canCancelCompetition && (
+            <Button
+              onClick={handleCancelCompetition}
+              disabled={cancelCompetitionMutation.isPending}
+              variant="destructive"
+              className="flex-shrink-0"
+              size="sm"
+            >
+              <Ban className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">
+                {cancelCompetitionMutation.isPending ? 'Anulowanie...' : 'Anuluj'}
+              </span>
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Main Content Grid */}
@@ -403,74 +422,6 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
               </div>
             </div>
             <div className="p-4 space-y-4">
-              <div>
-                <h3 className="font-semibold mb-1 text-foreground flex items-center">
-                  <UserCheck className="mr-2 h-4 w-4 text-green-600" />
-                  Organizator:
-                </h3>
-                <p className="text-sm text-muted-foreground">{competition.organizerName || 'Nieznany organizator'}</p>
-              </div>
-
-              {/* Categories Section */}
-              <div>
-                <h3 className="font-semibold mb-3 text-foreground flex items-center">
-                  <Trophy className="mr-2 h-4 w-4 text-primary" />
-                  Kategorie Zawodów:
-                </h3>
-                <div className="space-y-3">
-                  {/* Primary Scoring Category */}
-                  {competition.primaryScoringInfo && (
-                    <div className="p-3 bg-amber-50 border border-amber-200 rounded-md">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-medium text-amber-900 text-sm">
-                          {competition.primaryScoringInfo}
-                          {competition.categories &&
-                            competition.categories.find((c) => c.isPrimaryScoring)?.fishSpeciesName && (
-                              <span className="text-amber-700/80 font-normal">
-                                {' '}
-                                ({competition.categories.find((c) => c.isPrimaryScoring)?.fishSpeciesName})
-                              </span>
-                            )}
-                        </h4>
-                      </div>
-                      <p className="text-xs text-amber-700/80 italic">Decyduje o głównym rankingu zawodów</p>
-                    </div>
-                  )}
-
-                  {/* Additional Categories */}
-                  {competition.categories && competition.categories.filter((c) => !c.isPrimaryScoring).length > 0 && (
-                    <>
-                      {competition.categories
-                        .filter((category) => !category.isPrimaryScoring)
-                        .map((category, index) => (
-                          <div key={index} className="p-3 bg-muted/50 rounded-md">
-                            <h4 className="font-medium text-foreground text-sm">
-                              {category.name}
-                              {category.fishSpeciesName && (
-                                <span className="text-muted-foreground font-normal"> ({category.fishSpeciesName})</span>
-                              )}
-                            </h4>
-                            {category.description && (
-                              <p className="text-xs text-muted-foreground italic mt-1 leading-relaxed">
-                                {category.description}
-                              </p>
-                            )}
-                          </div>
-                        ))}
-                    </>
-                  )}
-
-                  {/* No additional categories message */}
-                  {(!competition.categories ||
-                    competition.categories.filter((c) => !c.isPrimaryScoring).length === 0) &&
-                    competition.primaryScoringInfo && (
-                      <p className="text-xs text-muted-foreground italic">
-                        Brak dodatkowych kategorii w tych zawodach.
-                      </p>
-                    )}
-                </div>
-              </div>
-
               <div>
                 <h3 className="font-semibold mb-1 text-foreground flex items-center">
                   <FileText className="mr-2 h-4 w-4 text-blue-600" />
@@ -492,6 +443,118 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
                   Do: {formatDateTime(competition.endTime!)}
                 </p>
               </div>
+            </div>
+          </div>
+
+          {/* Categories Section */}
+          <div className="overflow-hidden rounded-lg border border-border bg-card shadow">
+            <div className="bg-slate-800 text-slate-100 relative flex h-10 flex-shrink-0 items-center space-x-2 p-3">
+              <div className="relative z-10 flex items-center space-x-2">
+                <Trophy className="h-4 w-4" />
+                <span className="text-xs font-medium truncate">Kategorie Zawodów</span>
+              </div>
+            </div>
+            <div className="p-4 space-y-4">
+              {/* Main Category - Primary Scoring */}
+              {competition.primaryScoringInfo && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="flex items-center justify-center w-6 h-6 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full">
+                      <Award className="h-3 w-3 text-white" />
+                    </div>
+                    <h3 className="font-semibold text-foreground text-sm">Kategoria Główna</h3>
+                    <div className="flex-1 h-px bg-gradient-to-r from-amber-200 to-transparent"></div>
+                  </div>
+
+                  <div className="relative overflow-hidden rounded-lg border-2 border-amber-300 bg-gradient-to-br from-amber-50 via-orange-50 to-amber-50 shadow-sm">
+                    <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-amber-400/20 to-transparent rounded-bl-full"></div>
+                    <div className="relative p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-amber-500 to-orange-500 rounded-lg shadow-md">
+                          <Trophy className="h-5 w-5 text-white" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-amber-900 text-base leading-tight">
+                            {competition.primaryScoringInfo}
+                          </h4>
+                          {competition.categories &&
+                            competition.categories.find((c) => c.isPrimaryScoring)?.fishSpeciesName && (
+                              <p className="text-sm text-amber-700 mt-1">
+                                Gatunek: {competition.categories.find((c) => c.isPrimaryScoring)?.fishSpeciesName}
+                              </p>
+                            )}
+                          <div className="flex items-center gap-1 mt-2">
+                            <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+                            <p className="text-xs text-amber-700 font-medium">Decyduje o głównym rankingu zawodów</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Additional Categories */}
+              {competition.categories && competition.categories.filter((c) => !c.isPrimaryScoring).length > 0 && (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="flex items-center justify-center w-6 h-6 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full">
+                      <Fish className="h-3 w-3 text-white" />
+                    </div>
+                    <h3 className="font-semibold text-foreground text-sm">Kategorie Dodatkowe</h3>
+                    <div className="flex-1 h-px bg-gradient-to-r from-blue-200 to-transparent"></div>
+                  </div>
+
+                  <div className="grid gap-3">
+                    {competition.categories
+                      .filter((category) => !category.isPrimaryScoring)
+                      .map((category, index) => (
+                        <div
+                          key={index}
+                          className="relative overflow-hidden rounded-lg border border-slate-200 bg-gradient-to-r from-slate-50 to-blue-50/30 hover:shadow-md transition-shadow duration-200"
+                        >
+                          <div className="absolute top-0 right-0 w-12 h-12 bg-gradient-to-bl from-blue-400/10 to-transparent rounded-bl-full"></div>
+                          <div className="relative p-3">
+                            <div className="flex items-start gap-3">
+                              <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-slate-500 to-slate-600 rounded-md shadow-sm">
+                                <Fish className="h-4 w-4 text-white" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h4 className="font-medium text-slate-800 text-sm leading-tight">{category.name}</h4>
+                                {category.fishSpeciesName && (
+                                  <p className="text-xs text-slate-600 mt-1">Gatunek: {category.fishSpeciesName}</p>
+                                )}
+                                {category.description && (
+                                  <p className="text-xs text-slate-500 mt-2 leading-relaxed">{category.description}</p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* No categories message */}
+              {(!competition.categories || competition.categories.length === 0) && !competition.primaryScoringInfo && (
+                <div className="text-center py-8">
+                  <div className="flex items-center justify-center w-12 h-12 bg-slate-100 rounded-full mx-auto mb-3">
+                    <Trophy className="h-6 w-6 text-slate-400" />
+                  </div>
+                  <p className="text-sm text-muted-foreground">Brak zdefiniowanych kategorii dla tych zawodów</p>
+                </div>
+              )}
+
+              {/* No additional categories message */}
+              {(!competition.categories || competition.categories.filter((c) => !c.isPrimaryScoring).length === 0) &&
+                competition.primaryScoringInfo && (
+                  <div className="mt-4 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <p className="text-xs text-slate-600 text-center italic">
+                      Brak dodatkowych kategorii - zawody mają tylko kategorię główną
+                    </p>
+                  </div>
+                )}
             </div>
           </div>
 

@@ -4,16 +4,22 @@ import {
   ArrowLeft,
   Ban,
   BarChart3,
+  Calendar,
   CalendarDays,
   CheckCircle,
+  ChevronDown,
   Clock,
+  Edit3,
+  FileCheck,
   FileText,
   Hourglass,
   Play,
+  PlayCircle,
   Search,
   Settings,
   ShieldCheck,
   Square,
+  StopCircle,
   Trash2,
   Trophy,
   User,
@@ -21,7 +27,8 @@ import {
   UserPlus,
   UserX,
   Users,
-  X
+  X,
+  XCircle
 } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -407,172 +414,6 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
     }
   };
 
-  // Helper functions for status management
-  const getStatusColor = (status: CompetitionStatus) => {
-    switch (status) {
-      case CompetitionStatus.Draft:
-        return 'text-gray-500';
-      case CompetitionStatus.PendingApproval:
-        return 'text-yellow-500';
-      case CompetitionStatus.AcceptingRegistrations:
-      case CompetitionStatus.Scheduled:
-      case CompetitionStatus.Upcoming:
-        return 'text-blue-500';
-      case CompetitionStatus.Ongoing:
-        return 'text-green-500';
-      case CompetitionStatus.Finished:
-        return 'text-gray-500';
-      case CompetitionStatus.Cancelled:
-        return 'text-red-500';
-      default:
-        return 'text-gray-500';
-    }
-  };
-
-  const getStatusText = (status: CompetitionStatus) => {
-    switch (status) {
-      case CompetitionStatus.Draft:
-        return 'Szkic';
-      case CompetitionStatus.PendingApproval:
-        return 'Oczekuje na zatwierdzenie';
-      case CompetitionStatus.AcceptingRegistrations:
-        return 'Przyjmuje rejestracje';
-      case CompetitionStatus.Scheduled:
-        return 'Zaplanowane';
-      case CompetitionStatus.Upcoming:
-        return 'Nadchodzące';
-      case CompetitionStatus.Ongoing:
-        return 'W trakcie';
-      case CompetitionStatus.Finished:
-        return 'Zakończone';
-      case CompetitionStatus.Cancelled:
-        return 'Anulowane';
-      default:
-        return status;
-    }
-  };
-
-  const getStatusIcon = (status: CompetitionStatus) => {
-    switch (status) {
-      case CompetitionStatus.Draft:
-        return <FileText className="h-4 w-4" />;
-      case CompetitionStatus.PendingApproval:
-        return <Hourglass className="h-4 w-4" />;
-      case CompetitionStatus.AcceptingRegistrations:
-        return <UserPlus className="h-4 w-4" />;
-      case CompetitionStatus.Scheduled:
-        return <CalendarDays className="h-4 w-4" />;
-      case CompetitionStatus.Upcoming:
-        return <Clock className="h-4 w-4" />;
-      case CompetitionStatus.Ongoing:
-        return <Play className="h-4 w-4" />;
-      case CompetitionStatus.Finished:
-        return <CheckCircle className="h-4 w-4" />;
-      case CompetitionStatus.Cancelled:
-        return <Ban className="h-4 w-4" />;
-      default:
-        return <FileText className="h-4 w-4" />;
-    }
-  };
-
-  // Determine available status actions
-  const getAvailableActions = (status: CompetitionStatus) => {
-    const actions = [];
-
-    switch (status) {
-      case CompetitionStatus.Draft:
-        actions.push({
-          label: 'Wyślij do zatwierdzenia',
-          action: handleRequestApproval,
-          loading: requestApprovalMutation.isPending,
-          variant: 'default' as const,
-          icon: <Hourglass className="mr-2 h-4 w-4" />
-        });
-        actions.push({
-          label: 'Otwórz rejestracje',
-          action: handleOpenRegistrations,
-          loading: openRegistrationsMutation.isPending,
-          variant: 'default' as const,
-          icon: <UserPlus className="mr-2 h-4 w-4" />
-        });
-        break;
-
-      case CompetitionStatus.AcceptingRegistrations:
-        actions.push({
-          label: 'Zaplanuj zawody',
-          action: handleScheduleCompetition,
-          loading: scheduleCompetitionMutation.isPending,
-          variant: 'default' as const,
-          icon: <CalendarDays className="mr-2 h-4 w-4" />
-        });
-        break;
-
-      case CompetitionStatus.Scheduled:
-        actions.push({
-          label: 'Ustaw jako nadchodzące',
-          action: handleSetUpcoming,
-          loading: setUpcomingMutation.isPending,
-          variant: 'default' as const,
-          icon: <Clock className="mr-2 h-4 w-4" />
-        });
-        actions.push({
-          label: 'Ponownie otwórz rejestracje',
-          action: handleReopenRegistrations,
-          loading: reopenRegistrationsMutation.isPending,
-          variant: 'outline' as const,
-          icon: <UserPlus className="mr-2 h-4 w-4" />
-        });
-        actions.push({
-          label: 'Rozpocznij zawody',
-          action: handleStartCompetition,
-          loading: startCompetitionMutation.isPending,
-          variant: 'default' as const,
-          icon: <Play className="mr-2 h-4 w-4" />
-        });
-        break;
-
-      case CompetitionStatus.Upcoming:
-        actions.push({
-          label: 'Ponownie otwórz rejestracje',
-          action: handleReopenRegistrations,
-          loading: reopenRegistrationsMutation.isPending,
-          variant: 'outline' as const,
-          icon: <UserPlus className="mr-2 h-4 w-4" />
-        });
-        actions.push({
-          label: 'Rozpocznij zawody',
-          action: handleStartCompetition,
-          loading: startCompetitionMutation.isPending,
-          variant: 'default' as const,
-          icon: <Play className="mr-2 h-4 w-4" />
-        });
-        break;
-
-      case CompetitionStatus.Ongoing:
-        actions.push({
-          label: 'Zakończ zawody',
-          action: handleFinishCompetition,
-          loading: finishCompetitionMutation.isPending,
-          variant: 'default' as const,
-          icon: <Square className="mr-2 h-4 w-4" />
-        });
-        break;
-    }
-
-    // Cancel action (available for most statuses except Finished and Cancelled)
-    if (status !== CompetitionStatus.Finished && status !== CompetitionStatus.Cancelled) {
-      actions.push({
-        label: 'Anuluj zawody',
-        action: handleCancelCompetition,
-        loading: cancelCompetitionMutation.isPending,
-        variant: 'destructive' as const,
-        icon: <Ban className="mr-2 h-4 w-4" />
-      });
-    }
-
-    return actions;
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -627,7 +468,7 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
         </div>
       </div>
 
-      {/* Status Management */}
+      {/* Competition Status Management */}
       <div className="overflow-hidden rounded-lg bg-card shadow">
         <div className="bg-slate-800 text-slate-100 relative flex h-10 flex-shrink-0 items-center space-x-2 p-3">
           <div className="relative z-10 flex items-center space-x-2">
@@ -635,240 +476,307 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
             <span className="text-xs font-medium truncate">Zarządzanie Statusem</span>
           </div>
         </div>
-        <div className="p-4 space-y-4">
-          {/* Status Flow Information */}
-          <div>
-            <h3 className="font-medium mb-4 text-foreground">Przepływ statusów:</h3>
-            <div className="space-y-3">
-              {/* Draft Status */}
-              <div className="flex items-center space-x-2">
-                <Badge
-                  variant={competition.status === CompetitionStatus.Draft ? 'default' : 'outline'}
-                  className={`px-3 py-1.5 h-8 ${competition.status === CompetitionStatus.Draft ? 'bg-gray-600' : ''}`}
-                >
-                  <FileText className="mr-1 h-4 w-4" />
-                  Szkic
-                </Badge>
-                <span className="text-gray-400">→</span>
-                <div className="flex flex-wrap gap-1">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={competition.status !== CompetitionStatus.Draft || requestApprovalMutation.isPending}
-                    onClick={handleRequestApproval}
-                    className="h-8 text-xs"
-                  >
-                    <Hourglass className="mr-1 h-3 w-3" />
-                    Wyślij do zatwierdzenia
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={competition.status !== CompetitionStatus.Draft || openRegistrationsMutation.isPending}
-                    onClick={handleOpenRegistrations}
-                    className="h-8 text-xs"
-                  >
-                    <UserPlus className="mr-1 h-3 w-3" />
-                    Otwórz rejestracje
-                  </Button>
-                </div>
-              </div>
+        <div className="p-4">
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground mb-3">Przepływ statusów:</p>
 
-              {/* PendingApproval Status */}
-              <div className="flex items-center space-x-2">
-                <Badge
-                  variant={competition.status === CompetitionStatus.PendingApproval ? 'default' : 'outline'}
-                  className={`px-3 py-1.5 h-8 ${competition.status === CompetitionStatus.PendingApproval ? 'bg-yellow-600' : ''}`}
-                >
-                  <Hourglass className="mr-1 h-4 w-4" />
-                  Oczekuje na zatwierdzenie
-                </Badge>
-                <span className="text-gray-400">→</span>
-                <div className="flex flex-wrap gap-1">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={true}
-                    className="h-8 text-xs opacity-50 cursor-not-allowed"
+            {/* Status Flow */}
+            <div className="flex flex-col space-y-1">
+              {/* Draft */}
+              <Button
+                variant="outline"
+                className="flex items-center justify-between p-2 h-auto text-left w-full cursor-pointer hover:cursor-pointer"
+                disabled={true}
+              >
+                <div className="flex items-center">
+                  <div
+                    className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
+                      competition.status === CompetitionStatus.Draft
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-gray-300 text-gray-500'
+                    }`}
                   >
-                    <CheckCircle className="mr-1 h-3 w-3" />
-                    Zatwierdzenie przez administratora
-                  </Button>
-                </div>
-              </div>
-
-              {/* AcceptingRegistrations Status */}
-              <div className="flex items-center space-x-2">
-                <Badge
-                  variant={competition.status === CompetitionStatus.AcceptingRegistrations ? 'default' : 'outline'}
-                  className={`px-3 py-1.5 h-8 ${competition.status === CompetitionStatus.AcceptingRegistrations ? 'bg-blue-600' : ''}`}
-                >
-                  <UserPlus className="mr-1 h-4 w-4" />
-                  Przyjmuje rejestracje
-                </Badge>
-                <span className="text-gray-400">→</span>
-                <div className="flex flex-wrap gap-1">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={
-                      competition.status !== CompetitionStatus.AcceptingRegistrations ||
-                      scheduleCompetitionMutation.isPending
-                    }
-                    onClick={handleScheduleCompetition}
-                    className="h-8 text-xs"
-                  >
-                    <CalendarDays className="mr-1 h-3 w-3" />
-                    Zaplanuj zawody
-                  </Button>
-                </div>
-              </div>
-
-              {/* Scheduled Status */}
-              <div className="flex items-center space-x-2">
-                <Badge
-                  variant={competition.status === CompetitionStatus.Scheduled ? 'default' : 'outline'}
-                  className={`px-3 py-1.5 h-8 ${competition.status === CompetitionStatus.Scheduled ? 'bg-blue-600' : ''}`}
-                >
-                  <CalendarDays className="mr-1 h-4 w-4" />
-                  Zaplanowane
-                </Badge>
-                <span className="text-gray-400">→</span>
-                <div className="flex flex-wrap gap-1">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={competition.status !== CompetitionStatus.Scheduled || setUpcomingMutation.isPending}
-                    onClick={handleSetUpcoming}
-                    className="h-8 text-xs"
-                  >
-                    <Clock className="mr-1 h-3 w-3" />
-                    Ustaw jako nadchodzące
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={
-                      competition.status !== CompetitionStatus.Scheduled || reopenRegistrationsMutation.isPending
-                    }
-                    onClick={handleReopenRegistrations}
-                    className="h-8 text-xs"
-                  >
-                    <UserPlus className="mr-1 h-3 w-3" />
-                    Ponownie otwórz rejestracje
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={competition.status !== CompetitionStatus.Scheduled || startCompetitionMutation.isPending}
-                    onClick={handleStartCompetition}
-                    className="h-8 text-xs"
-                  >
-                    <Play className="mr-1 h-3 w-3" />
-                    Rozpocznij zawody
-                  </Button>
-                </div>
-              </div>
-
-              {/* Upcoming Status */}
-              <div className="flex items-center space-x-2">
-                <Badge
-                  variant={competition.status === CompetitionStatus.Upcoming ? 'default' : 'outline'}
-                  className={`px-3 py-1.5 h-8 ${competition.status === CompetitionStatus.Upcoming ? 'bg-blue-600' : ''}`}
-                >
-                  <Clock className="mr-1 h-4 w-4" />
-                  Nadchodzące
-                </Badge>
-                <span className="text-gray-400">→</span>
-                <div className="flex flex-wrap gap-1">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={
-                      competition.status !== CompetitionStatus.Upcoming || reopenRegistrationsMutation.isPending
-                    }
-                    onClick={handleReopenRegistrations}
-                    className="h-8 text-xs"
-                  >
-                    <UserPlus className="mr-1 h-3 w-3" />
-                    Ponownie otwórz rejestracje
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={competition.status !== CompetitionStatus.Upcoming || startCompetitionMutation.isPending}
-                    onClick={handleStartCompetition}
-                    className="h-8 text-xs"
-                  >
-                    <Play className="mr-1 h-3 w-3" />
-                    Rozpocznij zawody
-                  </Button>
-                </div>
-              </div>
-
-              {/* Ongoing Status */}
-              <div className="flex items-center space-x-2">
-                <Badge
-                  variant={competition.status === CompetitionStatus.Ongoing ? 'default' : 'outline'}
-                  className={`px-3 py-1.5 h-8 ${competition.status === CompetitionStatus.Ongoing ? 'bg-green-600' : ''}`}
-                >
-                  <Play className="mr-1 h-4 w-4" />W trakcie
-                </Badge>
-                <span className="text-gray-400">→</span>
-                <div className="flex flex-wrap gap-1">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={competition.status !== CompetitionStatus.Ongoing || finishCompetitionMutation.isPending}
-                    onClick={handleFinishCompetition}
-                    className="h-8 text-xs"
-                  >
-                    <Square className="mr-1 h-3 w-3" />
-                    Zakończ zawody
-                  </Button>
-                </div>
-              </div>
-
-              {/* Terminal States */}
-              <div className="flex items-center space-x-2">
-                <div className="flex gap-2">
-                  <Badge
-                    variant={competition.status === CompetitionStatus.Finished ? 'default' : 'outline'}
-                    className={`px-3 py-1.5 h-8 ${competition.status === CompetitionStatus.Finished ? 'bg-gray-600' : ''}`}
-                  >
-                    <CheckCircle className="mr-1 h-4 w-4" />
-                    Zakończone
-                  </Badge>
-                  <Badge
-                    variant={competition.status === CompetitionStatus.Cancelled ? 'default' : 'outline'}
-                    className={`px-3 py-1.5 h-8 ${competition.status === CompetitionStatus.Cancelled ? 'bg-red-600' : ''}`}
-                  >
-                    <Ban className="mr-1 h-4 w-4" />
-                    Anulowane
-                  </Badge>
-                </div>
-                <span className="text-gray-400 text-xs">(Statusy końcowe)</span>
-              </div>
-
-              {/* Cancel Action - Available for most statuses */}
-              {competition.status !== CompetitionStatus.Finished &&
-                competition.status !== CompetitionStatus.Cancelled && (
-                  <div className="pt-2 border-t border-gray-200">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xs text-muted-foreground font-medium">Akcja specjalna:</span>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        disabled={cancelCompetitionMutation.isPending}
-                        onClick={handleCancelCompetition}
-                        className="h-8 text-xs"
-                      >
-                        <Ban className="mr-1 h-3 w-3" />
-                        {cancelCompetitionMutation.isPending ? 'Anulowanie...' : 'Anuluj zawody'}
-                      </Button>
-                    </div>
+                    <FileText className="h-3 w-3" />
                   </div>
+                  <span className="ml-2 text-sm font-medium">Szkic</span>
+                </div>
+                {competition.status === CompetitionStatus.Draft && (
+                  <Badge variant="default" className="bg-blue-500 text-white">
+                    Aktualny
+                  </Badge>
                 )}
+              </Button>
+
+              {/* Arrow */}
+              <div className="flex justify-center py-1">
+                <ChevronDown className="h-3 w-3 text-gray-400" />
+              </div>
+
+              {/* Pending Approval */}
+              <Button
+                variant="outline"
+                className="flex items-center justify-between p-2 h-auto text-left w-full cursor-pointer hover:cursor-pointer"
+                onClick={competition.status === CompetitionStatus.Draft ? handleRequestApproval : undefined}
+                disabled={
+                  competition.status !== CompetitionStatus.Draft &&
+                  competition.status !== CompetitionStatus.PendingApproval
+                }
+              >
+                <div className="flex items-center">
+                  <div
+                    className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
+                      competition.status === CompetitionStatus.PendingApproval
+                        ? 'bg-amber-500 text-white'
+                        : competition.status === CompetitionStatus.Draft
+                          ? 'bg-amber-400 text-white'
+                          : 'bg-gray-300 text-gray-500'
+                    }`}
+                  >
+                    <Hourglass className="h-3 w-3" />
+                  </div>
+                  <span className="ml-2 text-sm font-medium">Oczekuje na zatwierdzenie</span>
+                </div>
+                {competition.status === CompetitionStatus.PendingApproval && (
+                  <Badge variant="default" className="bg-amber-500 text-white">
+                    Aktualny
+                  </Badge>
+                )}
+              </Button>
+
+              {/* Arrow */}
+              <div className="flex justify-center py-1">
+                <ChevronDown className="h-3 w-3 text-gray-400" />
+              </div>
+
+              {/* Accepting Registrations */}
+              <Button
+                variant="outline"
+                className="flex items-center justify-between p-2 h-auto text-left w-full cursor-pointer hover:cursor-pointer"
+                onClick={
+                  competition.status === CompetitionStatus.Draft
+                    ? handleOpenRegistrations
+                    : competition.status === CompetitionStatus.Scheduled
+                      ? handleReopenRegistrations
+                      : competition.status === CompetitionStatus.Upcoming
+                        ? handleReopenRegistrations
+                        : undefined
+                }
+                disabled={
+                  competition.status !== CompetitionStatus.Draft &&
+                  competition.status !== CompetitionStatus.AcceptingRegistrations &&
+                  competition.status !== CompetitionStatus.Scheduled &&
+                  competition.status !== CompetitionStatus.Upcoming
+                }
+              >
+                <div className="flex items-center">
+                  <div
+                    className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
+                      competition.status === CompetitionStatus.AcceptingRegistrations
+                        ? 'bg-green-500 text-white'
+                        : competition.status === CompetitionStatus.Draft ||
+                            competition.status === CompetitionStatus.Scheduled ||
+                            competition.status === CompetitionStatus.Upcoming
+                          ? 'bg-green-400 text-white'
+                          : 'bg-gray-300 text-gray-500'
+                    }`}
+                  >
+                    <Users className="h-3 w-3" />
+                  </div>
+                  <span className="ml-2 text-sm font-medium">Przyjmuje rejestracje</span>
+                </div>
+                {competition.status === CompetitionStatus.AcceptingRegistrations && (
+                  <Badge variant="default" className="bg-green-500 text-white">
+                    Aktualny
+                  </Badge>
+                )}
+              </Button>
+
+              {/* Arrow */}
+              <div className="flex justify-center py-1">
+                <ChevronDown className="h-3 w-3 text-gray-400" />
+              </div>
+
+              {/* Scheduled */}
+              <Button
+                variant="outline"
+                className="flex items-center justify-between p-2 h-auto text-left w-full cursor-pointer hover:cursor-pointer"
+                onClick={
+                  competition.status === CompetitionStatus.AcceptingRegistrations
+                    ? handleScheduleCompetition
+                    : undefined
+                }
+                disabled={
+                  competition.status !== CompetitionStatus.AcceptingRegistrations &&
+                  competition.status !== CompetitionStatus.Scheduled
+                }
+              >
+                <div className="flex items-center">
+                  <div
+                    className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
+                      competition.status === CompetitionStatus.Scheduled
+                        ? 'bg-blue-500 text-white'
+                        : competition.status === CompetitionStatus.AcceptingRegistrations
+                          ? 'bg-blue-400 text-white'
+                          : 'bg-gray-300 text-gray-500'
+                    }`}
+                  >
+                    <Calendar className="h-3 w-3" />
+                  </div>
+                  <span className="ml-2 text-sm font-medium">Zaplanowane</span>
+                </div>
+                {competition.status === CompetitionStatus.Scheduled && (
+                  <Badge variant="default" className="bg-blue-500 text-white">
+                    Aktualny
+                  </Badge>
+                )}
+              </Button>
+
+              {/* Arrow */}
+              <div className="flex justify-center py-1">
+                <ChevronDown className="h-3 w-3 text-gray-400" />
+              </div>
+
+              {/* Upcoming */}
+              <Button
+                variant="outline"
+                className="flex items-center justify-between p-2 h-auto text-left w-full cursor-pointer hover:cursor-pointer"
+                onClick={competition.status === CompetitionStatus.Scheduled ? handleSetUpcoming : undefined}
+                disabled={
+                  competition.status !== CompetitionStatus.Scheduled &&
+                  competition.status !== CompetitionStatus.Upcoming
+                }
+              >
+                <div className="flex items-center">
+                  <div
+                    className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
+                      competition.status === CompetitionStatus.Upcoming
+                        ? 'bg-sky-500 text-white'
+                        : competition.status === CompetitionStatus.Scheduled
+                          ? 'bg-sky-400 text-white'
+                          : 'bg-gray-300 text-gray-500'
+                    }`}
+                  >
+                    <Clock className="h-3 w-3" />
+                  </div>
+                  <span className="ml-2 text-sm font-medium">Nadchodzące</span>
+                </div>
+                {competition.status === CompetitionStatus.Upcoming && (
+                  <Badge variant="default" className="bg-sky-500 text-white">
+                    Aktualny
+                  </Badge>
+                )}
+              </Button>
+
+              {/* Arrow */}
+              <div className="flex justify-center py-1">
+                <ChevronDown className="h-3 w-3 text-gray-400" />
+              </div>
+
+              {/* Ongoing */}
+              <Button
+                variant="outline"
+                className="flex items-center justify-between p-2 h-auto text-left w-full cursor-pointer hover:cursor-pointer"
+                onClick={competition.status === CompetitionStatus.Upcoming ? handleStartCompetition : undefined}
+                disabled={
+                  competition.status !== CompetitionStatus.Upcoming && competition.status !== CompetitionStatus.Ongoing
+                }
+              >
+                <div className="flex items-center">
+                  <div
+                    className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
+                      competition.status === CompetitionStatus.Ongoing
+                        ? 'bg-emerald-500 text-white'
+                        : competition.status === CompetitionStatus.Upcoming
+                          ? 'bg-emerald-400 text-white'
+                          : 'bg-gray-300 text-gray-500'
+                    }`}
+                  >
+                    <Play className="h-3 w-3" />
+                  </div>
+                  <span className="ml-2 text-sm font-medium">W trakcie</span>
+                </div>
+                {competition.status === CompetitionStatus.Ongoing && (
+                  <Badge variant="default" className="bg-emerald-500 text-white">
+                    Aktualny
+                  </Badge>
+                )}
+              </Button>
+
+              {/* Arrow */}
+              <div className="flex justify-center py-1">
+                <ChevronDown className="h-3 w-3 text-gray-400" />
+              </div>
+
+              {/* Finished */}
+              <Button
+                variant="outline"
+                className="flex items-center justify-between p-2 h-auto text-left w-full cursor-pointer hover:cursor-pointer"
+                onClick={competition.status === CompetitionStatus.Ongoing ? handleFinishCompetition : undefined}
+                disabled={
+                  competition.status !== CompetitionStatus.Ongoing && competition.status !== CompetitionStatus.Finished
+                }
+              >
+                <div className="flex items-center">
+                  <div
+                    className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
+                      competition.status === CompetitionStatus.Finished
+                        ? 'bg-gray-600 text-white'
+                        : competition.status === CompetitionStatus.Ongoing
+                          ? 'bg-gray-500 text-white'
+                          : 'bg-gray-300 text-gray-500'
+                    }`}
+                  >
+                    <CheckCircle className="h-3 w-3" />
+                  </div>
+                  <span className="ml-2 text-sm font-medium">Zakończone</span>
+                </div>
+                {competition.status === CompetitionStatus.Finished && (
+                  <Badge variant="default" className="bg-gray-600 text-white">
+                    Aktualny
+                  </Badge>
+                )}
+              </Button>
+
+              {/* Arrow */}
+              <div className="flex justify-center py-1">
+                <ChevronDown className="h-3 w-3 text-gray-400" />
+              </div>
+
+              {/* Cancelled Status */}
+              <Button
+                variant="outline"
+                className="flex items-center justify-between p-2 h-auto text-left w-full cursor-pointer hover:cursor-pointer"
+                onClick={
+                  competition.status !== CompetitionStatus.Finished &&
+                  competition.status !== CompetitionStatus.Cancelled
+                    ? handleCancelCompetition
+                    : undefined
+                }
+                disabled={
+                  competition.status === CompetitionStatus.Finished ||
+                  competition.status === CompetitionStatus.Cancelled
+                }
+              >
+                <div className="flex items-center">
+                  <div
+                    className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
+                      competition.status === CompetitionStatus.Cancelled
+                        ? 'bg-red-500 text-white'
+                        : competition.status !== CompetitionStatus.Finished
+                          ? 'bg-red-400 text-white'
+                          : 'bg-gray-300 text-gray-500'
+                    }`}
+                  >
+                    <XCircle className="h-3 w-3" />
+                  </div>
+                  <span className="ml-2 text-sm font-medium">Anulowane</span>
+                </div>
+                {competition.status === CompetitionStatus.Cancelled && (
+                  <Badge variant="default" className="bg-red-500 text-white">
+                    Aktualny
+                  </Badge>
+                )}
+              </Button>
             </div>
           </div>
         </div>
