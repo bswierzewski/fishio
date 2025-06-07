@@ -4,7 +4,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { format, parseISO } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { ArrowLeft, CalendarDays, Clock, Edit, MapPin, Ruler, Trash2, Weight } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Edit, Fish, MapPin, Ruler, Trash2, Weight } from 'lucide-react';
 // For error state
 import { Terminal } from 'lucide-react';
 import Image from 'next/image';
@@ -23,6 +23,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 
+const cardHeaderBgClass = 'bg-secondary';
+const cardHeaderTextColorClass = 'text-secondary-foreground';
 const cardBodyBgClass = 'bg-card';
 const cardTextColorClass = 'text-foreground';
 const cardMutedTextColorClass = 'text-muted-foreground';
@@ -71,17 +73,27 @@ export default function LogbookEntryDetailPage() {
           <Skeleton className="relative w-full aspect-[4/3] sm:aspect-video bg-muted" /> {/* Image placeholder */}
           <div className="p-4 sm:p-6 space-y-4">
             <Skeleton className="h-8 w-3/4" /> {/* Species name placeholder */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
-              <Skeleton className="h-5 w-1/2" /> {/* Date placeholder */}
-              <Skeleton className="h-5 w-1/2" /> {/* Length placeholder */}
-              <Skeleton className="h-5 w-1/2" /> {/* Weight placeholder */}
-              <Skeleton className="h-5 w-full sm:col-span-2" /> {/* Fishery placeholder */}
-              <Skeleton className="h-5 w-1/2" /> {/* Created date placeholder */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Skeleton className="h-5 w-full" />
+              <Skeleton className="h-5 w-full" />
+              <Skeleton className="h-5 w-full" />
+              <Skeleton className="h-5 w-full" />
             </div>
             <div>
               <Skeleton className="h-6 w-1/4 mb-1" /> {/* Notes title placeholder */}
               <Skeleton className="h-10 w-full" /> {/* Notes content placeholder */}
             </div>
+          </div>
+        </div>
+        {/* Footer card skeleton */}
+        <div className={`overflow-hidden rounded-lg border border-border shadow ${cardBodyBgClass}`}>
+          <div className={`${cardHeaderBgClass} p-3 flex items-center space-x-2`}>
+            <Skeleton className="h-4 w-4" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+          <div className="p-4">
+            <Skeleton className="h-4 w-full mb-2" />
+            <Skeleton className="h-4 w-3/4" />
           </div>
         </div>
       </div>
@@ -115,9 +127,6 @@ export default function LogbookEntryDetailPage() {
     notFound();
   }
 
-  // Znajdź powiązane łowisko, jeśli istnieje - This logic might need adjustment based on API response
-  // const fishery = entry.fisheryId ? staticFisheries.find((f) => f.id === entry.fisheryId) : null; // Removed
-  // For now, assuming fishery details are part of the entry or fetched separately if needed.
   const fisheryName = entry.fisheryName;
   const fisheryId = entry.fisheryId;
 
@@ -161,12 +170,13 @@ export default function LogbookEntryDetailPage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
+        <h1 className={`text-2xl sm:text-3xl font-bold ${cardTextColorClass}`}>
+          {entry.fishSpeciesName || 'Nieznany gatunek'}
+        </h1>
         {/* Opcjonalnie: przyciski edycji/usuwania */}
         {canEditOrDelete && (
           <div className="flex gap-2">
             <Link href={`/logbook/${entry.id}/edit`}>
-              {' '}
-              {/* Placeholder dla edycji */}
               <Button variant="outline" size="icon">
                 <Edit className="h-4 w-4" />
                 <span className="sr-only">Edytuj</span>
@@ -189,12 +199,9 @@ export default function LogbookEntryDetailPage() {
         )}
       </div>
 
-      {/* Główna Karta Szczegółów Połowu */}
+      {/* Zdjęcie Ryby */}
       <div className={`overflow-hidden rounded-lg border border-border shadow ${cardBodyBgClass}`}>
-        {/* Duże Zdjęcie Ryby */}
         <div className="relative w-full aspect-[4/3] sm:aspect-video bg-muted">
-          {' '}
-          {/* Proporcje obrazka */}
           <Image
             src={entry.imageUrl || '/koi.svg'} // Use existing koi.svg as fallback
             alt={`Zdjęcie ${entry.fishSpeciesName || 'ryby'}`} // Changed to fishSpeciesName and added fallback
@@ -203,67 +210,79 @@ export default function LogbookEntryDetailPage() {
             priority
           />
         </div>
+      </div>
 
-        {/* Informacje o Połowie */}
-        <div className="p-4 sm:p-6 space-y-4">
-          <h1 className={`text-2xl sm:text-3xl font-bold ${cardTextColorClass}`}>
-            {entry.fishSpeciesName || 'Nieznany gatunek'}
-          </h1>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
-            <div className="flex items-center">
-              <CalendarDays className={`mr-2 h-5 w-5 ${cardMutedTextColorClass}`} />
-              <span className={cardTextColorClass}>Data połowu:</span>
-              <span className={`ml-1 font-medium ${cardTextColorClass}`}>
-                {entry.catchTime ? formatDate(entry.catchTime) : 'Brak danych'}
-              </span>
-            </div>
-
-            <div className="flex items-center">
-              <Ruler className={`mr-2 h-5 w-5 ${cardMutedTextColorClass}`} />
-              <span className={cardTextColorClass}>Długość:</span>
-              <span className={`ml-1 font-medium ${entry.lengthInCm ? cardTextColorClass : cardMutedTextColorClass}`}>
-                {entry.lengthInCm ? `${entry.lengthInCm} cm` : 'Nie podano'}
-              </span>
-            </div>
-
-            <div className="flex items-center">
-              <Weight className={`mr-2 h-5 w-5 ${cardMutedTextColorClass}`} />
-              <span className={cardTextColorClass}>Waga:</span>
-              <span className={`ml-1 font-medium ${entry.weightInKg ? cardTextColorClass : cardMutedTextColorClass}`}>
-                {entry.weightInKg ? `${entry.weightInKg} kg` : 'Nie podano'}
-              </span>
-            </div>
-
-            <div className="flex items-center sm:col-span-2">
-              <MapPin className={`mr-2 h-5 w-5 ${cardMutedTextColorClass}`} />
-              <span className={cardTextColorClass}>Łowisko:</span>
-              {fisheryName && fisheryId ? (
-                <Link href={`/fisheries/${fisheryId}`} className="ml-1 font-medium text-primary hover:underline">
-                  {fisheryName}
-                </Link>
-              ) : (
-                <span className={`ml-1 font-medium ${cardMutedTextColorClass}`}>Nie podano</span>
-              )}
-            </div>
-
-            {/* Display creation date */}
-            <div className="flex items-center sm:col-span-2">
-              <Clock className={`mr-2 h-5 w-5 ${cardMutedTextColorClass}`} />
-              <span className={cardTextColorClass}>Dodano:</span>
-              <span className={`ml-1 font-medium ${cardMutedTextColorClass}`}>
-                {entry.created ? formatDate(entry.created) : 'Brak danych'}
-              </span>
-            </div>
+      {/* Karty z Danymi */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Date Card */}
+        <div className="border border-border rounded-lg overflow-hidden shadow-sm">
+          <div className={`${cardHeaderBgClass} ${cardHeaderTextColorClass} p-3 flex items-center space-x-2`}>
+            <CalendarDays className="h-4 w-4" />
+            <span className="text-xs font-medium">Data połowu</span>
           </div>
-          {/* Notatki */}
-          <div>
-            <h2 className={`text-lg font-semibold mb-1 ${cardTextColorClass}`}>Notatki:</h2>
-            {entry.notes ? (
-              <p className={`text-sm whitespace-pre-wrap ${cardMutedTextColorClass}`}>{entry.notes}</p>
+          <div className={`p-3 ${cardBodyBgClass}`}>
+            <p className={`text-sm ${cardTextColorClass}`}>
+              {entry.catchTime ? formatDate(entry.catchTime) : 'Brak danych'}
+            </p>
+          </div>
+        </div>
+
+        {/* Length Card */}
+        <div className="border border-border rounded-lg overflow-hidden shadow-sm">
+          <div className={`${cardHeaderBgClass} ${cardHeaderTextColorClass} p-3 flex items-center space-x-2`}>
+            <Ruler className="h-4 w-4" />
+            <span className="text-xs font-medium">Długość</span>
+          </div>
+          <div className={`p-3 ${cardBodyBgClass}`}>
+            <p className={`text-sm ${entry.lengthInCm ? cardTextColorClass : cardMutedTextColorClass}`}>
+              {entry.lengthInCm ? `${entry.lengthInCm} cm` : 'Nie podano'}
+            </p>
+          </div>
+        </div>
+
+        {/* Weight Card */}
+        <div className="border border-border rounded-lg overflow-hidden shadow-sm">
+          <div className={`${cardHeaderBgClass} ${cardHeaderTextColorClass} p-3 flex items-center space-x-2`}>
+            <Weight className="h-4 w-4" />
+            <span className="text-xs font-medium">Waga</span>
+          </div>
+          <div className={`p-3 ${cardBodyBgClass}`}>
+            <p className={`text-sm ${entry.weightInKg ? cardTextColorClass : cardMutedTextColorClass}`}>
+              {entry.weightInKg ? `${entry.weightInKg} kg` : 'Nie podano'}
+            </p>
+          </div>
+        </div>
+
+        {/* Fishery Card */}
+        <div className="border border-border rounded-lg overflow-hidden shadow-sm">
+          <div className={`${cardHeaderBgClass} ${cardHeaderTextColorClass} p-3 flex items-center space-x-2`}>
+            <MapPin className="h-4 w-4" />
+            <span className="text-xs font-medium">Łowisko</span>
+          </div>
+          <div className={`p-3 ${cardBodyBgClass}`}>
+            {fisheryName && fisheryId ? (
+              <Link href={`/fisheries/${fisheryId}`} className="text-sm text-primary hover:underline">
+                {fisheryName}
+              </Link>
             ) : (
-              <p className={`text-sm italic ${cardMutedTextColorClass}`}>Brak notatek</p>
+              <p className={`text-sm ${cardMutedTextColorClass}`}>Nie podano</p>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Notatki Card */}
+      <div className="border border-border rounded-lg overflow-hidden shadow-sm">
+        <div className={`${cardHeaderBgClass} ${cardHeaderTextColorClass} p-3 flex items-center space-x-2`}>
+          <Edit className="h-4 w-4" />
+          <span className="text-xs font-medium">Notatki</span>
+        </div>
+        <div className={`p-4 ${cardBodyBgClass}`}>
+          {entry.notes ? (
+            <p className={`text-sm whitespace-pre-wrap ${cardTextColorClass}`}>{entry.notes}</p>
+          ) : (
+            <p className={`text-sm italic ${cardMutedTextColorClass}`}>Brak notatek</p>
+          )}
         </div>
       </div>
     </div>
