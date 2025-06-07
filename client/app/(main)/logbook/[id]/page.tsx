@@ -212,77 +212,81 @@ export default function LogbookEntryDetailPage() {
         </div>
       </div>
 
-      {/* Karty z Danymi */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {/* Date Card */}
-        <div className="border border-border rounded-lg overflow-hidden shadow-sm">
-          <div className={`${cardHeaderBgClass} ${cardHeaderTextColorClass} p-3 flex items-center space-x-2`}>
-            <CalendarDays className="h-4 w-4" />
-            <span className="text-xs font-medium">Data połowu</span>
-          </div>
-          <div className={`p-3 ${cardBodyBgClass}`}>
-            <p className={`text-sm ${cardTextColorClass}`}>
-              {entry.catchTime ? formatDate(entry.catchTime) : 'Brak danych'}
-            </p>
-          </div>
-        </div>
-
-        {/* Length Card */}
-        <div className="border border-border rounded-lg overflow-hidden shadow-sm">
-          <div className={`${cardHeaderBgClass} ${cardHeaderTextColorClass} p-3 flex items-center space-x-2`}>
-            <Ruler className="h-4 w-4" />
-            <span className="text-xs font-medium">Długość</span>
-          </div>
-          <div className={`p-3 ${cardBodyBgClass}`}>
-            <p className={`text-sm ${entry.lengthInCm ? cardTextColorClass : cardMutedTextColorClass}`}>
-              {entry.lengthInCm ? `${entry.lengthInCm} cm` : 'Nie podano'}
-            </p>
-          </div>
-        </div>
-
-        {/* Weight Card */}
-        <div className="border border-border rounded-lg overflow-hidden shadow-sm">
-          <div className={`${cardHeaderBgClass} ${cardHeaderTextColorClass} p-3 flex items-center space-x-2`}>
-            <Weight className="h-4 w-4" />
-            <span className="text-xs font-medium">Waga</span>
-          </div>
-          <div className={`p-3 ${cardBodyBgClass}`}>
-            <p className={`text-sm ${entry.weightInKg ? cardTextColorClass : cardMutedTextColorClass}`}>
-              {entry.weightInKg ? `${entry.weightInKg} kg` : 'Nie podano'}
-            </p>
-          </div>
-        </div>
-
-        {/* Fishery Card */}
-        <div className="border border-border rounded-lg overflow-hidden shadow-sm">
-          <div className={`${cardHeaderBgClass} ${cardHeaderTextColorClass} p-3 flex items-center space-x-2`}>
-            <MapPin className="h-4 w-4" />
-            <span className="text-xs font-medium">Łowisko</span>
-          </div>
-          <div className={`p-3 ${cardBodyBgClass}`}>
-            {fisheryName && fisheryId ? (
-              <Link href={`/fisheries/${fisheryId}`} className="text-sm text-primary hover:underline">
-                {fisheryName}
-              </Link>
-            ) : (
-              <p className={`text-sm ${cardMutedTextColorClass}`}>Nie podano</p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Notatki Card */}
+      {/* Szczegóły Połowu - Jedna Karta */}
       <div className="border border-border rounded-lg overflow-hidden shadow-sm">
         <div className={`${cardHeaderBgClass} ${cardHeaderTextColorClass} p-3 flex items-center space-x-2`}>
-          <Edit className="h-4 w-4" />
-          <span className="text-xs font-medium">Notatki</span>
+          <Fish className="h-4 w-4" />
+          <span className="text-sm font-medium">Szczegóły połowu</span>
         </div>
-        <div className={`p-4 ${cardBodyBgClass}`}>
-          {entry.notes ? (
-            <p className={`text-sm whitespace-pre-wrap ${cardTextColorClass}`}>{entry.notes}</p>
-          ) : (
-            <p className={`text-sm italic ${cardMutedTextColorClass}`}>Brak notatek</p>
-          )}
+        <div className={`p-4 ${cardBodyBgClass} space-y-4`}>
+          {/* Data połowu */}
+          <div className="flex items-center space-x-3">
+            <CalendarDays className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <div>
+              <p className="text-xs text-muted-foreground">Data połowu</p>
+              <p className={`text-sm ${cardTextColorClass}`}>
+                {entry.catchTime ? formatDate(entry.catchTime) : 'Brak danych'}
+              </p>
+            </div>
+          </div>
+
+          <hr className="border-border" />
+
+          {/* Długość */}
+          <div className="flex items-center space-x-3">
+            <Ruler className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <div>
+              <p className="text-xs text-muted-foreground">Długość</p>
+              <p className={`text-sm ${entry.lengthInCm ? cardTextColorClass : cardMutedTextColorClass}`}>
+                {entry.lengthInCm ? `${entry.lengthInCm} cm` : 'Nie podano'}
+              </p>
+            </div>
+          </div>
+
+          <hr className="border-border" />
+
+          {/* Waga */}
+          <div className="flex items-center space-x-3">
+            <Weight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <div>
+              <p className="text-xs text-muted-foreground">Waga</p>
+              <p className={`text-sm ${entry.weightInKg ? cardTextColorClass : cardMutedTextColorClass}`}>
+                {entry.weightInKg ? `${entry.weightInKg} kg` : 'Nie podano'}
+              </p>
+            </div>
+          </div>
+
+          <hr className="border-border" />
+
+          {/* Łowisko */}
+          <div className="flex items-center space-x-3">
+            <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <div>
+              <p className="text-xs text-muted-foreground">Łowisko</p>
+              {fisheryName && fisheryId ? (
+                <Link href={`/fisheries/${fisheryId}`} className="text-sm text-primary hover:underline">
+                  {fisheryName}
+                </Link>
+              ) : (
+                <p className={`text-sm ${cardMutedTextColorClass}`}>Nie podano</p>
+              )}
+            </div>
+          </div>
+
+          <hr className="border-border" />
+
+          {/* Notatki */}
+          <div className="flex items-start space-x-3">
+            <Edit className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-xs text-muted-foreground">Notatki</p>
+              {entry.notes ? (
+                <p className={`text-sm whitespace-pre-wrap ${cardTextColorClass}`}>{entry.notes}</p>
+              ) : (
+                <p className={`text-sm italic ${cardMutedTextColorClass}`}>Brak notatek</p>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
