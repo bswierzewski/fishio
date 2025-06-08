@@ -168,10 +168,12 @@ public class GetPublicCompetitionResultsQueryHandler : IRequestHandler<GetPublic
         // Sortowanie: Domyślnie większy wynik jest lepszy.
         // Jeśli metryka lub logika wskazuje inaczej (np. MinValue), trzeba by odwrócić sortowanie.
         // Na razie zakładamy, że większy TotalScore jest lepszy.
-        return ranking
-            .OrderByDescending(r => r.TotalScore)
-            .ThenByDescending(r => r.FishCount) // Dodatkowe kryterium przy remisie
-            .ToList();
+        var result = ranking
+    .OrderByDescending(r => r.TotalScore)
+    .ThenByDescending(r => r.FishCount) // Dodatkowe kryterium przy remisie
+    .ToList();
+
+        return await Task.FromResult(result);
     }
 
     private async Task<List<PublicResultSpecialCategoryDto>> CalculateSpecialCategoriesResultsAsync(
@@ -320,7 +322,7 @@ public class GetPublicCompetitionResultsQueryHandler : IRequestHandler<GetPublic
                 specialCategoriesResults.Add(categoryResult);
             }
         }
-        return specialCategoriesResults;
+        return await Task.FromResult(specialCategoriesResults);
     }
 
     private decimal? GetMetricValue(CompetitionFishCatch fishCatch, CategoryMetric metric)
