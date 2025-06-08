@@ -6,7 +6,7 @@ namespace Fishio.Application.Competitions.Queries.GetMyCompetitions;
 public enum MyCompetitionFilter
 {
     All,
-    Upcoming, // AcceptingRegistrations, Scheduled, Upcoming, Ongoing
+    Active, // AcceptingRegistrations, Scheduled, Ongoing
     Finished,
     Organized,
     Judged

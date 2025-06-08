@@ -57,7 +57,6 @@ public class GetPublicCompetitionResultsQueryHandler : IRequestHandler<GetPublic
 
         switch (effectiveStatus)
         {
-            case CompetitionStatus.Upcoming:
             case CompetitionStatus.Scheduled:
             case CompetitionStatus.AcceptingRegistrations:
                 dto = dto with { UpcomingMessage = $"Zawody '{competition.Name}' rozpoczną się {competition.Schedule.Start:g}. Zapraszamy!" };
@@ -92,7 +91,7 @@ public class GetPublicCompetitionResultsQueryHandler : IRequestHandler<GetPublic
         {
             return competition.Status == CompetitionStatus.AcceptingRegistrations || competition.Status == CompetitionStatus.Scheduled
                    ? competition.Status
-                   : CompetitionStatus.Upcoming;
+                   : CompetitionStatus.Scheduled;
         }
         if (now >= competition.Schedule.Start && now <= competition.Schedule.End)
         {

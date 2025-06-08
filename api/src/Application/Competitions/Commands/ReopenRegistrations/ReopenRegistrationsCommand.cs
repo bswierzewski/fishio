@@ -32,7 +32,7 @@ public class ReopenRegistrationsCommandValidator : AbstractValidator<ReopenRegis
         var now = _timeProvider.GetUtcNow();
 
         // Logika zgodna z metodą domenową Competition.ReopenRegistrations()
-        return (competition.Status == CompetitionStatus.Scheduled || competition.Status == CompetitionStatus.Upcoming) &&
+        return competition.Status == CompetitionStatus.Scheduled &&
                competition.Schedule.Start > now;
     }
 }

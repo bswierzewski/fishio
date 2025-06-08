@@ -29,10 +29,9 @@ public class GetMyCompetitionsQueryHandler : IRequestHandler<GetMyCompetitionsQu
 
         switch (request.Filter)
         {
-            case MyCompetitionFilter.Upcoming:
+            case MyCompetitionFilter.Active:
                 query = query.Where(c => c.Status == CompetitionStatus.AcceptingRegistrations ||
                                          c.Status == CompetitionStatus.Scheduled ||
-                                         c.Status == CompetitionStatus.Upcoming ||
                                          c.Status == CompetitionStatus.Ongoing);
                 break;
             case MyCompetitionFilter.Finished:

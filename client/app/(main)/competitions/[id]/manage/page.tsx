@@ -48,7 +48,6 @@ import {
   useOrganizerReopensRegistrations,
   useOrganizerRequestsApproval,
   useOrganizerSchedulesCompetition,
-  useOrganizerSetsUpcoming,
   useOrganizerStartsCompetition
 } from '@/lib/api/endpoints/competitions';
 import { useSearchAvailableUsers } from '@/lib/api/endpoints/users';
@@ -152,7 +151,6 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
   const requestApprovalMutation = useOrganizerRequestsApproval();
   const openRegistrationsMutation = useOrganizerOpensRegistrations();
   const scheduleCompetitionMutation = useOrganizerSchedulesCompetition();
-  const setUpcomingMutation = useOrganizerSetsUpcoming();
   const reopenRegistrationsMutation = useOrganizerReopensRegistrations();
   const startCompetitionMutation = useOrganizerStartsCompetition();
   const finishCompetitionMutation = useOrganizerFinishesCompetition();
@@ -417,18 +415,6 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
     }
   };
 
-  const handleSetUpcoming = async () => {
-    if (!competitionId) return;
-
-    try {
-      await setUpcomingMutation.mutateAsync({ competitionId });
-      toast.success('Status zawodów został zmieniony na "Nadchodzące"!');
-      refetch();
-    } catch (error) {
-      handleError(error);
-    }
-  };
-
   const handleReopenRegistrations = async () => {
     if (!competitionId) return;
 
@@ -606,15 +592,12 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
                     ? handleOpenRegistrations
                     : competition.status === CompetitionStatus.Scheduled
                       ? handleReopenRegistrations
-                      : competition.status === CompetitionStatus.Upcoming
-                        ? handleReopenRegistrations
-                        : undefined
+                      : undefined
                 }
                 disabled={
                   competition.status !== CompetitionStatus.Draft &&
                   competition.status !== CompetitionStatus.AcceptingRegistrations &&
-                  competition.status !== CompetitionStatus.Scheduled &&
-                  competition.status !== CompetitionStatus.Upcoming
+                  competition.status !== CompetitionStatus.Scheduled
                 }
               >
                 <div className="flex items-center">
@@ -623,8 +606,7 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
                       competition.status === CompetitionStatus.AcceptingRegistrations
                         ? 'bg-green-500 text-white'
                         : competition.status === CompetitionStatus.Draft ||
-                            competition.status === CompetitionStatus.Scheduled ||
-                            competition.status === CompetitionStatus.Upcoming
+                            competition.status === CompetitionStatus.Scheduled
                           ? 'bg-green-400 text-white'
                           : 'bg-gray-300 text-gray-500'
                     }`}
@@ -685,49 +667,13 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
                 <ChevronDown className="h-3 w-3 text-gray-400" />
               </div>
 
-              {/* Upcoming */}
-              <Button
-                variant="outline"
-                className="flex items-center justify-between p-2 h-auto text-left w-full cursor-pointer hover:cursor-pointer"
-                onClick={competition.status === CompetitionStatus.Scheduled ? handleSetUpcoming : undefined}
-                disabled={
-                  competition.status !== CompetitionStatus.Scheduled &&
-                  competition.status !== CompetitionStatus.Upcoming
-                }
-              >
-                <div className="flex items-center">
-                  <div
-                    className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
-                      competition.status === CompetitionStatus.Upcoming
-                        ? 'bg-sky-500 text-white'
-                        : competition.status === CompetitionStatus.Scheduled
-                          ? 'bg-sky-400 text-white'
-                          : 'bg-gray-300 text-gray-500'
-                    }`}
-                  >
-                    <Clock className="h-3 w-3" />
-                  </div>
-                  <span className="ml-2 text-sm font-medium">Nadchodzące</span>
-                </div>
-                {competition.status === CompetitionStatus.Upcoming && (
-                  <Badge variant="default" className="bg-sky-500 text-white">
-                    Aktualny
-                  </Badge>
-                )}
-              </Button>
-
-              {/* Arrow */}
-              <div className="flex justify-center py-1">
-                <ChevronDown className="h-3 w-3 text-gray-400" />
-              </div>
-
               {/* Ongoing */}
               <Button
                 variant="outline"
                 className="flex items-center justify-between p-2 h-auto text-left w-full cursor-pointer hover:cursor-pointer"
-                onClick={competition.status === CompetitionStatus.Upcoming ? handleStartCompetition : undefined}
+                onClick={competition.status === CompetitionStatus.Scheduled ? handleStartCompetition : undefined}
                 disabled={
-                  competition.status !== CompetitionStatus.Upcoming && competition.status !== CompetitionStatus.Ongoing
+                  competition.status !== CompetitionStatus.Scheduled && competition.status !== CompetitionStatus.Ongoing
                 }
               >
                 <div className="flex items-center">
@@ -735,7 +681,7 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
                     className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
                       competition.status === CompetitionStatus.Ongoing
                         ? 'bg-emerald-500 text-white'
-                        : competition.status === CompetitionStatus.Upcoming
+                        : competition.status === CompetitionStatus.Scheduled
                           ? 'bg-emerald-400 text-white'
                           : 'bg-gray-300 text-gray-500'
                     }`}

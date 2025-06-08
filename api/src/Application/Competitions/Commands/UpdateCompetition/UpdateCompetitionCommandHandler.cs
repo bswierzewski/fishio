@@ -35,9 +35,9 @@ public class UpdateCompetitionCommandHandler : IRequestHandler<UpdateCompetition
         }
 
         // Sprawdź, czy zawody można jeszcze edytować (np. nie rozpoczęły się)
-        if (competitionToUpdate.Status != CompetitionStatus.Upcoming)
+        if (competitionToUpdate.Status == CompetitionStatus.Ongoing || competitionToUpdate.Status == CompetitionStatus.Finished)
         {
-            throw new InvalidOperationException("Można edytować tylko zawody, które jeszcze się nie rozpoczęły.");
+            throw new InvalidOperationException("Nie można edytować zawodów, które już się rozpoczęły lub zakończyły.");
         }
 
         var fishery = await _context.Fisheries.FindAsync(new object[] { request.FisheryId }, cancellationToken);

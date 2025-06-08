@@ -4,22 +4,19 @@ namespace Fishio.Domain.Enums;
 
 public enum CompetitionStatus
 {
-    [Description("Wersja robocza")]
+    [Description("Szkic")]
     Draft,
 
-    [Description("W trakcie zatwierdzania")]
+    [Description("Oczekuje na zatwierdzenie")]
     PendingApproval,
 
-    [Description("Akceptacja zgłoszeń")]
+    [Description("Przyjmuje rejestracje")]
     AcceptingRegistrations,
 
-    [Description("Zgłoszenia zamknięte")]
+    [Description("Zaplanowane")]
     Scheduled,
 
-    [Description("Zaplanowane")]
-    Upcoming,
-
-    [Description("Trwające")]
+    [Description("W trakcie")]
     Ongoing,
 
     [Description("Zakończone")]

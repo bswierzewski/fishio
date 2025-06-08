@@ -48,8 +48,7 @@ public class GetDashboardDataQueryHandler : IRequestHandler<GetDashboardDataQuer
 
         dashboardDto.MyUpcomingCompetitions.AddRange(
             allMyCompetitions
-                .Where(x => x.Competition.Status == CompetitionStatus.Upcoming ||
-                              x.Competition.Status == CompetitionStatus.Ongoing ||
+                .Where(x => x.Competition.Status == CompetitionStatus.Ongoing ||
                               x.Competition.Status == CompetitionStatus.AcceptingRegistrations ||
                               x.Competition.Status == CompetitionStatus.Scheduled)
                 .Take(request.MaxRecentItems) // Użycie wartości z requestu
@@ -105,7 +104,7 @@ public class GetDashboardDataQueryHandler : IRequestHandler<GetDashboardDataQuer
         var openCompetitions = await _context.Competitions
             .AsNoTracking()
             .Where(c => (c.Type == CompetitionType.Public) &&
-                        (c.Status == CompetitionStatus.AcceptingRegistrations || c.Status == CompetitionStatus.Upcoming || c.Status == CompetitionStatus.Scheduled) &&
+                        (c.Status == CompetitionStatus.AcceptingRegistrations || c.Status == CompetitionStatus.Scheduled) &&
                         c.OrganizerId != currentUser.Id &&
                         !c.Participants.Any(p => p.UserId == currentUser.Id))
             .OrderBy(c => c.Schedule.Start)

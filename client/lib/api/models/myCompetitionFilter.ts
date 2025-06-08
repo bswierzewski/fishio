@@ -10,7 +10,7 @@ export type MyCompetitionFilter = (typeof MyCompetitionFilter)[keyof typeof MyCo
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const MyCompetitionFilter = {
   All: 'All',
-  Upcoming: 'Upcoming',
+  Active: 'Active',
   Finished: 'Finished',
   Organized: 'Organized',
   Judged: 'Judged'

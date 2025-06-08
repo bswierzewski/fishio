@@ -104,7 +104,8 @@ export default function PublicResultsPage() {
             <div className="flex items-center justify-center text-xs sm:text-sm opacity-90">
               <Clock className="mr-1.5 h-3 w-3 sm:h-4 sm:w-4" />
               <span>
-                {competition.status === CompetitionStatus.Upcoming &&
+                {(competition.status === CompetitionStatus.Scheduled ||
+                  competition.status === CompetitionStatus.AcceptingRegistrations) &&
                   competition.startTime &&
                   `Rozpoczęcie: ${formatDateTime(competition.startTime)}`}
                 {competition.status === CompetitionStatus.Ongoing &&
@@ -118,8 +119,7 @@ export default function PublicResultsPage() {
           </div>
 
           {/* --- Zawartość zależna od statusu --- */}
-          {(competition.status === CompetitionStatus.Upcoming ||
-            competition.status === CompetitionStatus.Scheduled ||
+          {(competition.status === CompetitionStatus.Scheduled ||
             competition.status === CompetitionStatus.AcceptingRegistrations) && (
             <div className="p-6 sm:p-8 text-center bg-card">
               <Hourglass className="mx-auto h-16 w-16 mb-4 text-muted-foreground" />

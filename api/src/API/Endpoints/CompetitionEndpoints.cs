@@ -16,7 +16,6 @@ using Fishio.Application.Competitions.Commands.RemoveParticipant;
 using Fishio.Application.Competitions.Commands.ReopenRegistrations;
 using Fishio.Application.Competitions.Commands.RequestApproval;
 using Fishio.Application.Competitions.Commands.ScheduleCompetition;
-using Fishio.Application.Competitions.Commands.SetUpcoming;
 using Fishio.Application.Competitions.Commands.StartCompetition;
 using Fishio.Application.Competitions.Commands.UpdateCompetition;
 using Fishio.Application.Competitions.Commands.UpdateCompetitionCategory;
@@ -102,12 +101,7 @@ public static class CompetitionsEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound).ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden);
 
-        statusGroup.MapPost("/set-upcoming", OrganizerSetsUpcoming)
-            .WithName(nameof(OrganizerSetsUpcoming))
-            .Produces(StatusCodes.Status204NoContent)
-            .ProducesValidationProblem().ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status404NotFound).ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status403Forbidden);
+
 
         statusGroup.MapPost("/reopen-registrations", OrganizerReopensRegistrations)
             .WithName(nameof(OrganizerReopensRegistrations))
@@ -371,12 +365,7 @@ public static class CompetitionsEndpoints
         return TypedResults.NoContent();
     }
 
-    private static async Task<IResult> OrganizerSetsUpcoming(ISender sender, int competitionId, CancellationToken ct)
-    {
-        var command = new SetUpcomingCommand { CompetitionId = competitionId };
-        await sender.Send(command, ct);
-        return TypedResults.NoContent();
-    }
+
 
     private static async Task<IResult> OrganizerReopensRegistrations(ISender sender, int competitionId, CancellationToken ct)
     {

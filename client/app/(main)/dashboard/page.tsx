@@ -89,7 +89,6 @@ export default function DashboardPage() {
           label: 'Trwające',
           bgColorClass: 'bg-green-500/10'
         };
-      case CompetitionStatus.Upcoming:
       case CompetitionStatus.Scheduled:
       case CompetitionStatus.AcceptingRegistrations:
         return {

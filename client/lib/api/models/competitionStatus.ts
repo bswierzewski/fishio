@@ -13,7 +13,6 @@ export const CompetitionStatus = {
   PendingApproval: 'PendingApproval',
   AcceptingRegistrations: 'AcceptingRegistrations',
   Scheduled: 'Scheduled',
-  Upcoming: 'Upcoming',
   Ongoing: 'Ongoing',
   Finished: 'Finished',
   Cancelled: 'Cancelled'

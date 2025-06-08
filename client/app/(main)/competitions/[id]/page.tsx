@@ -49,7 +49,6 @@ const formatDateTime = (dateString: string) => {
 
 const getStatusColor = (status: CompetitionStatus) => {
   switch (status) {
-    case CompetitionStatus.Upcoming:
     case CompetitionStatus.Scheduled:
     case CompetitionStatus.AcceptingRegistrations:
       return 'text-blue-500';
@@ -74,8 +73,6 @@ const getStatusText = (status: CompetitionStatus) => {
       return 'Przyjmuje rejestracje';
     case CompetitionStatus.Scheduled:
       return 'Zaplanowane';
-    case CompetitionStatus.Upcoming:
-      return 'Nadchodzące';
     case CompetitionStatus.Ongoing:
       return 'W trakcie';
     case CompetitionStatus.Finished:
@@ -218,18 +215,15 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
   // Get user's registration status
   const userRegistrationStatus = userParticipants.length > 0 ? userParticipants[0].status : null;
 
-  const canJoin =
-    !isParticipant &&
-    (competition.status === CompetitionStatus.AcceptingRegistrations ||
-      competition.status === CompetitionStatus.Upcoming);
+  const canJoin = !isParticipant && competition.status === CompetitionStatus.AcceptingRegistrations;
 
   const canRegisterCatch = isJudge && competition.status === CompetitionStatus.Ongoing;
   const canManage = isOrganizer;
-  const canStartCompetition = isOrganizer && competition.status === CompetitionStatus.Upcoming;
+  const canStartCompetition = isOrganizer && competition.status === CompetitionStatus.Scheduled;
   const canFinishCompetition = isOrganizer && competition.status === CompetitionStatus.Ongoing;
   const canCancelCompetition =
     isOrganizer &&
-    (competition.status === CompetitionStatus.Upcoming ||
+    (competition.status === CompetitionStatus.Scheduled ||
       competition.status === CompetitionStatus.AcceptingRegistrations);
 
   // Separate participants by role - only show approved participants
@@ -545,8 +539,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
               </div>
             </div>
             <div className="p-4">
-              {competition.status === CompetitionStatus.Upcoming ||
-              competition.status === CompetitionStatus.AcceptingRegistrations ||
+              {competition.status === CompetitionStatus.AcceptingRegistrations ||
               competition.status === CompetitionStatus.Scheduled ? (
                 <p className="text-sm text-muted-foreground">Ranking będzie dostępny po rozpoczęciu zawodów.</p>
               ) : competition.status === CompetitionStatus.Ongoing ? (

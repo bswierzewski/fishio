@@ -73,10 +73,10 @@ public class Competition : BaseAuditableEntity
         Guard.Against.NullOrWhiteSpace(name, nameof(name));
         Guard.Against.Null(schedule, nameof(schedule));
         Guard.Against.Null(fishery, nameof(fishery));
-        // TODO: Dodać walidację, czy można modyfikować (np. status Draft lub Upcoming)
-        if (Status != CompetitionStatus.Draft && Status != CompetitionStatus.Upcoming && Status != CompetitionStatus.AcceptingRegistrations)
+        // TODO: Dodać walidację, czy można modyfikować (np. status Draft lub AcceptingRegistrations)
+        if (Status != CompetitionStatus.Draft && Status != CompetitionStatus.AcceptingRegistrations && Status != CompetitionStatus.Scheduled)
         {
-            throw new InvalidOperationException("Szczegóły zawodów można zmieniać tylko w statusie Draft, Upcoming lub AcceptingRegistrations.");
+            throw new InvalidOperationException("Szczegóły zawodów można zmieniać tylko w statusie Draft, AcceptingRegistrations lub Scheduled.");
         }
 
         Name = name;
@@ -153,32 +153,13 @@ public class Competition : BaseAuditableEntity
     {
         if (Status != CompetitionStatus.AcceptingRegistrations)
             throw new InvalidOperationException("Można zaplanować tylko zawody, które akceptują zgłoszenia.");
-        if (Schedule.Start <= DateTimeOffset.UtcNow)
-            throw new InvalidOperationException("Nie można zaplanować zawodów, których czas rozpoczęcia już minął.");
         Status = CompetitionStatus.Scheduled;
-    }
-
-    public void SetUpcoming()
-    {
-        if (Status != CompetitionStatus.Scheduled)
-            throw new InvalidOperationException("Można ustawić status 'Upcoming' tylko dla zaplanowanych zawodów.");
-
-        // Sprawdzenie, czy czas rozpoczęcia jest blisko (np. w ciągu następnych 24 godzin)
-        var timeUntilStart = Schedule.Start - DateTimeOffset.UtcNow;
-        if (timeUntilStart.TotalHours > 24)
-            throw new InvalidOperationException("Status 'Upcoming' można ustawić tylko gdy do rozpoczęcia zostało mniej niż 24 godziny.");
-
-        Status = CompetitionStatus.Upcoming;
-        // AddDomainEvent(new CompetitionUpcomingEvent(this));
     }
 
     public void ReopenRegistrations()
     {
-        if (Status != CompetitionStatus.Scheduled && Status != CompetitionStatus.Upcoming)
-            throw new InvalidOperationException("Można ponownie otworzyć rejestracje tylko dla zawodów w statusie Scheduled lub Upcoming.");
-
-        if (Schedule.Start <= DateTimeOffset.UtcNow)
-            throw new InvalidOperationException("Nie można ponownie otworzyć rejestracji dla zawodów, które już się rozpoczęły.");
+        if (Status != CompetitionStatus.Scheduled)
+            throw new InvalidOperationException("Można ponownie otworzyć rejestracje tylko dla zawodów w statusie Scheduled.");
 
         Status = CompetitionStatus.AcceptingRegistrations;
         // AddDomainEvent(new CompetitionRegistrationsReopenedEvent(this));
@@ -198,12 +179,8 @@ public class Competition : BaseAuditableEntity
 
     public void StartCompetition()
     {
-        if (Status != CompetitionStatus.Scheduled && Status != CompetitionStatus.Upcoming) // Upcoming jeśli czas nadszedł
+        if (Status != CompetitionStatus.Scheduled)
             throw new InvalidOperationException("Można rozpocząć tylko zaplanowane zawody.");
-        if (Schedule.Start > DateTimeOffset.UtcNow)
-            throw new InvalidOperationException("Nie można rozpocząć zawodów przed zaplanowanym czasem rozpoczęcia.");
-        if (Schedule.End <= DateTimeOffset.UtcNow)
-            throw new InvalidOperationException("Nie można rozpocząć zawodów, których czas zakończenia już minął.");
 
         Status = CompetitionStatus.Ongoing;
         // AddDomainEvent(new CompetitionStartedEvent(this));

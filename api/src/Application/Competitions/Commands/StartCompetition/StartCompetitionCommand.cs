@@ -32,8 +32,7 @@ public class StartCompetitionCommandValidator : AbstractValidator<StartCompetiti
         var now = _timeProvider.GetUtcNow();
 
         // Logika zgodna z metodą domenową Competition.StartCompetition()
-        return (competition.Status == CompetitionStatus.Scheduled ||
-                (competition.Status == CompetitionStatus.Upcoming && now >= competition.Schedule.Start)) && // Upcoming, jeśli czas nadszedł
+        return competition.Status == CompetitionStatus.Scheduled &&
                now >= competition.Schedule.Start &&
                now <= competition.Schedule.End;
     }

@@ -60,8 +60,6 @@ export default function MyCompetitionsPage() {
 
   const getStatusLabel = (status?: CompetitionStatus) => {
     switch (status) {
-      case CompetitionStatus.Upcoming:
-        return 'Nadchodzące';
       case CompetitionStatus.Ongoing:
         return 'Trwające';
       case CompetitionStatus.Finished:
@@ -148,7 +146,7 @@ export default function MyCompetitionsPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={MyCompetitionFilter.All}>Wszystkie</SelectItem>
-            <SelectItem value={MyCompetitionFilter.Upcoming}>Nadchodzące</SelectItem>
+            <SelectItem value={MyCompetitionFilter.Active}>Aktywne</SelectItem>
             <SelectItem value={MyCompetitionFilter.Finished}>Zakończone</SelectItem>
             <SelectItem value={MyCompetitionFilter.Organized}>Organizowane</SelectItem>
             <SelectItem value={MyCompetitionFilter.Judged}>Sędziowane</SelectItem>
