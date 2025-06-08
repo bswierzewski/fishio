@@ -1,6 +1,6 @@
 'use client';
 
-import { formatDateTimeLocal } from '@/lib/utils';
+import { formatDateTimeLocal, parseLocalDateTime } from '@/lib/utils';
 import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Calendar, FileText, Fish, MapPin, Ruler, Weight } from 'lucide-react';
@@ -102,7 +102,7 @@ export default function AddLogbookEntryPage() {
       const command: CreateLogbookEntryCommand = {
         imageUrl,
         imagePublicId,
-        catchTime: value.catchTime || undefined,
+        catchTime: value.catchTime ? parseLocalDateTime(value.catchTime) : undefined,
         lengthInCm: value.lengthInCm ? parseFloat(value.lengthInCm) : undefined,
         weightInKg: value.weightInKg ? parseFloat(value.weightInKg) : undefined,
         notes: value.notes || undefined,

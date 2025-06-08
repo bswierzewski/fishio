@@ -1,6 +1,6 @@
 'use client';
 
-import { formatDateTimeLocal } from '@/lib/utils';
+import { formatDateTimeLocal, parseLocalDateTime } from '@/lib/utils';
 import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Calendar, FileText, MapPin, Trophy } from 'lucide-react';
@@ -136,6 +136,8 @@ export default function EditCompetitionPage({ params }: { params: Promise<{ id: 
       const command: UpdateCompetitionCommand = {
         ...value,
         id: competitionId,
+        startTime: value.startTime ? parseLocalDateTime(value.startTime) : undefined,
+        endTime: value.endTime ? parseLocalDateTime(value.endTime) : undefined,
         imageUrl,
         imagePublicId,
         removeCurrentImage

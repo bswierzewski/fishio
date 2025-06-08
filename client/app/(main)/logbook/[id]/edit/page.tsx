@@ -1,6 +1,6 @@
 'use client';
 
-import { formatDateTimeLocal } from '@/lib/utils';
+import { formatDateTimeLocal, parseLocalDateTime } from '@/lib/utils';
 import { useForm } from '@tanstack/react-form';
 import { ArrowLeft, Calendar, FileText, Fish, MapPin, Ruler, Weight } from 'lucide-react';
 import Link from 'next/link';
@@ -77,7 +77,7 @@ export default function EditLogbookEntryPage() {
         imageUrl: value.imageUrl,
         imagePublicId: value.imagePublicId,
         removeCurrentImage: removeCurrentImageFlag,
-        catchTime: value.catchTime || null,
+        catchTime: value.catchTime ? parseLocalDateTime(value.catchTime) : null,
         lengthInCm: value.lengthInCm ? parseFloat(value.lengthInCm) : null,
         weightInKg: value.weightInKg ? parseFloat(value.weightInKg) : null,
         notes: value.notes || null,

@@ -1,6 +1,6 @@
 'use client';
 
-import { formatDateTimeLocal } from '@/lib/utils';
+import { formatDateTimeLocal, parseLocalDateTime } from '@/lib/utils';
 import { useForm } from '@tanstack/react-form';
 import { ArrowLeft, Calendar, Fish, Ruler, Users, Weight } from 'lucide-react';
 import Link from 'next/link';
@@ -82,7 +82,7 @@ export default function NewCatchPage({ params }: { params: Promise<{ id: string 
         weightInKg: value.weightInKg ? parseFloat(value.weightInKg) : null,
         imageUrl: value.imageUrl,
         imagePublicId: value.imagePublicId,
-        catchTime: value.catchTime
+        catchTime: value.catchTime ? parseLocalDateTime(value.catchTime) : undefined
       };
 
       await recordCatchMutation.mutateAsync({
