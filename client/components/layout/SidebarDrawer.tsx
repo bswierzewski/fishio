@@ -170,8 +170,8 @@ export default function SidebarDrawer({ children }: SidebarDrawerProps) {
           <div className="bg-gradient-to-b from-slate-800 to-slate-700 text-white p-6">
             <div className="flex items-center space-x-3">
               <div className="flex-shrink-0">
-                <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
-                  <Image src="/logo.svg" alt="Fishio Logo" width={24} height={24} className="text-white" />
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center">
+                  <Image src="/logo.svg" alt="Fishio Logo" width={50} height={50} className="text-white" />
                 </div>
               </div>
               <div className="flex-1 min-w-0">
