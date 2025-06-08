@@ -54,7 +54,7 @@ public class Competition : BaseAuditableEntity
         Rules = rules;
         ImageUrl = imageUrl;
         ImagePublicId = imagePublicId;
-        Status = CompetitionStatus.AcceptingRegistrations;
+        Status = CompetitionStatus.Draft;
         ResultsToken = Guid.NewGuid().ToString("N");
 
         // Automatycznie dodaj organizatora jako uczestnika z rolą Organizator
@@ -115,35 +115,10 @@ public class Competition : BaseAuditableEntity
     public bool CanModifyDetails() => Status == CompetitionStatus.Draft || Status == CompetitionStatus.AcceptingRegistrations || Status == CompetitionStatus.Scheduled;
 
 
-    public void RequestApproval()
-    {
-        if (Status != CompetitionStatus.Draft)
-            throw new InvalidOperationException("Wniosek o zatwierdzenie można złożyć tylko dla zawodów w wersji roboczej (Draft).");
-        // TODO: Sprawdzić, czy wszystkie wymagane pola są uzupełnione (np. przynajmniej jedna kategoria główna)
-        if (!_categories.Any(c => c.IsPrimaryScoring && c.IsEnabled))
-            throw new InvalidOperationException("Zawody muszą mieć zdefiniowaną przynajmniej jedną aktywną kategorię główną przed zgłoszeniem do zatwierdzenia.");
 
-        Status = CompetitionStatus.PendingApproval;
-        // AddDomainEvent(new CompetitionApprovalRequestedEvent(this));
-    }
-
-    public void ApproveCompetition()
-    {
-        if (Status != CompetitionStatus.PendingApproval)
-            throw new InvalidOperationException("Można zatwierdzić tylko zawody oczekujące na zatwierdzenie.");
-        Status = CompetitionStatus.AcceptingRegistrations;
-        // AddDomainEvent(new CompetitionApprovedEvent(this));
-    }
 
     public void OpenRegistrations()
     {
-        if (Status != CompetitionStatus.Draft)
-            throw new InvalidOperationException("Można otworzyć rejestracje tylko dla zawodów w wersji roboczej (Draft).");
-
-        // Sprawdzić, czy wszystkie wymagane pola są uzupełnione (np. przynajmniej jedna kategoria główna)
-        if (!_categories.Any(c => c.IsPrimaryScoring && c.IsEnabled))
-            throw new InvalidOperationException("Zawody muszą mieć zdefiniowaną przynajmniej jedną aktywną kategorię główną przed otwarciem rejestracji.");
-
         Status = CompetitionStatus.AcceptingRegistrations;
         // AddDomainEvent(new CompetitionRegistrationsOpenedEvent(this));
     }
@@ -151,49 +126,34 @@ public class Competition : BaseAuditableEntity
 
     public void ScheduleCompetition()
     {
-        if (Status != CompetitionStatus.AcceptingRegistrations)
-            throw new InvalidOperationException("Można zaplanować tylko zawody, które akceptują zgłoszenia.");
         Status = CompetitionStatus.Scheduled;
     }
 
     public void ReopenRegistrations()
     {
-        if (Status != CompetitionStatus.Scheduled)
-            throw new InvalidOperationException("Można ponownie otworzyć rejestracje tylko dla zawodów w statusie Scheduled.");
-
         Status = CompetitionStatus.AcceptingRegistrations;
         // AddDomainEvent(new CompetitionRegistrationsReopenedEvent(this));
     }
 
-    public void RejectApproval(string reason)
+    public void SetToDraft(string reason)
     {
         Guard.Against.NullOrWhiteSpace(reason, nameof(reason));
-        if (Status != CompetitionStatus.PendingApproval)
-            throw new InvalidOperationException("Można odrzucić tylko zawody oczekujące na zatwierdzenie.");
-
         Status = CompetitionStatus.Draft;
-        // TODO: Zapisać powód odrzucenia, np. w nowym polu `RejectionReason`
-        // AddDomainEvent(new CompetitionApprovalRejectedEvent(this, reason));
+        // TODO: Zapisać powód przywrócenia do szkicu, np. w nowym polu `DraftReason`
+        // AddDomainEvent(new CompetitionSetToDraftEvent(this, reason));
     }
+
+
 
 
     public void StartCompetition()
     {
-        if (Status != CompetitionStatus.Scheduled)
-            throw new InvalidOperationException("Można rozpocząć tylko zaplanowane zawody.");
-
         Status = CompetitionStatus.Ongoing;
         // AddDomainEvent(new CompetitionStartedEvent(this));
     }
 
     public void FinishCompetition()
     {
-        if (Status != CompetitionStatus.Ongoing)
-            throw new InvalidOperationException("Można zakończyć tylko trwające zawody.");
-        // Można dodać warunek, że czas zakończenia minął, lub pozwolić na wcześniejsze zakończenie
-        // if (Schedule.End > DateTimeOffset.UtcNow)
-        //    throw new InvalidOperationException("Nie można zakończyć zawodów przed zaplanowanym czasem zakończenia.");
-
         Status = CompetitionStatus.Finished;
         // AddDomainEvent(new CompetitionFinishedEvent(this));
     }
@@ -201,9 +161,6 @@ public class Competition : BaseAuditableEntity
     public void CancelCompetition(string reason)
     {
         Guard.Against.NullOrWhiteSpace(reason, nameof(reason));
-        if (Status == CompetitionStatus.Finished || Status == CompetitionStatus.Cancelled)
-            throw new InvalidOperationException("Nie można anulować zakończonych lub już anulowanych zawodów.");
-
         Status = CompetitionStatus.Cancelled;
         // TODO: Zapisać powód anulowania, np. w nowym polu `CancellationReason`
         // AddDomainEvent(new CompetitionCancelledEvent(this, reason));

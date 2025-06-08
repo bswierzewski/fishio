@@ -17,7 +17,7 @@ public class FinishCompetitionCommandValidator : AbstractValidator<FinishCompeti
                     .AsNoTracking()
                     .Select(c => new { c.Id, c.Status })
                     .FirstOrDefaultAsync(c => c.Id == id, ct);
-                return competition != null && competition.Status == CompetitionStatus.Ongoing;
-            }).WithMessage("Zawody nie istnieją lub nie są w trakcie (Ongoing).");
+                return competition != null;
+            }).WithMessage("Zawody nie istnieją.");
     }
 }

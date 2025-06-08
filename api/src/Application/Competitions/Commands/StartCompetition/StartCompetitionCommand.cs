@@ -17,7 +17,7 @@ public class StartCompetitionCommandValidator : AbstractValidator<StartCompetiti
 
         RuleFor(v => v.CompetitionId)
             .NotEmpty().WithMessage("ID zawodów jest wymagane.")
-            .MustAsync(CompetitionCanBeStarted).WithMessage("Zawody nie mogą zostać rozpoczęte (np. nie istnieją, nie są w odpowiednim statusie lub czas rozpoczęcia jeszcze nie nadszedł).");
+            .MustAsync(CompetitionCanBeStarted).WithMessage("Zawody nie istnieją.");
     }
 
     private async Task<bool> CompetitionCanBeStarted(int competitionId, CancellationToken cancellationToken)
@@ -27,13 +27,6 @@ public class StartCompetitionCommandValidator : AbstractValidator<StartCompetiti
             .Select(c => new { c.Id, c.Status, c.Schedule })
             .FirstOrDefaultAsync(c => c.Id == competitionId, cancellationToken);
 
-        if (competition == null) return false;
-
-        var now = _timeProvider.GetUtcNow();
-
-        // Logika zgodna z metodą domenową Competition.StartCompetition()
-        return competition.Status == CompetitionStatus.Scheduled &&
-               now >= competition.Schedule.Start &&
-               now <= competition.Schedule.End;
+        return competition != null;
     }
 }

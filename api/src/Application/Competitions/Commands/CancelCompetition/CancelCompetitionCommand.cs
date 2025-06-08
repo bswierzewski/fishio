@@ -18,11 +18,8 @@ public class CancelCompetitionCommandValidator : AbstractValidator<CancelCompeti
                     .AsNoTracking()
                     .Select(c => new { c.Id, c.Status })
                     .FirstOrDefaultAsync(c => c.Id == id, ct);
-                // Nie można anulować zakończonych lub już anulowanych
-                return competition != null &&
-                       competition.Status != CompetitionStatus.Finished &&
-                       competition.Status != CompetitionStatus.Cancelled;
-            }).WithMessage("Zawody nie istnieją, są już zakończone lub anulowane.");
+                return competition != null;
+            }).WithMessage("Zawody nie istnieją.");
 
         RuleFor(v => v.Reason)
             .NotEmpty().WithMessage("Powód anulowania jest wymagany.")

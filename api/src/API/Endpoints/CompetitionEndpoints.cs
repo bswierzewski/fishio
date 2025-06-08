@@ -1,6 +1,5 @@
 ﻿using Fishio.Application.Common.Models;
 using Fishio.Application.Competitions.Commands.AddParticipant;
-using Fishio.Application.Competitions.Commands.ApproveCompetition;
 using Fishio.Application.Competitions.Commands.ApproveParticipant;
 using Fishio.Application.Competitions.Commands.AssignJudge;
 using Fishio.Application.Competitions.Commands.CancelCompetition;
@@ -9,13 +8,12 @@ using Fishio.Application.Competitions.Commands.FinishCompetition;
 using Fishio.Application.Competitions.Commands.JoinCompetition;
 using Fishio.Application.Competitions.Commands.OpenRegistrations;
 using Fishio.Application.Competitions.Commands.RecordFishCatch;
-using Fishio.Application.Competitions.Commands.RejectApproval;
 using Fishio.Application.Competitions.Commands.RejectParticipant;
 using Fishio.Application.Competitions.Commands.RemoveJudge;
 using Fishio.Application.Competitions.Commands.RemoveParticipant;
 using Fishio.Application.Competitions.Commands.ReopenRegistrations;
-using Fishio.Application.Competitions.Commands.RequestApproval;
 using Fishio.Application.Competitions.Commands.ScheduleCompetition;
+using Fishio.Application.Competitions.Commands.SetToDraft;
 using Fishio.Application.Competitions.Commands.StartCompetition;
 using Fishio.Application.Competitions.Commands.UpdateCompetition;
 using Fishio.Application.Competitions.Commands.UpdateCompetitionCategory;
@@ -66,8 +64,8 @@ public static class CompetitionsEndpoints
         var statusGroup = competitionsGroup.MapGroup("/{competitionId:int}/status")
             .RequireAuthorization(); // Zmiana statusu wymaga autoryzacji (organizator)
 
-        statusGroup.MapPost("/request-approval", OrganizerRequestsApproval)
-            .WithName(nameof(OrganizerRequestsApproval))
+        statusGroup.MapPost("/set-to-draft", OrganizerSetsToDraft)
+            .WithName(nameof(OrganizerSetsToDraft))
             .Produces(StatusCodes.Status204NoContent)
             .ProducesValidationProblem().ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound).ProducesProblem(StatusCodes.Status401Unauthorized)
@@ -75,20 +73,6 @@ public static class CompetitionsEndpoints
 
         statusGroup.MapPost("/open-registrations", OrganizerOpensRegistrations)
             .WithName(nameof(OrganizerOpensRegistrations))
-            .Produces(StatusCodes.Status204NoContent)
-            .ProducesValidationProblem().ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status404NotFound).ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status403Forbidden);
-
-        statusGroup.MapPost("/approve", AdminApprovesCompetition)
-            .WithName(nameof(AdminApprovesCompetition))
-            .Produces(StatusCodes.Status204NoContent)
-            .ProducesValidationProblem().ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status404NotFound).ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status403Forbidden);
-
-        statusGroup.MapPost("/reject-approval", AdminRejectsApproval)
-            .WithName(nameof(AdminRejectsApproval))
             .Produces(StatusCodes.Status204NoContent)
             .ProducesValidationProblem().ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound).ProducesProblem(StatusCodes.Status401Unauthorized)
@@ -326,9 +310,13 @@ public static class CompetitionsEndpoints
         return TypedResults.NoContent();
     }
 
-    private static async Task<IResult> OrganizerRequestsApproval(ISender sender, int competitionId, CancellationToken ct)
+    private static async Task<IResult> OrganizerSetsToDraft(ISender sender, int competitionId, SetToDraftCommand command, CancellationToken ct)
     {
-        var command = new RequestApprovalCommand { CompetitionId = competitionId };
+        // Set the competition ID from the route
+        if (command.CompetitionId == 0) command.CompetitionId = competitionId;
+        else if (command.CompetitionId != competitionId)
+            return TypedResults.BadRequest("ID zawodów w ścieżce nie zgadza się z ID w ciele żądania.");
+
         await sender.Send(command, ct);
         return TypedResults.NoContent();
     }
@@ -336,24 +324,6 @@ public static class CompetitionsEndpoints
     private static async Task<IResult> OrganizerOpensRegistrations(ISender sender, int competitionId, CancellationToken ct)
     {
         var command = new OpenRegistrationsCommand { CompetitionId = competitionId };
-        await sender.Send(command, ct);
-        return TypedResults.NoContent();
-    }
-
-    private static async Task<IResult> AdminApprovesCompetition(ISender sender, int competitionId, CancellationToken ct)
-    {
-        var command = new ApproveCompetitionCommand { CompetitionId = competitionId };
-        await sender.Send(command, ct);
-        return TypedResults.NoContent();
-    }
-
-    private static async Task<IResult> AdminRejectsApproval(ISender sender, int competitionId, RejectApprovalCommand command, CancellationToken ct)
-    {
-        if (competitionId != command.CompetitionId)
-        {
-            if (command.CompetitionId == 0) command.CompetitionId = competitionId;
-            else return TypedResults.BadRequest("ID zawodów w ścieżce nie zgadza się z ID w ciele żądania.");
-        }
         await sender.Send(command, ct);
         return TypedResults.NoContent();
     }

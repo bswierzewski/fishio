@@ -7,9 +7,6 @@ public enum CompetitionStatus
     [Description("Szkic")]
     Draft,
 
-    [Description("Oczekuje na zatwierdzenie")]
-    PendingApproval,
-
     [Description("Przyjmuje rejestracje")]
     AcceptingRegistrations,
 

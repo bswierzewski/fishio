@@ -15,7 +15,7 @@ public class OpenRegistrationsCommandValidator : AbstractValidator<OpenRegistrat
 
         RuleFor(v => v.CompetitionId)
             .NotEmpty().WithMessage("ID zawodów jest wymagane.")
-            .MustAsync(CompetitionCanOpenRegistrations).WithMessage("Nie można otworzyć rejestracji dla tych zawodów (np. nie istnieją, nie są w statusie Draft lub nie mają aktywnej kategorii głównej).");
+            .MustAsync(CompetitionCanOpenRegistrations).WithMessage("Zawody nie istnieją.");
     }
 
     private async Task<bool> CompetitionCanOpenRegistrations(int competitionId, CancellationToken cancellationToken)
@@ -26,10 +26,6 @@ public class OpenRegistrationsCommandValidator : AbstractValidator<OpenRegistrat
             .Select(c => new { c.Id, c.Status, Categories = c.Categories.Where(cat => cat.IsEnabled && cat.IsPrimaryScoring) })
             .FirstOrDefaultAsync(c => c.Id == competitionId, cancellationToken);
 
-        if (competition == null) return false;
-
-        // Logika zgodna z metodą domenową Competition.OpenRegistrations()
-        return competition.Status == CompetitionStatus.Draft &&
-               competition.Categories.Any();
+        return competition != null;
     }
 }

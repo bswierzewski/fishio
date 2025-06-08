@@ -16,23 +16,6 @@ public class ScheduleCompetitionCommandValidator : AbstractValidator<ScheduleCom
         _timeProvider = timeProvider;
 
         RuleFor(v => v.CompetitionId)
-            .NotEmpty().WithMessage("ID zawodów jest wymagane.")
-            .MustAsync(CompetitionCanBeScheduled).WithMessage("Nie można zaplanować tych zawodów (np. nie istnieją, nie są w statusie AcceptingRegistrations lub czas rozpoczęcia już minął).");
-    }
-
-    private async Task<bool> CompetitionCanBeScheduled(int competitionId, CancellationToken cancellationToken)
-    {
-        var competition = await _context.Competitions
-            .AsNoTracking()
-            .Select(c => new { c.Id, c.Status, c.Schedule })
-            .FirstOrDefaultAsync(c => c.Id == competitionId, cancellationToken);
-
-        if (competition == null) return false;
-
-        var now = _timeProvider.GetUtcNow();
-
-        // Logika zgodna z metodą domenową Competition.ScheduleCompetition()
-        return competition.Status == CompetitionStatus.AcceptingRegistrations &&
-               competition.Schedule.Start > now;
+            .NotEmpty().WithMessage("ID zawodów jest wymagane.");
     }
 }

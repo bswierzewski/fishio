@@ -12,7 +12,6 @@ import {
   Edit3,
   FileCheck,
   FileText,
-  Hourglass,
   Play,
   PlayCircle,
   Search,
@@ -46,8 +45,8 @@ import {
   useOrganizerRejectsParticipant,
   useOrganizerRemovesParticipant,
   useOrganizerReopensRegistrations,
-  useOrganizerRequestsApproval,
   useOrganizerSchedulesCompetition,
+  useOrganizerSetsToDraft,
   useOrganizerStartsCompetition
 } from '@/lib/api/endpoints/competitions';
 import { useSearchAvailableUsers } from '@/lib/api/endpoints/users';
@@ -148,7 +147,7 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
   const rejectParticipantMutation = useOrganizerRejectsParticipant();
 
   // Status management mutations
-  const requestApprovalMutation = useOrganizerRequestsApproval();
+  const setToDraftMutation = useOrganizerSetsToDraft();
   const openRegistrationsMutation = useOrganizerOpensRegistrations();
   const scheduleCompetitionMutation = useOrganizerSchedulesCompetition();
   const reopenRegistrationsMutation = useOrganizerReopensRegistrations();
@@ -379,17 +378,6 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
   };
 
   // Status management handlers
-  const handleRequestApproval = async () => {
-    if (!competitionId) return;
-
-    try {
-      await requestApprovalMutation.mutateAsync({ competitionId });
-      toast.success('Wniosek o zatwierdzenie został wysłany!');
-      refetch();
-    } catch (error) {
-      handleError(error);
-    }
-  };
 
   const handleOpenRegistrations = async () => {
     if (!competitionId) return;
@@ -469,6 +457,23 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
     }
   };
 
+  const handleSetToDraft = async () => {
+    if (!competitionId) return;
+
+    const reason = prompt('Podaj powód przywrócenia do szkicu:') || 'Przywrócono do szkicu';
+
+    try {
+      await setToDraftMutation.mutateAsync({
+        competitionId,
+        data: { competitionId, reason }
+      });
+      toast.success('Zawody zostały przywrócone do szkicu!');
+      refetch();
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader onBack={() => (window.location.href = `/competitions/${competitionId}`)} />
@@ -521,14 +526,16 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
               <Button
                 variant="outline"
                 className="flex items-center justify-between p-2 h-auto text-left w-full cursor-pointer hover:cursor-pointer"
-                disabled={true}
+                onClick={() => {
+                  handleSetToDraft();
+                }}
               >
                 <div className="flex items-center">
                   <div
                     className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
                       competition.status === CompetitionStatus.Draft
                         ? 'bg-blue-500 text-white'
-                        : 'bg-gray-300 text-gray-500'
+                        : 'bg-blue-200 text-blue-700'
                     }`}
                   >
                     <FileText className="h-3 w-3" />
@@ -547,68 +554,20 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
                 <ChevronDown className="h-3 w-3 text-gray-400" />
               </div>
 
-              {/* Pending Approval */}
-              <Button
-                variant="outline"
-                className="flex items-center justify-between p-2 h-auto text-left w-full cursor-pointer hover:cursor-pointer"
-                onClick={competition.status === CompetitionStatus.Draft ? handleRequestApproval : undefined}
-                disabled={
-                  competition.status !== CompetitionStatus.Draft &&
-                  competition.status !== CompetitionStatus.PendingApproval
-                }
-              >
-                <div className="flex items-center">
-                  <div
-                    className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
-                      competition.status === CompetitionStatus.PendingApproval
-                        ? 'bg-amber-500 text-white'
-                        : competition.status === CompetitionStatus.Draft
-                          ? 'bg-amber-400 text-white'
-                          : 'bg-gray-300 text-gray-500'
-                    }`}
-                  >
-                    <Hourglass className="h-3 w-3" />
-                  </div>
-                  <span className="ml-2 text-sm font-medium">Oczekuje na zatwierdzenie</span>
-                </div>
-                {competition.status === CompetitionStatus.PendingApproval && (
-                  <Badge variant="default" className="bg-amber-500 text-white">
-                    Aktualny
-                  </Badge>
-                )}
-              </Button>
-
-              {/* Arrow */}
-              <div className="flex justify-center py-1">
-                <ChevronDown className="h-3 w-3 text-gray-400" />
-              </div>
-
               {/* Accepting Registrations */}
               <Button
                 variant="outline"
                 className="flex items-center justify-between p-2 h-auto text-left w-full cursor-pointer hover:cursor-pointer"
-                onClick={
-                  competition.status === CompetitionStatus.Draft
-                    ? handleOpenRegistrations
-                    : competition.status === CompetitionStatus.Scheduled
-                      ? handleReopenRegistrations
-                      : undefined
-                }
-                disabled={
-                  competition.status !== CompetitionStatus.Draft &&
-                  competition.status !== CompetitionStatus.AcceptingRegistrations &&
-                  competition.status !== CompetitionStatus.Scheduled
-                }
+                onClick={() => {
+                  handleOpenRegistrations();
+                }}
               >
                 <div className="flex items-center">
                   <div
                     className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
                       competition.status === CompetitionStatus.AcceptingRegistrations
                         ? 'bg-green-500 text-white'
-                        : competition.status === CompetitionStatus.Draft ||
-                            competition.status === CompetitionStatus.Scheduled
-                          ? 'bg-green-400 text-white'
-                          : 'bg-gray-300 text-gray-500'
+                        : 'bg-green-200 text-green-700'
                     }`}
                   >
                     <Users className="h-3 w-3" />
@@ -631,24 +590,16 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
               <Button
                 variant="outline"
                 className="flex items-center justify-between p-2 h-auto text-left w-full cursor-pointer hover:cursor-pointer"
-                onClick={
-                  competition.status === CompetitionStatus.AcceptingRegistrations
-                    ? handleScheduleCompetition
-                    : undefined
-                }
-                disabled={
-                  competition.status !== CompetitionStatus.AcceptingRegistrations &&
-                  competition.status !== CompetitionStatus.Scheduled
-                }
+                onClick={() => {
+                  handleScheduleCompetition();
+                }}
               >
                 <div className="flex items-center">
                   <div
                     className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
                       competition.status === CompetitionStatus.Scheduled
-                        ? 'bg-blue-500 text-white'
-                        : competition.status === CompetitionStatus.AcceptingRegistrations
-                          ? 'bg-blue-400 text-white'
-                          : 'bg-gray-300 text-gray-500'
+                        ? 'bg-purple-500 text-white'
+                        : 'bg-purple-200 text-purple-700'
                     }`}
                   >
                     <Calendar className="h-3 w-3" />
@@ -656,7 +607,7 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
                   <span className="ml-2 text-sm font-medium">Zaplanowane</span>
                 </div>
                 {competition.status === CompetitionStatus.Scheduled && (
-                  <Badge variant="default" className="bg-blue-500 text-white">
+                  <Badge variant="default" className="bg-purple-500 text-white">
                     Aktualny
                   </Badge>
                 )}
@@ -671,19 +622,16 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
               <Button
                 variant="outline"
                 className="flex items-center justify-between p-2 h-auto text-left w-full cursor-pointer hover:cursor-pointer"
-                onClick={competition.status === CompetitionStatus.Scheduled ? handleStartCompetition : undefined}
-                disabled={
-                  competition.status !== CompetitionStatus.Scheduled && competition.status !== CompetitionStatus.Ongoing
-                }
+                onClick={() => {
+                  handleStartCompetition();
+                }}
               >
                 <div className="flex items-center">
                   <div
                     className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
                       competition.status === CompetitionStatus.Ongoing
                         ? 'bg-emerald-500 text-white'
-                        : competition.status === CompetitionStatus.Scheduled
-                          ? 'bg-emerald-400 text-white'
-                          : 'bg-gray-300 text-gray-500'
+                        : 'bg-emerald-200 text-emerald-700'
                     }`}
                   >
                     <Play className="h-3 w-3" />
@@ -706,19 +654,16 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
               <Button
                 variant="outline"
                 className="flex items-center justify-between p-2 h-auto text-left w-full cursor-pointer hover:cursor-pointer"
-                onClick={competition.status === CompetitionStatus.Ongoing ? handleFinishCompetition : undefined}
-                disabled={
-                  competition.status !== CompetitionStatus.Ongoing && competition.status !== CompetitionStatus.Finished
-                }
+                onClick={() => {
+                  handleFinishCompetition();
+                }}
               >
                 <div className="flex items-center">
                   <div
                     className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
                       competition.status === CompetitionStatus.Finished
-                        ? 'bg-gray-600 text-white'
-                        : competition.status === CompetitionStatus.Ongoing
-                          ? 'bg-gray-500 text-white'
-                          : 'bg-gray-300 text-gray-500'
+                        ? 'bg-slate-600 text-white'
+                        : 'bg-slate-200 text-slate-700'
                     }`}
                   >
                     <CheckCircle className="h-3 w-3" />
@@ -726,7 +671,7 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
                   <span className="ml-2 text-sm font-medium">Zakończone</span>
                 </div>
                 {competition.status === CompetitionStatus.Finished && (
-                  <Badge variant="default" className="bg-gray-600 text-white">
+                  <Badge variant="default" className="bg-slate-600 text-white">
                     Aktualny
                   </Badge>
                 )}
@@ -741,25 +686,16 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
               <Button
                 variant="outline"
                 className="flex items-center justify-between p-2 h-auto text-left w-full cursor-pointer hover:cursor-pointer"
-                onClick={
-                  competition.status !== CompetitionStatus.Finished &&
-                  competition.status !== CompetitionStatus.Cancelled
-                    ? handleCancelCompetition
-                    : undefined
-                }
-                disabled={
-                  competition.status === CompetitionStatus.Finished ||
-                  competition.status === CompetitionStatus.Cancelled
-                }
+                onClick={() => {
+                  handleCancelCompetition();
+                }}
               >
                 <div className="flex items-center">
                   <div
                     className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
                       competition.status === CompetitionStatus.Cancelled
                         ? 'bg-red-500 text-white'
-                        : competition.status !== CompetitionStatus.Finished
-                          ? 'bg-red-400 text-white'
-                          : 'bg-gray-300 text-gray-500'
+                        : 'bg-red-200 text-red-700'
                     }`}
                   >
                     <XCircle className="h-3 w-3" />

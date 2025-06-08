@@ -33,7 +33,7 @@ import type {
   MyCompetitionSummaryDtoPaginatedList,
   ProblemDetails,
   RecordCompetitionFishCatchCommand,
-  RejectApprovalCommand,
+  SetToDraftCommand,
   UpdateCompetitionCategoryCommand,
   UpdateCompetitionCommand
 } from '../models';
@@ -530,32 +530,39 @@ export const useUpdateExistingCompetition = <TError = ProblemDetails, TContext =
 
   return useMutation(mutationOptions, queryClient);
 };
-export const organizerRequestsApproval = (
+export const organizerSetsToDraft = (
   competitionId: number,
+  setToDraftCommand: SetToDraftCommand,
   options?: SecondParameter<typeof customInstance>,
   signal?: AbortSignal
 ) => {
   return customInstance<void>(
-    { url: `/api/competitions/${competitionId}/status/request-approval`, method: 'POST', signal },
+    {
+      url: `/api/competitions/${competitionId}/status/set-to-draft`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: setToDraftCommand,
+      signal
+    },
     options
   );
 };
 
-export const getOrganizerRequestsApprovalMutationOptions = <TError = ProblemDetails, TContext = unknown>(options?: {
+export const getOrganizerSetsToDraftMutationOptions = <TError = ProblemDetails, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof organizerRequestsApproval>>,
+    Awaited<ReturnType<typeof organizerSetsToDraft>>,
     TError,
-    { competitionId: number },
+    { competitionId: number; data: SetToDraftCommand },
     TContext
   >;
   request?: SecondParameter<typeof customInstance>;
 }): UseMutationOptions<
-  Awaited<ReturnType<typeof organizerRequestsApproval>>,
+  Awaited<ReturnType<typeof organizerSetsToDraft>>,
   TError,
-  { competitionId: number },
+  { competitionId: number; data: SetToDraftCommand },
   TContext
 > => {
-  const mutationKey = ['organizerRequestsApproval'];
+  const mutationKey = ['organizerSetsToDraft'];
   const { mutation: mutationOptions, request: requestOptions } = options
     ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
       ? options
@@ -563,41 +570,39 @@ export const getOrganizerRequestsApprovalMutationOptions = <TError = ProblemDeta
     : { mutation: { mutationKey }, request: undefined };
 
   const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof organizerRequestsApproval>>,
-    { competitionId: number }
+    Awaited<ReturnType<typeof organizerSetsToDraft>>,
+    { competitionId: number; data: SetToDraftCommand }
   > = (props) => {
-    const { competitionId } = props ?? {};
+    const { competitionId, data } = props ?? {};
 
-    return organizerRequestsApproval(competitionId, requestOptions);
+    return organizerSetsToDraft(competitionId, data, requestOptions);
   };
 
   return { mutationFn, ...mutationOptions };
 };
 
-export type OrganizerRequestsApprovalMutationResult = NonNullable<
-  Awaited<ReturnType<typeof organizerRequestsApproval>>
->;
+export type OrganizerSetsToDraftMutationResult = NonNullable<Awaited<ReturnType<typeof organizerSetsToDraft>>>;
+export type OrganizerSetsToDraftMutationBody = SetToDraftCommand;
+export type OrganizerSetsToDraftMutationError = ProblemDetails;
 
-export type OrganizerRequestsApprovalMutationError = ProblemDetails;
-
-export const useOrganizerRequestsApproval = <TError = ProblemDetails, TContext = unknown>(
+export const useOrganizerSetsToDraft = <TError = ProblemDetails, TContext = unknown>(
   options?: {
     mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof organizerRequestsApproval>>,
+      Awaited<ReturnType<typeof organizerSetsToDraft>>,
       TError,
-      { competitionId: number },
+      { competitionId: number; data: SetToDraftCommand },
       TContext
     >;
     request?: SecondParameter<typeof customInstance>;
   },
   queryClient?: QueryClient
 ): UseMutationResult<
-  Awaited<ReturnType<typeof organizerRequestsApproval>>,
+  Awaited<ReturnType<typeof organizerSetsToDraft>>,
   TError,
-  { competitionId: number },
+  { competitionId: number; data: SetToDraftCommand },
   TContext
 > => {
-  const mutationOptions = getOrganizerRequestsApprovalMutationOptions(options);
+  const mutationOptions = getOrganizerSetsToDraftMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };
@@ -669,151 +674,6 @@ export const useOrganizerOpensRegistrations = <TError = ProblemDetails, TContext
   TContext
 > => {
   const mutationOptions = getOrganizerOpensRegistrationsMutationOptions(options);
-
-  return useMutation(mutationOptions, queryClient);
-};
-export const adminApprovesCompetition = (
-  competitionId: number,
-  options?: SecondParameter<typeof customInstance>,
-  signal?: AbortSignal
-) => {
-  return customInstance<void>(
-    { url: `/api/competitions/${competitionId}/status/approve`, method: 'POST', signal },
-    options
-  );
-};
-
-export const getAdminApprovesCompetitionMutationOptions = <TError = ProblemDetails, TContext = unknown>(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof adminApprovesCompetition>>,
-    TError,
-    { competitionId: number },
-    TContext
-  >;
-  request?: SecondParameter<typeof customInstance>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof adminApprovesCompetition>>,
-  TError,
-  { competitionId: number },
-  TContext
-> => {
-  const mutationKey = ['adminApprovesCompetition'];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof adminApprovesCompetition>>,
-    { competitionId: number }
-  > = (props) => {
-    const { competitionId } = props ?? {};
-
-    return adminApprovesCompetition(competitionId, requestOptions);
-  };
-
-  return { mutationFn, ...mutationOptions };
-};
-
-export type AdminApprovesCompetitionMutationResult = NonNullable<Awaited<ReturnType<typeof adminApprovesCompetition>>>;
-
-export type AdminApprovesCompetitionMutationError = ProblemDetails;
-
-export const useAdminApprovesCompetition = <TError = ProblemDetails, TContext = unknown>(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof adminApprovesCompetition>>,
-      TError,
-      { competitionId: number },
-      TContext
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-  queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof adminApprovesCompetition>>,
-  TError,
-  { competitionId: number },
-  TContext
-> => {
-  const mutationOptions = getAdminApprovesCompetitionMutationOptions(options);
-
-  return useMutation(mutationOptions, queryClient);
-};
-export const adminRejectsApproval = (
-  competitionId: number,
-  rejectApprovalCommand: RejectApprovalCommand,
-  options?: SecondParameter<typeof customInstance>,
-  signal?: AbortSignal
-) => {
-  return customInstance<void>(
-    {
-      url: `/api/competitions/${competitionId}/status/reject-approval`,
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      data: rejectApprovalCommand,
-      signal
-    },
-    options
-  );
-};
-
-export const getAdminRejectsApprovalMutationOptions = <TError = ProblemDetails, TContext = unknown>(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof adminRejectsApproval>>,
-    TError,
-    { competitionId: number; data: RejectApprovalCommand },
-    TContext
-  >;
-  request?: SecondParameter<typeof customInstance>;
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof adminRejectsApproval>>,
-  TError,
-  { competitionId: number; data: RejectApprovalCommand },
-  TContext
-> => {
-  const mutationKey = ['adminRejectsApproval'];
-  const { mutation: mutationOptions, request: requestOptions } = options
-    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
-      ? options
-      : { ...options, mutation: { ...options.mutation, mutationKey } }
-    : { mutation: { mutationKey }, request: undefined };
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof adminRejectsApproval>>,
-    { competitionId: number; data: RejectApprovalCommand }
-  > = (props) => {
-    const { competitionId, data } = props ?? {};
-
-    return adminRejectsApproval(competitionId, data, requestOptions);
-  };
-
-  return { mutationFn, ...mutationOptions };
-};
-
-export type AdminRejectsApprovalMutationResult = NonNullable<Awaited<ReturnType<typeof adminRejectsApproval>>>;
-export type AdminRejectsApprovalMutationBody = RejectApprovalCommand;
-export type AdminRejectsApprovalMutationError = ProblemDetails;
-
-export const useAdminRejectsApproval = <TError = ProblemDetails, TContext = unknown>(
-  options?: {
-    mutation?: UseMutationOptions<
-      Awaited<ReturnType<typeof adminRejectsApproval>>,
-      TError,
-      { competitionId: number; data: RejectApprovalCommand },
-      TContext
-    >;
-    request?: SecondParameter<typeof customInstance>;
-  },
-  queryClient?: QueryClient
-): UseMutationResult<
-  Awaited<ReturnType<typeof adminRejectsApproval>>,
-  TError,
-  { competitionId: number; data: RejectApprovalCommand },
-  TContext
-> => {
-  const mutationOptions = getAdminRejectsApprovalMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

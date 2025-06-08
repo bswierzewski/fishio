@@ -5,7 +5,7 @@
  * OpenAPI spec version: v1
  */
 
-export interface RejectApprovalCommand {
+export interface SetToDraftCommand {
   competitionId?: number;
   /** @nullable */
   reason?: string | null;

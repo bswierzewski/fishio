@@ -49,11 +49,13 @@ const formatDateTime = (dateString: string) => {
 
 const getStatusColor = (status: CompetitionStatus) => {
   switch (status) {
+    case CompetitionStatus.Draft:
+      return 'text-blue-500';
     case CompetitionStatus.Scheduled:
     case CompetitionStatus.AcceptingRegistrations:
-      return 'text-blue-500';
-    case CompetitionStatus.Ongoing:
       return 'text-green-500';
+    case CompetitionStatus.Ongoing:
+      return 'text-emerald-500';
     case CompetitionStatus.Finished:
       return 'text-gray-500';
     case CompetitionStatus.Cancelled:
@@ -67,8 +69,6 @@ const getStatusText = (status: CompetitionStatus) => {
   switch (status) {
     case CompetitionStatus.Draft:
       return 'Szkic';
-    case CompetitionStatus.PendingApproval:
-      return 'Oczekuje na zatwierdzenie';
     case CompetitionStatus.AcceptingRegistrations:
       return 'Przyjmuje rejestracje';
     case CompetitionStatus.Scheduled:
