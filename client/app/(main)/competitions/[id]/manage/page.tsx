@@ -415,17 +415,9 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
     }
   };
 
-  const pageActions: PageHeaderAction[] = [
-    {
-      label: 'Ustawienia',
-      href: `/competitions/${competitionId}/edit`,
-      icon: <Settings className="h-4 w-4" />
-    }
-  ];
-
   return (
     <div className="space-y-6">
-      <PageHeader actions={pageActions} onBack={() => (window.location.href = `/competitions/${competitionId}`)} />
+      <PageHeader onBack={() => (window.location.href = `/competitions/${competitionId}`)} />
 
       {/* Quick Stats */}
       <div className="overflow-hidden rounded-lg bg-card shadow">

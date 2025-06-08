@@ -5,23 +5,19 @@ import { pl } from 'date-fns/locale';
 import {
   Activity,
   Award,
-  Ban,
   BarChart3,
   CalendarDays,
   Clock,
+  Edit,
   FileText,
   Fish,
-  Hourglass,
   Info,
   ListChecks,
   MapPin,
-  Play,
   Plus,
   ShieldCheck,
-  Square,
   Trophy,
   UserCheck,
-  UserMinus,
   UserPlus,
   Users
 } from 'lucide-react';
@@ -33,12 +29,8 @@ import { toast } from 'react-hot-toast';
 
 import {
   useGetCompetitionDetailsById,
-  useOrganizerAddsParticipant,
-  useOrganizerAssignsJudge,
   useOrganizerCancelsCompetition,
   useOrganizerFinishesCompetition,
-  useOrganizerRemovesJudge,
-  useOrganizerRemovesParticipant,
   useOrganizerStartsCompetition,
   useUserJoinsCompetition
 } from '@/lib/api/endpoints/competitions';
@@ -234,6 +226,11 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
       label: 'Zarządzaj',
       href: `/competitions/${competitionId}/manage`,
       icon: <ListChecks className="h-4 w-4" />
+    });
+    pageActions.push({
+      label: 'Edytuj',
+      href: `/competitions/${competitionId}/edit`,
+      icon: <Edit className="h-4 w-4" />
     });
   }
 
