@@ -28,6 +28,7 @@ public record CompetitionParticipantDto
     public string Name { get; init; } = string.Empty; // User.Name lub GuestName
     public ParticipantRole Role { get; init; }
     public bool AddedByOrganizer { get; init; }
+    public ParticipantStatus Status { get; init; }
 }
 
 // DTO dla podsumowania zawodów (używane na listach)

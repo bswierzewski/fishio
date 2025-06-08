@@ -1,6 +1,7 @@
 ﻿using Fishio.Application.Common.Models;
 using Fishio.Application.Competitions.Commands.AddParticipant;
 using Fishio.Application.Competitions.Commands.ApproveCompetition;
+using Fishio.Application.Competitions.Commands.ApproveParticipant;
 using Fishio.Application.Competitions.Commands.AssignJudge;
 using Fishio.Application.Competitions.Commands.CancelCompetition;
 using Fishio.Application.Competitions.Commands.CreateCompetition;
@@ -9,6 +10,7 @@ using Fishio.Application.Competitions.Commands.JoinCompetition;
 using Fishio.Application.Competitions.Commands.OpenRegistrations;
 using Fishio.Application.Competitions.Commands.RecordFishCatch;
 using Fishio.Application.Competitions.Commands.RejectApproval;
+using Fishio.Application.Competitions.Commands.RejectParticipant;
 using Fishio.Application.Competitions.Commands.RemoveJudge;
 using Fishio.Application.Competitions.Commands.RemoveParticipant;
 using Fishio.Application.Competitions.Commands.ReopenRegistrations;
@@ -152,6 +154,16 @@ public static class CompetitionsEndpoints
 
         participantsGroup.MapDelete("/{participantEntryId:int}", OrganizerRemovesParticipant)
             .WithName(nameof(OrganizerRemovesParticipant))
+            .Produces(StatusCodes.Status204NoContent).ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status401Unauthorized).ProducesProblem(StatusCodes.Status403Forbidden);
+
+        participantsGroup.MapPost("/{participantId:int}/approve", OrganizerApprovesParticipant)
+            .WithName(nameof(OrganizerApprovesParticipant))
+            .Produces(StatusCodes.Status204NoContent).ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status401Unauthorized).ProducesProblem(StatusCodes.Status403Forbidden);
+
+        participantsGroup.MapPost("/{participantId:int}/reject", OrganizerRejectsParticipant)
+            .WithName(nameof(OrganizerRejectsParticipant))
             .Produces(StatusCodes.Status204NoContent).ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized).ProducesProblem(StatusCodes.Status403Forbidden);
 
@@ -369,6 +381,20 @@ public static class CompetitionsEndpoints
     private static async Task<IResult> OrganizerReopensRegistrations(ISender sender, int competitionId, CancellationToken ct)
     {
         var command = new ReopenRegistrationsCommand { CompetitionId = competitionId };
+        await sender.Send(command, ct);
+        return TypedResults.NoContent();
+    }
+
+    private static async Task<IResult> OrganizerApprovesParticipant(ISender sender, int competitionId, int participantId, CancellationToken ct)
+    {
+        var command = new ApproveParticipantCommand { CompetitionId = competitionId, ParticipantId = participantId };
+        await sender.Send(command, ct);
+        return TypedResults.NoContent();
+    }
+
+    private static async Task<IResult> OrganizerRejectsParticipant(ISender sender, int competitionId, int participantId, CancellationToken ct)
+    {
+        var command = new RejectParticipantCommand { CompetitionId = competitionId, ParticipantId = participantId };
         await sender.Send(command, ct);
         return TypedResults.NoContent();
     }

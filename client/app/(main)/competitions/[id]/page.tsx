@@ -35,6 +35,7 @@ import {
   useUserJoinsCompetition
 } from '@/lib/api/endpoints/competitions';
 import { CompetitionStatus, CompetitionType, ParticipantRole } from '@/lib/api/models';
+import { ParticipantStatus } from '@/lib/api/models/participantStatus';
 
 import { useCurrentUser } from '@/hooks/use-current-user';
 
@@ -109,6 +110,32 @@ const getRoleText = (role: ParticipantRole) => {
       return 'Zawodnik';
     default:
       return role;
+  }
+};
+
+const getParticipantStatusText = (status: ParticipantStatus) => {
+  switch (status) {
+    case ParticipantStatus.Waiting:
+      return 'Oczekuje na zatwierdzenie';
+    case ParticipantStatus.Approved:
+      return 'Zatwierdzony';
+    case ParticipantStatus.Rejected:
+      return 'Odrzucony';
+    default:
+      return status;
+  }
+};
+
+const getParticipantStatusColor = (status: ParticipantStatus) => {
+  switch (status) {
+    case ParticipantStatus.Waiting:
+      return 'text-yellow-600';
+    case ParticipantStatus.Approved:
+      return 'text-green-600';
+    case ParticipantStatus.Rejected:
+      return 'text-red-600';
+    default:
+      return 'text-gray-600';
   }
 };
 
@@ -188,6 +215,9 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
   const isJudge = userParticipants.some((p) => p.role === ParticipantRole.Judge);
   const isParticipant = userParticipants.length > 0;
 
+  // Get user's registration status
+  const userRegistrationStatus = userParticipants.length > 0 ? userParticipants[0].status : null;
+
   const canJoin =
     !isParticipant &&
     (competition.status === CompetitionStatus.AcceptingRegistrations ||
@@ -202,20 +232,29 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
     (competition.status === CompetitionStatus.Upcoming ||
       competition.status === CompetitionStatus.AcceptingRegistrations);
 
-  // Separate participants by role
-  const organizers = competition.participantsList?.filter((p) => p.role === ParticipantRole.Organizer) || [];
-  const judges = competition.participantsList?.filter((p) => p.role === ParticipantRole.Judge) || [];
-  const competitors = competition.participantsList?.filter((p) => p.role === ParticipantRole.Competitor) || [];
+  // Separate participants by role - only show approved participants
+  const organizers =
+    competition.participantsList?.filter(
+      (p) => p.role === ParticipantRole.Organizer && p.status === ParticipantStatus.Approved
+    ) || [];
+  const judges =
+    competition.participantsList?.filter(
+      (p) => p.role === ParticipantRole.Judge && p.status === ParticipantStatus.Approved
+    ) || [];
+  const competitors =
+    competition.participantsList?.filter(
+      (p) => p.role === ParticipantRole.Competitor && p.status === ParticipantStatus.Approved
+    ) || [];
 
   const handleJoinCompetition = async () => {
     if (!competitionId) return;
 
     try {
       await joinCompetitionMutation.mutateAsync({ competitionId });
-      toast.success('Pomyślnie dołączono do zawodów!');
+      toast.success('Wysłano prośbę o dołączenie do zawodów!');
       refetch();
     } catch (error) {
-      toast.error('Nie udało się dołączyć do zawodów');
+      toast.error('Nie udało się wysłać prośby o dołączenie');
     }
   };
 
@@ -324,6 +363,29 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
           )}
         </div>
       </div>
+
+      {/* User Registration Status */}
+      {currentUserId && !isOrganizer && userRegistrationStatus !== null && userRegistrationStatus !== undefined && (
+        <div className="rounded-lg border border-border bg-card p-4 shadow">
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2">
+              <Users className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Status Twojego zgłoszenia:</span>
+            </div>
+            <span className={`text-sm font-medium ${getParticipantStatusColor(userRegistrationStatus)}`}>
+              {getParticipantStatusText(userRegistrationStatus)}
+            </span>
+          </div>
+          {userRegistrationStatus === ParticipantStatus.Waiting && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Twoje zgłoszenie oczekuje na zatwierdzenie przez organizatora.
+            </p>
+          )}
+          {userRegistrationStatus === ParticipantStatus.Rejected && (
+            <p className="text-xs text-muted-foreground mt-2">Twoje zgłoszenie zostało odrzucone przez organizatora.</p>
+          )}
+        </div>
+      )}
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -39,9 +39,11 @@ import { useApiError } from '@/hooks/use-api-error';
 import {
   useGetCompetitionDetailsById,
   useOrganizerAddsParticipant,
+  useOrganizerApprovesParticipant,
   useOrganizerCancelsCompetition,
   useOrganizerFinishesCompetition,
   useOrganizerOpensRegistrations,
+  useOrganizerRejectsParticipant,
   useOrganizerRemovesParticipant,
   useOrganizerReopensRegistrations,
   useOrganizerRequestsApproval,
@@ -50,7 +52,13 @@ import {
   useOrganizerStartsCompetition
 } from '@/lib/api/endpoints/competitions';
 import { useSearchAvailableUsers } from '@/lib/api/endpoints/users';
-import { type AddParticipantCommand, CompetitionStatus, ParticipantRole, type UserDto } from '@/lib/api/models';
+import {
+  type AddParticipantCommand,
+  CompetitionStatus,
+  ParticipantRole,
+  ParticipantStatus,
+  type UserDto
+} from '@/lib/api/models';
 
 import { useCurrentUser } from '@/hooks/use-current-user';
 
@@ -137,6 +145,8 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
   // Mutations
   const addParticipantMutation = useOrganizerAddsParticipant();
   const removeParticipantMutation = useOrganizerRemovesParticipant();
+  const approveParticipantMutation = useOrganizerApprovesParticipant();
+  const rejectParticipantMutation = useOrganizerRejectsParticipant();
 
   // Status management mutations
   const requestApprovalMutation = useOrganizerRequestsApproval();
@@ -216,6 +226,32 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
         return 'Zawodnik';
       default:
         return role;
+    }
+  };
+
+  const getStatusText = (status: ParticipantStatus) => {
+    switch (status) {
+      case ParticipantStatus.Waiting:
+        return 'Oczekuje';
+      case ParticipantStatus.Approved:
+        return 'Zatwierdzony';
+      case ParticipantStatus.Rejected:
+        return 'Odrzucony';
+      default:
+        return status;
+    }
+  };
+
+  const getStatusColor = (status: ParticipantStatus) => {
+    switch (status) {
+      case ParticipantStatus.Waiting:
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case ParticipantStatus.Approved:
+        return 'bg-green-100 text-green-800 border-green-200';
+      case ParticipantStatus.Rejected:
+        return 'bg-red-100 text-red-800 border-red-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
@@ -309,6 +345,38 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
       refetch();
     } catch (error) {
       toast.error('Nie udało się usunąć uczestnika');
+    }
+  };
+
+  const handleApproveParticipant = async (participantId: number, participantName: string) => {
+    try {
+      await approveParticipantMutation.mutateAsync({
+        competitionId: competitionId,
+        participantId: participantId
+      });
+
+      toast.success(`${participantName} został zatwierdzony`);
+      refetch();
+    } catch (error) {
+      toast.error('Nie udało się zatwierdzić uczestnika');
+    }
+  };
+
+  const handleRejectParticipant = async (participantId: number, participantName: string) => {
+    if (!confirm(`Czy na pewno chcesz odrzucić zgłoszenie "${participantName}"?`)) {
+      return;
+    }
+
+    try {
+      await rejectParticipantMutation.mutateAsync({
+        competitionId: competitionId,
+        participantId: participantId
+      });
+
+      toast.success(`Zgłoszenie ${participantName} zostało odrzucone`);
+      refetch();
+    } catch (error) {
+      toast.error('Nie udało się odrzucić zgłoszenia');
     }
   };
 
@@ -928,7 +996,7 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
           <div className="relative z-10 flex items-center space-x-2">
             <Users className="h-4 w-4" />
             <span className="text-xs font-medium truncate">
-              Uczestnicy ({competition.participantsList?.length || 0})
+              Uczestnicy i Zgłoszenia ({competition.participantsList?.length || 0})
             </span>
           </div>
         </div>
@@ -936,130 +1004,110 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
           {!competition.participantsList || competition.participantsList.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">Brak uczestników</p>
           ) : (
-            <div className="space-y-6">
-              {/* Organizers */}
-              {organizers.length > 0 && (
-                <div>
-                  <div className="flex items-center space-x-2 mb-4">
-                    <Trophy className="h-4 w-4 text-amber-500" />
-                    <h3 className="font-medium text-amber-600">Organizatorzy ({organizers.length})</h3>
-                  </div>
-                  <div className="space-y-3">
-                    {organizers.map((participant) => (
-                      <div
-                        key={participant.id}
-                        className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
-                      >
-                        <div className="flex items-center space-x-3">
-                          {getRoleIcon(participant.role!)}
-                          <div>
-                            <p className="font-medium">{participant.name}</p>
-                            <div className="flex items-center space-x-2">
-                              {participant.addedByOrganizer && (
-                                <span className="text-xs text-muted-foreground">• Dodany przez organizatora</span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                        {participant.addedByOrganizer && participant.userId !== currentUserId && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleRemoveParticipant(participant.id!, participant.name!)}
-                            disabled={removeParticipantMutation.isPending}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Judges */}
-              {judges.length > 0 && (
-                <div>
-                  <div className="flex items-center space-x-2 mb-4">
-                    <ShieldCheck className="h-4 w-4 text-blue-500" />
-                    <h3 className="font-medium text-blue-600">Sędziowie ({judges.length})</h3>
-                  </div>
-                  <div className="space-y-3">
-                    {judges.map((participant) => (
-                      <div
-                        key={participant.id}
-                        className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
-                      >
-                        <div className="flex items-center space-x-3">
-                          {getRoleIcon(participant.role!)}
-                          <div>
-                            <p className="font-medium">{participant.name}</p>
-                            <div className="flex items-center space-x-2">
-                              {participant.addedByOrganizer && (
-                                <span className="text-xs text-muted-foreground">• Dodany przez organizatora</span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                        {participant.addedByOrganizer && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleRemoveParticipant(participant.id!, participant.name!)}
-                            disabled={removeParticipantMutation.isPending}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Competitors */}
-              {competitors.length > 0 && (
-                <div>
-                  <div className="flex items-center space-x-2 mb-4">
-                    <UserCheck className="h-4 w-4 text-green-500" />
-                    <h3 className="font-medium text-green-600">Zawodnicy ({competitors.length})</h3>
-                  </div>
-                  <div className="space-y-3">
-                    {competitors.map((participant) => (
-                      <div
-                        key={participant.id}
-                        className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-muted/50 transition-colors"
-                      >
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Uczestnik</th>
+                    <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Rola</th>
+                    <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Status</th>
+                    <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Źródło</th>
+                    <th className="text-right py-2 px-3 text-sm font-medium text-muted-foreground">Akcje</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {competition.participantsList.map((participant) => (
+                    <tr key={participant.id} className="border-b border-border hover:bg-muted/50 transition-colors">
+                      <td className="py-3 px-3">
                         <div className="flex items-center space-x-3">
                           {!participant.userId ? (
                             <UserX className="h-4 w-4 text-gray-500" />
                           ) : (
                             getRoleIcon(participant.role!)
                           )}
-                          <div>
-                            <p className="font-medium">{participant.name}</p>
-                            <div className="flex items-center space-x-2">
-                              {participant.addedByOrganizer && (
-                                <span className="text-xs text-muted-foreground">• Dodany przez organizatora</span>
-                              )}
-                            </div>
-                          </div>
+                          <span className="font-medium">{participant.name}</span>
                         </div>
-                        {participant.addedByOrganizer && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleRemoveParticipant(participant.id!, participant.name!)}
-                            disabled={removeParticipantMutation.isPending}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                      </td>
+                      <td className="py-3 px-3">
+                        <span className="text-sm text-muted-foreground">{getRoleText(participant.role!)}</span>
+                      </td>
+                      <td className="py-3 px-3">
+                        <Badge className={`text-xs border ${getStatusColor(participant.status!)}`}>
+                          {getStatusText(participant.status!)}
+                        </Badge>
+                      </td>
+                      <td className="py-3 px-3">
+                        <span className="text-xs text-muted-foreground">
+                          {participant.addedByOrganizer ? 'Dodany przez organizatora' : 'Dołączył samodzielnie'}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3">
+                        <div className="flex items-center justify-end space-x-2">
+                          {participant.role !== ParticipantRole.Organizer && (
+                            <>
+                              {participant.status === ParticipantStatus.Waiting && (
+                                <>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleApproveParticipant(participant.id!, participant.name!)}
+                                    disabled={approveParticipantMutation.isPending}
+                                    className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                                  >
+                                    <CheckCircle className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleRejectParticipant(participant.id!, participant.name!)}
+                                    disabled={rejectParticipantMutation.isPending}
+                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  >
+                                    <XCircle className="h-4 w-4" />
+                                  </Button>
+                                </>
+                              )}
+                              {participant.status === ParticipantStatus.Rejected && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleApproveParticipant(participant.id!, participant.name!)}
+                                  disabled={approveParticipantMutation.isPending}
+                                  className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                                >
+                                  <CheckCircle className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {participant.status === ParticipantStatus.Approved && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleRejectParticipant(participant.id!, participant.name!)}
+                                  disabled={rejectParticipantMutation.isPending}
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <XCircle className="h-4 w-4" />
+                                </Button>
+                              )}
+                              {participant.userId !== currentUserId && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleRemoveParticipant(participant.id!, participant.name!)}
+                                  disabled={removeParticipantMutation.isPending}
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>

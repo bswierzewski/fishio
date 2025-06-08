@@ -5,6 +5,7 @@
  * OpenAPI spec version: v1
  */
 import type { ParticipantRole } from './participantRole';
+import type { ParticipantStatus } from './participantStatus';
 
 export interface CompetitionParticipantDto {
   id?: number;
@@ -14,4 +15,5 @@ export interface CompetitionParticipantDto {
   name?: string | null;
   role?: ParticipantRole;
   addedByOrganizer?: boolean;
+  status?: ParticipantStatus;
 }

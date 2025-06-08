@@ -45,7 +45,7 @@ public class GetCompetitionDetailsQueryHandler : IRequestHandler<GetCompetitionD
             FisheryName = competition.Fishery?.Name,
             FisheryLocation = competition.Fishery?.Location,
             ImageUrl = competition.ImageUrl,
-            ParticipantsCount = competition.Participants.Count(p => p.Role == ParticipantRole.Competitor),
+            ParticipantsCount = competition.Participants.Count(p => p.Role == ParticipantRole.Competitor && p.Status == ParticipantStatus.Approved),
             PrimaryScoringInfo = primaryScoringCategory != null
                 ? (primaryScoringCategory.CustomNameOverride ?? primaryScoringCategory.CategoryDefinition.Name) +
                   (primaryScoringCategory.CategoryDefinition.Metric != CategoryMetric.NotApplicable ? $" ({GetMetricAbbreviation(primaryScoringCategory.CategoryDefinition.Metric)})" : "")
@@ -70,7 +70,8 @@ public class GetCompetitionDetailsQueryHandler : IRequestHandler<GetCompetitionD
                 UserId = p.UserId,
                 Name = p.User?.Name ?? p.GuestName ?? "Uczestnik",
                 Role = p.Role,
-                AddedByOrganizer = p.AddedByOrganizer
+                AddedByOrganizer = p.AddedByOrganizer,
+                Status = p.Status
             }).OrderBy(p => p.Name).ToList()
         };
     }

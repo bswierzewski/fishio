@@ -1457,6 +1457,150 @@ export const useOrganizerRemovesParticipant = <TError = ProblemDetails, TContext
 
   return useMutation(mutationOptions, queryClient);
 };
+export const organizerApprovesParticipant = (
+  competitionId: number,
+  participantId: number,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal
+) => {
+  return customInstance<void>(
+    { url: `/api/competitions/${competitionId}/participants/${participantId}/approve`, method: 'POST', signal },
+    options
+  );
+};
+
+export const getOrganizerApprovesParticipantMutationOptions = <TError = ProblemDetails, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof organizerApprovesParticipant>>,
+    TError,
+    { competitionId: number; participantId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof organizerApprovesParticipant>>,
+  TError,
+  { competitionId: number; participantId: number },
+  TContext
+> => {
+  const mutationKey = ['organizerApprovesParticipant'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof organizerApprovesParticipant>>,
+    { competitionId: number; participantId: number }
+  > = (props) => {
+    const { competitionId, participantId } = props ?? {};
+
+    return organizerApprovesParticipant(competitionId, participantId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type OrganizerApprovesParticipantMutationResult = NonNullable<
+  Awaited<ReturnType<typeof organizerApprovesParticipant>>
+>;
+
+export type OrganizerApprovesParticipantMutationError = ProblemDetails;
+
+export const useOrganizerApprovesParticipant = <TError = ProblemDetails, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof organizerApprovesParticipant>>,
+      TError,
+      { competitionId: number; participantId: number },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof organizerApprovesParticipant>>,
+  TError,
+  { competitionId: number; participantId: number },
+  TContext
+> => {
+  const mutationOptions = getOrganizerApprovesParticipantMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+export const organizerRejectsParticipant = (
+  competitionId: number,
+  participantId: number,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal
+) => {
+  return customInstance<void>(
+    { url: `/api/competitions/${competitionId}/participants/${participantId}/reject`, method: 'POST', signal },
+    options
+  );
+};
+
+export const getOrganizerRejectsParticipantMutationOptions = <TError = ProblemDetails, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof organizerRejectsParticipant>>,
+    TError,
+    { competitionId: number; participantId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof organizerRejectsParticipant>>,
+  TError,
+  { competitionId: number; participantId: number },
+  TContext
+> => {
+  const mutationKey = ['organizerRejectsParticipant'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof organizerRejectsParticipant>>,
+    { competitionId: number; participantId: number }
+  > = (props) => {
+    const { competitionId, participantId } = props ?? {};
+
+    return organizerRejectsParticipant(competitionId, participantId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type OrganizerRejectsParticipantMutationResult = NonNullable<
+  Awaited<ReturnType<typeof organizerRejectsParticipant>>
+>;
+
+export type OrganizerRejectsParticipantMutationError = ProblemDetails;
+
+export const useOrganizerRejectsParticipant = <TError = ProblemDetails, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof organizerRejectsParticipant>>,
+      TError,
+      { competitionId: number; participantId: number },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof organizerRejectsParticipant>>,
+  TError,
+  { competitionId: number; participantId: number },
+  TContext
+> => {
+  const mutationOptions = getOrganizerRejectsParticipantMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
 export const organizerAssignsJudge = (
   competitionId: number,
   assignJudgeCommand: AssignJudgeCommand,

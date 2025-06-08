@@ -19,6 +19,7 @@ public class CompetitionParticipant : BaseAuditableEntity
 
     public ParticipantRole Role { get; private set; }
     public bool AddedByOrganizer { get; private set; }
+    public ParticipantStatus Status { get; private set; }
 
     public virtual ICollection<CompetitionFishCatch> FishCatches { get; private set; } = [];
 
@@ -37,6 +38,8 @@ public class CompetitionParticipant : BaseAuditableEntity
         User = user;
         Role = role;
         AddedByOrganizer = addedByOrganizer;
+        // If added by organizer, automatically approve; otherwise set as waiting
+        Status = addedByOrganizer ? ParticipantStatus.Approved : ParticipantStatus.Waiting;
     }
 
     // Konstruktor wewnętrzny dla gości, tworzenie przez Competition.AddGuestParticipant
@@ -55,6 +58,8 @@ public class CompetitionParticipant : BaseAuditableEntity
         GuestIdentifier = guestIdentifier;
         Role = role;
         AddedByOrganizer = addedByOrganizer;
+        // If added by organizer, automatically approve; otherwise set as waiting
+        Status = addedByOrganizer ? ParticipantStatus.Approved : ParticipantStatus.Waiting;
     }
 
     public void ChangeRole(ParticipantRole newRole, User assigningUser /* Można dodać logikę uprawnień */)
@@ -71,5 +76,27 @@ public class CompetitionParticipant : BaseAuditableEntity
 
         Role = newRole;
         // Można dodać zdarzenie domenowe: ParticipantRoleChangedEvent
+    }
+
+    public void Approve()
+    {
+        if (Status == ParticipantStatus.Approved)
+        {
+            throw new InvalidOperationException("Uczestnik jest już zatwierdzony.");
+        }
+
+        Status = ParticipantStatus.Approved;
+        // Można dodać zdarzenie domenowe: ParticipantApprovedEvent
+    }
+
+    public void Reject()
+    {
+        if (Status == ParticipantStatus.Rejected)
+        {
+            throw new InvalidOperationException("Uczestnik jest już odrzucony.");
+        }
+
+        Status = ParticipantStatus.Rejected;
+        // Można dodać zdarzenie domenowe: ParticipantRejectedEvent
     }
 }

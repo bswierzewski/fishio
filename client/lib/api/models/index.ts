@@ -59,6 +59,7 @@ export * from './myCompetitionFilter';
 export * from './myCompetitionSummaryDto';
 export * from './myCompetitionSummaryDtoPaginatedList';
 export * from './participantRole';
+export * from './participantStatus';
 export * from './problemDetails';
 export * from './publicCompetitionResultsDto';
 export * from './publicResultCategoryWinnerDto';
