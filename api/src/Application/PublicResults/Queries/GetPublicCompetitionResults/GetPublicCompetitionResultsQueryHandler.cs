@@ -83,24 +83,6 @@ public class GetPublicCompetitionResultsQueryHandler : IRequestHandler<GetPublic
 
     private CompetitionStatus DetermineEffectiveStatus(Competition competition, DateTimeOffset now)
     {
-        if (competition.Status == CompetitionStatus.Cancelled || competition.Status == CompetitionStatus.Finished)
-        {
-            return competition.Status;
-        }
-        if (now < competition.Schedule.Start)
-        {
-            return competition.Status == CompetitionStatus.AcceptingRegistrations || competition.Status == CompetitionStatus.Scheduled
-                   ? competition.Status
-                   : CompetitionStatus.Scheduled;
-        }
-        if (now >= competition.Schedule.Start && now <= competition.Schedule.End)
-        {
-            return CompetitionStatus.Ongoing;
-        }
-        if (now > competition.Schedule.End)
-        {
-            return CompetitionStatus.Finished;
-        }
         return competition.Status;
     }
 

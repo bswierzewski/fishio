@@ -2,7 +2,20 @@
 
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { Award, Edit, Filter, ListChecks, Plus, Search, ShieldCheck, Trophy, UserCheck } from 'lucide-react';
+import {
+  Activity,
+  Award,
+  CheckCircle2,
+  Clock,
+  Edit,
+  Filter,
+  ListChecks,
+  Plus,
+  Search,
+  ShieldCheck,
+  Trophy,
+  UserCheck
+} from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
@@ -72,6 +85,47 @@ export default function MyCompetitionsPage() {
         return 'Zaplanowane';
       default:
         return 'Nieznany';
+    }
+  };
+
+  const getStatusStyles = (status?: CompetitionStatus) => {
+    switch (status) {
+      case CompetitionStatus.Ongoing:
+        return {
+          textColor: 'text-green-500',
+          icon: <Activity className="h-3.5 w-3.5" />,
+          label: 'Trwające',
+          bgColorClass: 'bg-green-500/10'
+        };
+      case CompetitionStatus.Scheduled:
+      case CompetitionStatus.AcceptingRegistrations:
+        return {
+          textColor: 'text-blue-500',
+          icon: <Clock className="h-3.5 w-3.5" />,
+          label: status === CompetitionStatus.AcceptingRegistrations ? 'Rejestracja' : 'Zaplanowane',
+          bgColorClass: 'bg-blue-500/10'
+        };
+      case CompetitionStatus.Finished:
+        return {
+          textColor: 'text-slate-500',
+          icon: <CheckCircle2 className="h-3.5 w-3.5" />,
+          label: 'Zakończone',
+          bgColorClass: 'bg-slate-500/10'
+        };
+      case CompetitionStatus.Cancelled:
+        return {
+          textColor: 'text-red-500',
+          icon: <Clock className="h-3.5 w-3.5" />,
+          label: 'Anulowane',
+          bgColorClass: 'bg-red-500/10'
+        };
+      default:
+        return {
+          textColor: 'text-muted-foreground',
+          icon: <Trophy className="h-3.5 w-3.5" />,
+          label: 'Nieznany',
+          bgColorClass: 'bg-muted/10'
+        };
     }
   };
 
@@ -177,6 +231,7 @@ export default function MyCompetitionsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {competitions.map((comp) => {
             const userRole = getRoleIconAndLabel(comp);
+            const statusInfo = getStatusStyles(comp.status);
 
             return (
               <Link key={comp.id} href={`/competitions/${comp.id}`} className="group flex flex-col">
@@ -193,7 +248,7 @@ export default function MyCompetitionsPage() {
                       )}
                       <div className="relative z-10 flex items-center space-x-2">
                         <Trophy className="h-4 w-4" />
-                        <span className="text-xs font-medium truncate">{getStatusLabel(comp.status)}</span>
+                        <span className="text-xs font-medium truncate">Zawody</span>
                       </div>
                     </div>
                     {userRole.icon && (
@@ -226,6 +281,14 @@ export default function MyCompetitionsPage() {
                         </div>
                       )}
                     </div>
+                  </div>
+
+                  {/* Status na dole karty */}
+                  <div
+                    className={`flex items-center space-x-1 text-[10px] font-semibold p-2 ${statusInfo.textColor} ${statusInfo.bgColorClass}`}
+                  >
+                    {statusInfo.icon}
+                    <span>{statusInfo.label}</span>
                   </div>
                 </div>
               </Link>

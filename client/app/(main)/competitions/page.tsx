@@ -1,12 +1,13 @@
 'use client';
 
-import { Award, Filter, ListChecks, Plus, Search, Trophy } from 'lucide-react';
+import { Activity, Award, CheckCircle2, Clock, Filter, ListChecks, Plus, Search, Trophy } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 import { useGetOpenCompetitionsList } from '@/lib/api/endpoints/competitions';
 import { CompetitionSummaryDto } from '@/lib/api/models';
+import { CompetitionStatus } from '@/lib/api/models/competitionStatus';
 
 import { PageHeader, PageHeaderAction } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
@@ -37,6 +38,47 @@ export default function CompetitionsPage() {
   const openCompetitions = competitionsResponse?.items || [];
   const hasNextPage = competitionsResponse?.hasNextPage || false;
   const hasPreviousPage = competitionsResponse?.hasPreviousPage || false;
+
+  const getStatusStyles = (status?: CompetitionStatus) => {
+    switch (status) {
+      case CompetitionStatus.Ongoing:
+        return {
+          textColor: 'text-green-500',
+          icon: <Activity className="h-3.5 w-3.5" />,
+          label: 'Trwające',
+          bgColorClass: 'bg-green-500/10'
+        };
+      case CompetitionStatus.Scheduled:
+      case CompetitionStatus.AcceptingRegistrations:
+        return {
+          textColor: 'text-blue-500',
+          icon: <Clock className="h-3.5 w-3.5" />,
+          label: status === CompetitionStatus.AcceptingRegistrations ? 'Rejestracja' : 'Zaplanowane',
+          bgColorClass: 'bg-blue-500/10'
+        };
+      case CompetitionStatus.Finished:
+        return {
+          textColor: 'text-slate-500',
+          icon: <CheckCircle2 className="h-3.5 w-3.5" />,
+          label: 'Zakończone',
+          bgColorClass: 'bg-slate-500/10'
+        };
+      case CompetitionStatus.Cancelled:
+        return {
+          textColor: 'text-red-500',
+          icon: <Clock className="h-3.5 w-3.5" />,
+          label: 'Anulowane',
+          bgColorClass: 'bg-red-500/10'
+        };
+      default:
+        return {
+          textColor: 'text-muted-foreground',
+          icon: <Trophy className="h-3.5 w-3.5" />,
+          label: 'Nieznany',
+          bgColorClass: 'bg-muted/10'
+        };
+    }
+  };
 
   const handleNextPage = () => {
     if (hasNextPage) {
@@ -145,6 +187,7 @@ export default function CompetitionsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {openCompetitions.map((comp: CompetitionSummaryDto) => {
               const startDate = comp.startTime ? new Date(comp.startTime) : null;
+              const statusStyles = getStatusStyles(comp.status);
 
               return (
                 <Link href={`/competitions/${comp.id}`} key={comp.id} className="group flex flex-col">
@@ -197,6 +240,14 @@ export default function CompetitionsPage() {
                           </div>
                         )}
                       </div>
+                    </div>
+
+                    {/* Status na dole karty */}
+                    <div
+                      className={`flex items-center space-x-1 text-[10px] font-semibold p-2 ${statusStyles.textColor} ${statusStyles.bgColorClass}`}
+                    >
+                      {statusStyles.icon}
+                      <span>{statusStyles.label}</span>
                     </div>
                   </div>
                 </Link>
