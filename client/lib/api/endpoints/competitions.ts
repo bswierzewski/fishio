@@ -26,6 +26,7 @@ import type {
   AssignJudgeCommand,
   CancelCompetitionCommand,
   CompetitionDetailsDto,
+  CompetitionFishCatchDto,
   CompetitionSummaryDtoPaginatedList,
   CreateCompetitionCommand,
   GetOpenCompetitionsListParams,
@@ -1538,6 +1539,120 @@ export const useOrganizerRemovesJudge = <TError = ProblemDetails, TContext = unk
 
   return useMutation(mutationOptions, queryClient);
 };
+export const getCompetitionCatches = (
+  competitionId: number,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal
+) => {
+  return customInstance<CompetitionFishCatchDto[]>(
+    { url: `/api/competitions/${competitionId}/catches`, method: 'GET', signal },
+    options
+  );
+};
+
+export const getGetCompetitionCatchesQueryKey = (competitionId: number) => {
+  return [`/api/competitions/${competitionId}/catches`] as const;
+};
+
+export const getGetCompetitionCatchesQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCompetitionCatches>>,
+  TError = ProblemDetails
+>(
+  competitionId: number,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCompetitionCatches>>, TError, TData>>;
+    request?: SecondParameter<typeof customInstance>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetCompetitionCatchesQueryKey(competitionId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getCompetitionCatches>>> = ({ signal }) =>
+    getCompetitionCatches(competitionId, requestOptions, signal);
+
+  return { queryKey, queryFn, enabled: !!competitionId, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCompetitionCatches>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetCompetitionCatchesQueryResult = NonNullable<Awaited<ReturnType<typeof getCompetitionCatches>>>;
+export type GetCompetitionCatchesQueryError = ProblemDetails;
+
+export function useGetCompetitionCatches<
+  TData = Awaited<ReturnType<typeof getCompetitionCatches>>,
+  TError = ProblemDetails
+>(
+  competitionId: number,
+  options: {
+    query: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCompetitionCatches>>, TError, TData>> &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCompetitionCatches>>,
+          TError,
+          Awaited<ReturnType<typeof getCompetitionCatches>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetCompetitionCatches<
+  TData = Awaited<ReturnType<typeof getCompetitionCatches>>,
+  TError = ProblemDetails
+>(
+  competitionId: number,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCompetitionCatches>>, TError, TData>> &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCompetitionCatches>>,
+          TError,
+          Awaited<ReturnType<typeof getCompetitionCatches>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetCompetitionCatches<
+  TData = Awaited<ReturnType<typeof getCompetitionCatches>>,
+  TError = ProblemDetails
+>(
+  competitionId: number,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCompetitionCatches>>, TError, TData>>;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetCompetitionCatches<
+  TData = Awaited<ReturnType<typeof getCompetitionCatches>>,
+  TError = ProblemDetails
+>(
+  competitionId: number,
+  options?: {
+    query?: Partial<UseQueryOptions<Awaited<ReturnType<typeof getCompetitionCatches>>, TError, TData>>;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetCompetitionCatchesQueryOptions(competitionId, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
 export const judgeRecordsFishCatch = (
   competitionId: number,
   recordCompetitionFishCatchCommand: RecordCompetitionFishCatchCommand,

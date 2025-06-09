@@ -11,13 +11,11 @@ public class CompetitionFishCatch : BaseAuditableEntity
     public int JudgeId { get; private set; }
     public virtual User Judge { get; private set; } = null!;
 
-    public int FishSpeciesId { get; private set; }
-    public virtual FishSpecies FishSpecies { get; private set; } = null!;
+    public int? FishSpeciesId { get; private set; }
+    public virtual FishSpecies? FishSpecies { get; private set; }
 
     public FishLength? Length { get; private set; }
     public FishWeight? Weight { get; private set; }
-    public string ImageUrl { get; private set; } = string.Empty;
-    public string? ImagePublicId { get; private set; } // Cloudinary PublicId for image management
     public DateTimeOffset CatchTime { get; private set; } = DateTimeOffset.UtcNow;
 
     private CompetitionFishCatch() { }
@@ -27,22 +25,18 @@ public class CompetitionFishCatch : BaseAuditableEntity
         Competition competition,
         CompetitionParticipant participant,
         User judge,
-        FishSpecies fishSpecies,
-        string imageUrl,
+        FishSpecies? fishSpecies,
         DateTimeOffset catchTime,
         FishLength? length = null,
-        FishWeight? weight = null,
-        string? imagePublicId = null)
+        FishWeight? weight = null)
     {
         Guard.Against.Null(competition, nameof(competition));
         Guard.Against.Null(participant, nameof(participant));
         Guard.Against.Null(judge, nameof(judge));
-        Guard.Against.Null(fishSpecies, nameof(fishSpecies));
-        Guard.Against.NullOrWhiteSpace(imageUrl, nameof(imageUrl));
+        // FishSpecies is now optional - judges may not specify species for multiple fish catches
         Guard.Against.Default(catchTime, nameof(catchTime));
 
-        if (catchTime < competition.Schedule.Start || catchTime > competition.Schedule.End)
-            throw new ArgumentOutOfRangeException(nameof(catchTime), "Czas połowu musi mieścić się w czasie trwania zawodów.");
+        // Remove time restriction - judges can register catches from paper records later
 
         CompetitionId = competition.Id;
         Competition = competition;
@@ -50,10 +44,8 @@ public class CompetitionFishCatch : BaseAuditableEntity
         Participant = participant;
         JudgeId = judge.Id;
         Judge = judge;
-        FishSpeciesId = fishSpecies.Id;
+        FishSpeciesId = fishSpecies?.Id;
         FishSpecies = fishSpecies;
-        ImageUrl = imageUrl;
-        ImagePublicId = imagePublicId;
         CatchTime = catchTime;
         Length = length;
         Weight = weight;
@@ -100,17 +92,5 @@ public class CompetitionFishCatch : BaseAuditableEntity
         // AddDomainEvent(new FishCatchMeasurementsUpdatedEvent(this, modifyingUser));
     }
 
-    /// <summary>
-    /// Updates the image metadata for this fish catch
-    /// </summary>
-    public void UpdateImage(string imageUrl, string? imagePublicId = null, User modifyingUser = null!)
-    {
-        if (modifyingUser != null && !CanBeModifiedBy(modifyingUser))
-            throw new InvalidOperationException("Brak uprawnień do modyfikacji tego połowu lub zawody są zakończone.");
 
-        Guard.Against.NullOrWhiteSpace(imageUrl, nameof(imageUrl));
-        ImageUrl = imageUrl;
-        ImagePublicId = imagePublicId;
-        // AddDomainEvent(new FishCatchImageUpdatedEvent(this, modifyingUser));
-    }
 }

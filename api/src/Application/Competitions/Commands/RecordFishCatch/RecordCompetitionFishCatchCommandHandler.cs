@@ -34,12 +34,16 @@ public class RecordCompetitionFishCatchCommandHandler : IRequestHandler<RecordCo
             throw new NotFoundException(nameof(Competition), request.CompetitionId.ToString());
         }
 
+        // Check if user is a judge or organizer (both can register catches)
         var judgeParticipantEntry = competition.Participants
-            .FirstOrDefault(p => p.UserId == currentUser.Id && p.Role == ParticipantRole.Judge);
+            .FirstOrDefault(p => p.UserId == currentUser.Id &&
+                (p.Role == ParticipantRole.Judge || p.Role == ParticipantRole.Organizer));
 
-        if (judgeParticipantEntry == null)
+        var isOrganizer = competition.OrganizerId == currentUser.Id;
+
+        if (judgeParticipantEntry == null && !isOrganizer)
         {
-            throw new ForbiddenAccessException("Tylko wyznaczony sędzia może rejestrować połowy w tych zawodach.");
+            throw new ForbiddenAccessException("Tylko wyznaczony sędzia lub organizator może rejestrować połowy w tych zawodach.");
         }
 
         var participantToCredit = competition.Participants
@@ -49,11 +53,12 @@ public class RecordCompetitionFishCatchCommandHandler : IRequestHandler<RecordCo
             throw new NotFoundException("Wybrany uczestnik nie został znaleziony w tych zawodach lub nie jest zawodnikiem/gościem.", request.ParticipantEntryId.ToString());
         }
 
-        var fishSpecies = await _context.FishSpecies.FindAsync(new object[] { request.FishSpeciesId }, cancellationToken)
-            ?? throw new NotFoundException(nameof(FishSpecies), request.FishSpeciesId.ToString());
-
-        // Use the provided image URL directly
-        string imageUrl = request.ImageUrl;
+        FishSpecies? fishSpecies = null;
+        if (request.FishSpeciesId.HasValue)
+        {
+            fishSpecies = await _context.FishSpecies.FindAsync(new object[] { request.FishSpeciesId.Value }, cancellationToken)
+                ?? throw new NotFoundException(nameof(FishSpecies), request.FishSpeciesId.Value.ToString());
+        }
 
         FishLength? length = request.LengthInCm.HasValue ? new FishLength(request.LengthInCm.Value) : null;
         FishWeight? weight = request.WeightInKg.HasValue ? new FishWeight(request.WeightInKg.Value) : null;
@@ -68,7 +73,6 @@ public class RecordCompetitionFishCatchCommandHandler : IRequestHandler<RecordCo
                 participant: participantToCredit,
                 judge: currentUser, // Przekazujemy encję User sędziego
                 fishSpecies: fishSpecies,
-                imageUrl: imageUrl,
                 catchTime: catchTimeUtc,
                 length: length,
                 weight: weight

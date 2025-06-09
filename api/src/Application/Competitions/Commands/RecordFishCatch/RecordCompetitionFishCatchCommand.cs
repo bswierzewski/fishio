@@ -4,9 +4,7 @@ public class RecordCompetitionFishCatchCommand : IRequest<int> // Zwraca ID zare
 {
     public int CompetitionId { get; set; }
     public int ParticipantEntryId { get; set; } // ID wpisu CompetitionParticipant dla zawodnika
-    public int FishSpeciesId { get; set; }
-    public string ImageUrl { get; set; } = string.Empty; // URL zdjęcia jest wymagany
-    public string? ImagePublicId { get; set; } // PublicId zdjęcia (opcjonalny)
+    public int? FishSpeciesId { get; set; }
     public DateTimeOffset CatchTime { get; set; } // Czas złowienia, ustawiany przez sędziego
     public decimal? LengthInCm { get; set; }
     public decimal? WeightInKg { get; set; }
@@ -26,18 +24,15 @@ public class RecordCompetitionFishCatchCommandValidator : AbstractValidator<Reco
         RuleFor(v => v.CompetitionId).NotEmpty();
         RuleFor(v => v.ParticipantEntryId).NotEmpty();
 
-        RuleFor(v => v.FishSpeciesId)
-            .NotEmpty().WithMessage("Gatunek ryby jest wymagany.")
-            .GreaterThan(0).WithMessage("Nieprawidłowe ID gatunku ryby.")
-            .MustAsync(FishSpeciesMustExist).WithMessage("Wybrany gatunek ryby nie istnieje.");
-
-        RuleFor(x => x.ImageUrl)
-            .NotEmpty().WithMessage("URL zdjęcia jest wymagany.")
-            .Must(BeValidUrl).WithMessage("Nieprawidłowy URL zdjęcia.");
+        When(x => x.FishSpeciesId.HasValue, () =>
+        {
+            RuleFor(v => v.FishSpeciesId)
+                .GreaterThan(0).WithMessage("Nieprawidłowe ID gatunku ryby.")
+                .MustAsync(FishSpeciesMustExist).WithMessage("Wybrany gatunek ryby nie istnieje.");
+        });
 
         RuleFor(v => v.CatchTime)
-            .NotEmpty().WithMessage("Czas połowu jest wymagany.")
-            .MustAsync(BeWithinCompetitionTime).WithMessage("Czas połowu musi mieścić się w czasie trwania zawodów.");
+            .NotEmpty().WithMessage("Czas połowu jest wymagany.");
 
         When(x => x.LengthInCm.HasValue, () =>
         {
@@ -61,31 +56,13 @@ public class RecordCompetitionFishCatchCommandValidator : AbstractValidator<Reco
             .WithMessage("Należy podać przynajmniej długość lub wagę ryby.");
     }
 
-    private async Task<bool> FishSpeciesMustExist(int fishSpeciesId, CancellationToken cancellationToken)
+    private async Task<bool> FishSpeciesMustExist(int? fishSpeciesId, CancellationToken cancellationToken)
     {
-        return await _context.FishSpecies.AnyAsync(fs => fs.Id == fishSpeciesId, cancellationToken);
+        if (!fishSpeciesId.HasValue) return true; // null is valid
+        return await _context.FishSpecies.AnyAsync(fs => fs.Id == fishSpeciesId.Value, cancellationToken);
     }
 
-    private bool BeValidUrl(string url)
-    {
-        return Uri.TryCreate(url, UriKind.Absolute, out _);
-    }
 
-    private async Task<bool> BeWithinCompetitionTime(RecordCompetitionFishCatchCommand command, DateTimeOffset catchTime, CancellationToken cancellationToken)
-    {
-        var competition = await _context.Competitions
-            .AsNoTracking() // Nie potrzebujemy śledzić do walidacji
-            .Select(c => new { c.Id, c.Schedule, c.Status }) // Pobierz tylko potrzebne pola
-            .FirstOrDefaultAsync(c => c.Id == command.CompetitionId, cancellationToken);
-
-        if (competition == null) return false; // Zawody nie istnieją
-
-        // Czas połowu musi być w trakcie trwania zawodów
-        // I zawody muszą być w statusie Ongoing
-        return competition.Status == CompetitionStatus.Ongoing &&
-               catchTime >= competition.Schedule.Start &&
-               catchTime <= competition.Schedule.End;
-    }
     private bool HaveAtLeastOneMeasurement(RecordCompetitionFishCatchCommand command)
     {
         return command.LengthInCm.HasValue || command.WeightInKg.HasValue;

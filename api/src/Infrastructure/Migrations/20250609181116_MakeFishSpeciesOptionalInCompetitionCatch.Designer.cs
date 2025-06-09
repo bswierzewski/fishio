@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250609181116_MakeFishSpeciesOptionalInCompetitionCatch")]
+    partial class MakeFishSpeciesOptionalInCompetitionCatch
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -400,8 +403,16 @@ namespace Infrastructure.Migrations
                     b.Property<int?>("CreatedBy")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("FishSpeciesId")
+                    b.Property<int>("FishSpeciesId")
                         .HasColumnType("integer");
+
+                    b.Property<string>("ImagePublicId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ImageUrl")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
 
                     b.Property<int>("JudgeId")
                         .HasColumnType("integer");
@@ -977,7 +988,8 @@ namespace Infrastructure.Migrations
                     b.HasOne("Fishio.Domain.Entities.FishSpecies", "FishSpecies")
                         .WithMany("CompetitionFishCatches")
                         .HasForeignKey("FishSpeciesId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("Fishio.Domain.Entities.User", "Judge")
                         .WithMany("JudgedFishCatches")

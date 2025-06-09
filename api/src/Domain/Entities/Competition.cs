@@ -110,7 +110,6 @@ public class Competition : BaseAuditableEntity
 
     // --- Zarządzanie Statusem ---
     public bool IsAcceptingRegistrations() => Status == CompetitionStatus.AcceptingRegistrations;
-    public bool IsOngoing() => Status == CompetitionStatus.Ongoing && Schedule.Contains(DateTimeOffset.UtcNow);
     public bool IsFinished() => Status == CompetitionStatus.Finished;
     public bool CanModifyDetails() => Status == CompetitionStatus.Draft || Status == CompetitionStatus.AcceptingRegistrations || Status == CompetitionStatus.Scheduled;
 
@@ -293,27 +292,24 @@ public class Competition : BaseAuditableEntity
     public CompetitionFishCatch RecordFishCatch(
         CompetitionParticipant participant,
         User judge,
-        FishSpecies fishSpecies,
-        string imageUrl,
+        FishSpecies? fishSpecies,
         DateTimeOffset catchTime,
         FishLength? length = null,
         FishWeight? weight = null)
     {
-        if (!IsOngoing())
-            throw new InvalidOperationException("Połowy można rejestrować tylko podczas trwających zawodów.");
         Guard.Against.Null(participant, nameof(participant));
         Guard.Against.Null(judge, nameof(judge));
-        Guard.Against.Null(fishSpecies, nameof(fishSpecies));
-        Guard.Against.NullOrWhiteSpace(imageUrl, nameof(imageUrl));
+        // FishSpecies is now optional - judges may not specify species for multiple fish catches
+        // ImageUrl is now optional - judges may register catches without photos
 
         if (participant.CompetitionId != Id)
             throw new ArgumentException("Uczestnik nie należy do tych zawodów.", nameof(participant));
         if (participant.Role != ParticipantRole.Competitor)
             throw new ArgumentException("Połów można zarejestrować tylko dla zawodnika.", nameof(participant));
 
-        var judgeAsParticipant = _participants.FirstOrDefault(p => p.UserId == judge.Id && p.Role == ParticipantRole.Judge);
+        var judgeAsParticipant = _participants.FirstOrDefault(p => p.UserId == judge.Id && (p.Role == ParticipantRole.Judge || p.Role == ParticipantRole.Organizer));
         if (judgeAsParticipant == null)
-            throw new InvalidOperationException($"Użytkownik '{judge.Name}' nie jest sędzią w tych zawodach lub nie ma uprawnień.");
+            throw new InvalidOperationException($"Użytkownik '{judge.Name}' nie jest sędzią ani organizatorem w tych zawodach lub nie ma uprawnień.");
 
         // Walidacja, czy przynajmniej jedna miara (długość/waga) jest podana, jeśli wymaga tego kategoria główna
         var primaryCategory = _categories.FirstOrDefault(c => c.IsPrimaryScoring && c.IsEnabled);
@@ -334,7 +330,7 @@ public class Competition : BaseAuditableEntity
         }
 
 
-        var fishCatch = new CompetitionFishCatch(this, participant, judge, fishSpecies, imageUrl, catchTime, length, weight);
+        var fishCatch = new CompetitionFishCatch(this, participant, judge, fishSpecies, catchTime, length, weight);
         _fishCatches.Add(fishCatch);
         // AddDomainEvent(new FishCatchRecordedEvent(this, fishCatch));
         return fishCatch;

@@ -17,6 +17,7 @@ using Fishio.Application.Competitions.Commands.SetToDraft;
 using Fishio.Application.Competitions.Commands.StartCompetition;
 using Fishio.Application.Competitions.Commands.UpdateCompetition;
 using Fishio.Application.Competitions.Commands.UpdateCompetitionCategory;
+using Fishio.Application.Competitions.Queries.GetCompetitionCatches;
 using Fishio.Application.Competitions.Queries.GetCompetitionDetails;
 using Fishio.Application.Competitions.Queries.GetMyCompetitions;
 using Fishio.Application.Competitions.Queries.GetOpenCompetitions;
@@ -165,6 +166,12 @@ public static class CompetitionsEndpoints
         var catchesGroup = competitionsGroup.MapGroup("/{competitionId:int}/catches")
             .RequireAuthorization(); // Rejestracja połowów wymaga autoryzacji (sędzia)
 
+        catchesGroup.MapGet("/", GetCompetitionCatches)
+            .WithName(nameof(GetCompetitionCatches))
+            .Produces<List<CompetitionFishCatchDto>>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound).ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
+
         catchesGroup.MapPost("/", JudgeRecordsFishCatch)
             .WithName(nameof(JudgeRecordsFishCatch))
             .Produces<object>(StatusCodes.Status201Created) // Zwraca { fishCatchId = newId }
@@ -270,6 +277,13 @@ public static class CompetitionsEndpoints
         var command = new RemoveJudgeCommand { CompetitionId = competitionId, JudgeParticipantEntryId = judgeParticipantEntryId };
         await sender.Send(command, ct);
         return TypedResults.NoContent();
+    }
+
+    private static async Task<IResult> GetCompetitionCatches(ISender sender, int competitionId, CancellationToken ct)
+    {
+        var query = new GetCompetitionCatchesQuery(competitionId);
+        var catches = await sender.Send(query, ct);
+        return TypedResults.Ok(catches);
     }
 
     private static async Task<IResult> JudgeRecordsFishCatch(ISender sender, int competitionId, RecordCompetitionFishCatchCommand command, CancellationToken ct)

@@ -35,7 +35,7 @@ public class CompetitionFishCatchConfiguration : IEntityTypeConfiguration<Compet
         builder.HasOne(cfc => cfc.FishSpecies)
             .WithMany(fs => fs.CompetitionFishCatches) // Dodaj ICollection<CompetitionFishCatch> CompetitionFishCatches w FishSpecies
             .HasForeignKey(cfc => cfc.FishSpeciesId)
-            .IsRequired() // Zakładamy, że gatunek jest zawsze wymagany dla połowu w zawodach
+            .IsRequired(false) // FishSpecies is now optional - judges may register multiple fish without specifying species
             .OnDelete(DeleteBehavior.Restrict);
 
         // Konfiguracja Value Object FishLength
@@ -53,10 +53,6 @@ public class CompetitionFishCatchConfiguration : IEntityTypeConfiguration<Compet
                 value => value == null ? null : new FishWeight(value.Value))
             .HasColumnName("WeightKg")
             .HasPrecision(7, 3);
-
-        builder.Property(cfc => cfc.ImageUrl)
-            .IsRequired()
-            .HasMaxLength(2048);
 
         builder.Property(cfc => cfc.CatchTime).IsRequired();
 

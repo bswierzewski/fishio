@@ -217,7 +217,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
 
   const canJoin = !isParticipant && competition.status === CompetitionStatus.AcceptingRegistrations;
 
-  const canRegisterCatch = isJudge && competition.status === CompetitionStatus.Ongoing;
+  const canRegisterCatch = (isJudge || isOrganizer) && competition.status === CompetitionStatus.Ongoing;
   const canManage = isOrganizer;
   const canStartCompetition = isOrganizer && competition.status === CompetitionStatus.Scheduled;
   const canFinishCompetition = isOrganizer && competition.status === CompetitionStatus.Ongoing;
@@ -253,6 +253,14 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
   };
 
   const pageActions: PageHeaderAction[] = [];
+
+  if (canRegisterCatch) {
+    pageActions.push({
+      label: 'Zarządzaj Połowami',
+      href: `/competitions/${competitionId}/catch`,
+      icon: <Fish className="h-4 w-4" />
+    });
+  }
 
   if (canManage) {
     pageActions.push({
@@ -345,15 +353,6 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
                 {joinCompetitionMutation.isPending ? 'Dołączanie...' : 'Dołącz do Zawodów'}
               </span>
             </Button>
-          )}
-
-          {canRegisterCatch && (
-            <Link href={`/competitions/${competitionId}/catch/new`}>
-              <Button className="bg-blue-600 text-white hover:bg-blue-700 flex-shrink-0" size="sm">
-                <Plus className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Zarejestruj Połów</span>
-              </Button>
-            </Link>
           )}
         </div>
       </div>

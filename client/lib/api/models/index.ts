@@ -17,6 +17,7 @@ export * from './categoryMetric';
 export * from './categoryType';
 export * from './competitionCategoryDto';
 export * from './competitionDetailsDto';
+export * from './competitionFishCatchDto';
 export * from './competitionParticipantDto';
 export * from './competitionStatus';
 export * from './competitionSummaryDto';

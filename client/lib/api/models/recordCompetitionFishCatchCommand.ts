@@ -8,11 +8,8 @@
 export interface RecordCompetitionFishCatchCommand {
   competitionId?: number;
   participantEntryId?: number;
-  fishSpeciesId?: number;
   /** @nullable */
-  imageUrl?: string | null;
-  /** @nullable */
-  imagePublicId?: string | null;
+  fishSpeciesId?: number | null;
   catchTime?: string;
   /** @nullable */
   lengthInCm?: number | null;
