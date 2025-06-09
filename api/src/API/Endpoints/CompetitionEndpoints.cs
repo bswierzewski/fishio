@@ -4,6 +4,7 @@ using Fishio.Application.Competitions.Commands.ApproveParticipant;
 using Fishio.Application.Competitions.Commands.AssignJudge;
 using Fishio.Application.Competitions.Commands.CancelCompetition;
 using Fishio.Application.Competitions.Commands.CreateCompetition;
+using Fishio.Application.Competitions.Commands.DeleteFishCatch;
 using Fishio.Application.Competitions.Commands.FinishCompetition;
 using Fishio.Application.Competitions.Commands.JoinCompetition;
 using Fishio.Application.Competitions.Commands.OpenRegistrations;
@@ -179,6 +180,12 @@ public static class CompetitionsEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound).ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden);
 
+        catchesGroup.MapDelete("/{fishCatchId:int}", JudgeDeletesFishCatch)
+            .WithName(nameof(JudgeDeletesFishCatch))
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound).ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
+
         // --- Category Management in Competition ---
         var categoryManagementGroup = competitionsGroup.MapGroup("/{competitionId:int}/categories")
             .RequireAuthorization(); // Zarządzanie kategoriami wymaga autoryzacji (organizator)
@@ -291,6 +298,13 @@ public static class CompetitionsEndpoints
         command.CompetitionId = competitionId; // Ustawiamy ID zawodów z trasy
         var fishCatchId = await sender.Send(command, ct);
         return TypedResults.Created($"/api/competitions/{competitionId}/catches/{fishCatchId}", new { FishCatchId = fishCatchId });
+    }
+
+    private static async Task<IResult> JudgeDeletesFishCatch(ISender sender, int competitionId, int fishCatchId, CancellationToken ct)
+    {
+        var command = new DeleteCompetitionFishCatchCommand(competitionId, fishCatchId);
+        await sender.Send(command, ct);
+        return TypedResults.NoContent();
     }
 
     private static async Task<IResult> OrganizerStartsCompetition(ISender sender, int competitionId, CancellationToken ct)

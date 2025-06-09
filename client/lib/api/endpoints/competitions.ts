@@ -1729,6 +1729,75 @@ export const useJudgeRecordsFishCatch = <TError = ProblemDetails, TContext = unk
 
   return useMutation(mutationOptions, queryClient);
 };
+export const judgeDeletesFishCatch = (
+  competitionId: number,
+  fishCatchId: number,
+  options?: SecondParameter<typeof customInstance>
+) => {
+  return customInstance<void>(
+    { url: `/api/competitions/${competitionId}/catches/${fishCatchId}`, method: 'DELETE' },
+    options
+  );
+};
+
+export const getJudgeDeletesFishCatchMutationOptions = <TError = ProblemDetails, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof judgeDeletesFishCatch>>,
+    TError,
+    { competitionId: number; fishCatchId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof judgeDeletesFishCatch>>,
+  TError,
+  { competitionId: number; fishCatchId: number },
+  TContext
+> => {
+  const mutationKey = ['judgeDeletesFishCatch'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof judgeDeletesFishCatch>>,
+    { competitionId: number; fishCatchId: number }
+  > = (props) => {
+    const { competitionId, fishCatchId } = props ?? {};
+
+    return judgeDeletesFishCatch(competitionId, fishCatchId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type JudgeDeletesFishCatchMutationResult = NonNullable<Awaited<ReturnType<typeof judgeDeletesFishCatch>>>;
+
+export type JudgeDeletesFishCatchMutationError = ProblemDetails;
+
+export const useJudgeDeletesFishCatch = <TError = ProblemDetails, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof judgeDeletesFishCatch>>,
+      TError,
+      { competitionId: number; fishCatchId: number },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof judgeDeletesFishCatch>>,
+  TError,
+  { competitionId: number; fishCatchId: number },
+  TContext
+> => {
+  const mutationOptions = getJudgeDeletesFishCatchMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
 export const organizerUpdatesCompetitionCategory = (
   competitionId: number,
   competitionCategoryId: number,

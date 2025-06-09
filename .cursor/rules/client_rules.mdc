@@ -31,9 +31,10 @@ alwaysApply: false
 6.  **Accessibility (a11y):**
     *   Pay attention to HTML semantics and ARIA attributes to ensure application accessibility. `shadcn/ui` components often have this built-in.
 7.  **API Client:**
-    *   The API client, including models (DTOs) and React Query hooks for endpoints, is auto-generated (e.g., using Orval or a similar tool).
+    *   The API client, including models (DTOs) and React Query hooks for endpoints, is auto-generated using Orval.
     *   These generated files are located in `@/lib/api/models` for types/interfaces and `@/lib/api/endpoints` for query/mutation hooks.
     *   Always use these generated hooks and types for interacting with the backend API to ensure consistency and type safety. Do not manually write `fetch` calls for API interactions if a generated hook is available.
+    *   **To regenerate the API client after backend changes:** Run `npx orval` in the client directory. This will update all endpoints and models based on the latest OpenAPI specification from the backend.
 
 ## 🔄 2. State Management
 

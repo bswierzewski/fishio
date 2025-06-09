@@ -13,6 +13,7 @@ import { useApiError } from '@/hooks/use-api-error';
 import {
   useGetCompetitionCatches,
   useGetCompetitionDetailsById,
+  useJudgeDeletesFishCatch,
   useJudgeRecordsFishCatch
 } from '@/lib/api/endpoints/competitions';
 import { useGetAllFishSpecies } from '@/lib/api/endpoints/lookup-data';
@@ -101,6 +102,23 @@ export default function CatchManagementPage({ params }: { params: Promise<{ id: 
     }
   });
 
+  const deleteCatchMutation = useJudgeDeletesFishCatch({
+    mutation: {
+      onSuccess: () => {
+        toast.success('Połów został usunięty!');
+        refetch();
+        refetchCatches();
+        queryClient.invalidateQueries({
+          queryKey: ['/api/competitions']
+        });
+      },
+      onError: (error) => {
+        console.error('Error deleting catch:', error);
+        handleError(error);
+      }
+    }
+  });
+
   const form = useForm({
     defaultValues: {
       participantEntryId: '',
@@ -169,8 +187,15 @@ export default function CatchManagementPage({ params }: { params: Promise<{ id: 
     if (!competitionId) return;
 
     if (window.confirm('Czy na pewno chcesz usunąć ten połów?')) {
-      // Note: Need to implement delete endpoint
-      toast('Funkcja usuwania będzie dostępna wkrótce', { icon: 'ℹ️' });
+      try {
+        await deleteCatchMutation.mutateAsync({
+          competitionId,
+          fishCatchId: catchId
+        });
+      } catch (error) {
+        // Error is already handled by the mutation's onError callback
+        console.error('Failed to delete catch:', error);
+      }
     }
   };
 
@@ -495,6 +520,7 @@ export default function CatchManagementPage({ params }: { params: Promise<{ id: 
                           size="sm"
                           onClick={() => handleDeleteCatch(catchItem.id || 0)}
                           className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          disabled={deleteCatchMutation.isPending}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
