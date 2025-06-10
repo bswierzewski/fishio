@@ -518,8 +518,6 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
         </div>
         <div className="p-4">
           <div className="space-y-2">
-            <p className="text-xs text-muted-foreground mb-3">Przepływ statusów:</p>
-
             {/* Status Flow */}
             <div className="flex flex-col space-y-1">
               {/* Draft */}

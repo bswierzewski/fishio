@@ -256,7 +256,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
 
   if (canRegisterCatch) {
     pageActions.push({
-      label: 'Zarządzaj Połowami',
+      label: 'Połowy',
       href: `/competitions/${competitionId}/catch`,
       icon: <Fish className="h-4 w-4" />
     });
@@ -264,7 +264,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
 
   if (canManage) {
     pageActions.push({
-      label: 'Zarządzaj',
+      label: 'Uczestnicy',
       href: `/competitions/${competitionId}/manage`,
       icon: <ListChecks className="h-4 w-4" />
     });
