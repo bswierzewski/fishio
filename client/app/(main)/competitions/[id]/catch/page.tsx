@@ -333,16 +333,7 @@ export default function CatchManagementPage({ params }: { params: Promise<{ id: 
                             </SelectItem>
                             {fishSpecies?.map((species: FishSpeciesDto) => (
                               <SelectItem key={species.id} value={species?.id?.toString() ?? ''}>
-                                <div className="flex items-center gap-2 py-1">
-                                  <FishImage
-                                    src={species.imageUrl}
-                                    alt={species.name || ''}
-                                    className="w-6 h-4 flex-shrink-0"
-                                    width={24}
-                                    height={16}
-                                  />
-                                  <span className="truncate">{species.name}</span>
-                                </div>
+                                {species.name}
                               </SelectItem>
                             ))}
                           </SelectContent>
