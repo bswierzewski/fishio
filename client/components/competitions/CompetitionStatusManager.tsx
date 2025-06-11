@@ -108,11 +108,11 @@ export function CompetitionStatusManager({
       </div>
       <div className="p-4">
         {/* Status Flow */}
-        <div className="flex flex-col sm:flex-row sm:flex-wrap items-center justify-center gap-2 sm:gap-3">
+        <div className="flex flex-row flex-wrap items-center justify-center gap-2">
           {/* Draft */}
           <Button
             variant="outline"
-            className="flex flex-col items-center p-2 h-auto text-center min-w-[60px] sm:min-w-[80px] cursor-pointer hover:cursor-pointer relative"
+            className="flex flex-col items-center p-2 h-auto text-center min-w-[60px] sm:min-w-[80px] cursor-pointer hover:cursor-pointer relative shadow"
             onClick={handleSetToDraft}
           >
             <div
@@ -122,19 +122,23 @@ export function CompetitionStatusManager({
             >
               <FileText className="h-3 w-3 sm:h-4 sm:w-4" />
             </div>
-            <span className="text-xs font-medium">Szkic</span>
+            {currentStatus === CompetitionStatus.Draft ? (
+              <Badge className="bg-blue-500 text-white text-xs">Szkic</Badge>
+            ) : (
+              <span className="text-xs font-medium">Szkic</span>
+            )}
             {currentStatus === CompetitionStatus.Draft && (
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-600 rounded-full border-2 border-white"></div>
             )}
           </Button>
 
           {/* Arrow */}
-          <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0 rotate-90 sm:rotate-0" />
+          <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
 
           {/* Accepting Registrations */}
           <Button
             variant="outline"
-            className="flex flex-col items-center p-2 h-auto text-center min-w-[60px] sm:min-w-[80px] cursor-pointer hover:cursor-pointer relative"
+            className="flex flex-col items-center p-2 h-auto text-center min-w-[60px] sm:min-w-[80px] cursor-pointer hover:cursor-pointer relative shadow"
             onClick={handleOpenRegistrations}
           >
             <div
@@ -144,19 +148,23 @@ export function CompetitionStatusManager({
             >
               <Users className="h-3 w-3 sm:h-4 sm:w-4" />
             </div>
-            <span className="text-xs font-medium text-center leading-tight">Rejestracje</span>
+            {currentStatus === CompetitionStatus.AcceptingRegistrations ? (
+              <Badge className="bg-green-500 text-white text-xs">Rejestracje</Badge>
+            ) : (
+              <span className="text-xs font-medium text-center leading-tight">Rejestracje</span>
+            )}
             {currentStatus === CompetitionStatus.AcceptingRegistrations && (
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-600 rounded-full border-2 border-white"></div>
             )}
           </Button>
 
           {/* Arrow */}
-          <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0 rotate-90 sm:rotate-0" />
+          <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
 
           {/* Scheduled */}
           <Button
             variant="outline"
-            className="flex flex-col items-center p-2 h-auto text-center min-w-[60px] sm:min-w-[80px] cursor-pointer hover:cursor-pointer relative"
+            className="flex flex-col items-center p-2 h-auto text-center min-w-[60px] sm:min-w-[80px] cursor-pointer hover:cursor-pointer relative shadow"
             onClick={handleScheduleCompetition}
           >
             <div
@@ -166,19 +174,23 @@ export function CompetitionStatusManager({
             >
               <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
             </div>
-            <span className="text-xs font-medium">Zaplanowane</span>
+            {currentStatus === CompetitionStatus.Scheduled ? (
+              <Badge className="bg-purple-500 text-white text-xs">Zaplanowane</Badge>
+            ) : (
+              <span className="text-xs font-medium">Zaplanowane</span>
+            )}
             {currentStatus === CompetitionStatus.Scheduled && (
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-purple-600 rounded-full border-2 border-white"></div>
             )}
           </Button>
 
           {/* Arrow */}
-          <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0 rotate-90 sm:rotate-0" />
+          <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
 
           {/* Ongoing */}
           <Button
             variant="outline"
-            className="flex flex-col items-center p-2 h-auto text-center min-w-[60px] sm:min-w-[80px] cursor-pointer hover:cursor-pointer relative"
+            className="flex flex-col items-center p-2 h-auto text-center min-w-[60px] sm:min-w-[80px] cursor-pointer hover:cursor-pointer relative shadow"
             onClick={handleStartCompetition}
           >
             <div
@@ -188,19 +200,23 @@ export function CompetitionStatusManager({
             >
               <Play className="h-3 w-3 sm:h-4 sm:w-4" />
             </div>
-            <span className="text-xs font-medium">W trakcie</span>
+            {currentStatus === CompetitionStatus.Ongoing ? (
+              <Badge className="bg-emerald-500 text-white text-xs">W trakcie</Badge>
+            ) : (
+              <span className="text-xs font-medium">W trakcie</span>
+            )}
             {currentStatus === CompetitionStatus.Ongoing && (
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-600 rounded-full border-2 border-white"></div>
             )}
           </Button>
 
           {/* Arrow */}
-          <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0 rotate-90 sm:rotate-0" />
+          <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0" />
 
           {/* Finished */}
           <Button
             variant="outline"
-            className="flex flex-col items-center p-2 h-auto text-center min-w-[60px] sm:min-w-[80px] cursor-pointer hover:cursor-pointer relative"
+            className="flex flex-col items-center p-2 h-auto text-center min-w-[60px] sm:min-w-[80px] cursor-pointer hover:cursor-pointer relative shadow"
             onClick={handleFinishCompetition}
           >
             <div
@@ -210,7 +226,11 @@ export function CompetitionStatusManager({
             >
               <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />
             </div>
-            <span className="text-xs font-medium">Zakończone</span>
+            {currentStatus === CompetitionStatus.Finished ? (
+              <Badge className="bg-slate-500 text-white text-xs">Zakończone</Badge>
+            ) : (
+              <span className="text-xs font-medium">Zakończone</span>
+            )}
             {currentStatus === CompetitionStatus.Finished && (
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-slate-700 rounded-full border-2 border-white"></div>
             )}
