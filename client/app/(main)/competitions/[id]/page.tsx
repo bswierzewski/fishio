@@ -19,7 +19,8 @@ import {
   Trophy,
   UserCheck,
   UserPlus,
-  Users
+  Users,
+  XCircle
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -27,6 +28,7 @@ import { notFound } from 'next/navigation';
 import { use, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
+import { useApiError } from '@/hooks/use-api-error';
 import {
   useGetCompetitionDetailsById,
   useOrganizerCancelsCompetition,
@@ -39,6 +41,7 @@ import { ParticipantStatus } from '@/lib/api/models/participantStatus';
 
 import { useCurrentUser } from '@/hooks/use-current-user';
 
+import { CompetitionStatusManager } from '@/components/competitions/CompetitionStatusManager';
 import { PageHeader, PageHeaderAction } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -94,19 +97,6 @@ const getRoleIcon = (role: ParticipantRole) => {
       return <UserCheck className="mr-2 h-4 w-4 text-green-500" />;
     default:
       return <UserCheck className="mr-2 h-4 w-4" />;
-  }
-};
-
-const getRoleText = (role: ParticipantRole) => {
-  switch (role) {
-    case ParticipantRole.Organizer:
-      return 'Organizator';
-    case ParticipantRole.Judge:
-      return 'Sędzia';
-    case ParticipantRole.Competitor:
-      return 'Zawodnik';
-    default:
-      return role;
   }
 };
 
@@ -180,6 +170,9 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
   const finishCompetitionMutation = useOrganizerFinishesCompetition();
   const cancelCompetitionMutation = useOrganizerCancelsCompetition();
 
+  // API error handling
+  const { handleError } = useApiError();
+
   // Don't render anything until params are resolved
   if (!paramsResolved) {
     return <CompetitionDetailSkeleton />;
@@ -252,6 +245,22 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
     }
   };
 
+  const handleCancelCompetition = async () => {
+    const reason = prompt('Podaj powód anulowania zawodów:');
+    if (!reason) return;
+
+    try {
+      await cancelCompetitionMutation.mutateAsync({
+        competitionId,
+        data: { reason }
+      });
+      toast.success('Zawody zostały anulowane!');
+      refetch();
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
   const pageActions: PageHeaderAction[] = [];
 
   if (canRegisterCatch) {
@@ -272,6 +281,17 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
       label: 'Edytuj',
       href: `/competitions/${competitionId}/edit`,
       icon: <Edit className="h-4 w-4" />
+    });
+  }
+
+  // Add cancel competition action as the last element with destructive styling
+  if (canCancelCompetition) {
+    pageActions.push({
+      label: cancelCompetitionMutation.isPending ? 'Anulowanie...' : 'Anuluj',
+      onClick: handleCancelCompetition,
+      icon: <XCircle className="h-4 w-4" />,
+      variant: 'destructive',
+      disabled: cancelCompetitionMutation.isPending
     });
   }
 
@@ -338,10 +358,18 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
         )}
       </div>
 
+      {/* Competition Status Management - Only for Organizers */}
+      <CompetitionStatusManager
+        competitionId={competitionId}
+        currentStatus={competition.status!}
+        isOrganizer={isOrganizer}
+        onStatusChange={refetch}
+      />
+
       {/* Action Buttons - Mobile: Icons only, Desktop: Full text */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border p-3 -mx-4 sm:-mx-6 mb-6">
-        <div className="flex items-center justify-center gap-2 overflow-x-auto pb-1">
-          {canJoin && (
+      {canJoin && (
+        <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border p-3 -mx-4 sm:-mx-6 mb-6">
+          <div className="flex items-center justify-center gap-2 overflow-x-auto pb-1">
             <Button
               onClick={handleJoinCompetition}
               disabled={joinCompetitionMutation.isPending}
@@ -353,9 +381,9 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
                 {joinCompetitionMutation.isPending ? 'Dołączanie...' : 'Dołącz do Zawodów'}
               </span>
             </Button>
-          )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* User Registration Status */}
       {currentUserId && !isOrganizer && userRegistrationStatus !== null && userRegistrationStatus !== undefined && (

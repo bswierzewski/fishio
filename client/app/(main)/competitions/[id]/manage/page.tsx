@@ -4,21 +4,12 @@ import {
   ArrowLeft,
   Ban,
   BarChart3,
-  Calendar,
-  CalendarDays,
   CheckCircle,
-  ChevronDown,
   Clock,
   Edit3,
   FileCheck,
-  FileText,
-  Play,
-  PlayCircle,
   Search,
-  Settings,
   ShieldCheck,
-  Square,
-  StopCircle,
   Trash2,
   Trophy,
   User,
@@ -39,15 +30,8 @@ import {
   useGetCompetitionDetailsById,
   useOrganizerAddsParticipant,
   useOrganizerApprovesParticipant,
-  useOrganizerCancelsCompetition,
-  useOrganizerFinishesCompetition,
-  useOrganizerOpensRegistrations,
   useOrganizerRejectsParticipant,
-  useOrganizerRemovesParticipant,
-  useOrganizerReopensRegistrations,
-  useOrganizerSchedulesCompetition,
-  useOrganizerSetsToDraft,
-  useOrganizerStartsCompetition
+  useOrganizerRemovesParticipant
 } from '@/lib/api/endpoints/competitions';
 import { useSearchAvailableUsers } from '@/lib/api/endpoints/users';
 import {
@@ -145,15 +129,6 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
   const removeParticipantMutation = useOrganizerRemovesParticipant();
   const approveParticipantMutation = useOrganizerApprovesParticipant();
   const rejectParticipantMutation = useOrganizerRejectsParticipant();
-
-  // Status management mutations
-  const setToDraftMutation = useOrganizerSetsToDraft();
-  const openRegistrationsMutation = useOrganizerOpensRegistrations();
-  const scheduleCompetitionMutation = useOrganizerSchedulesCompetition();
-  const reopenRegistrationsMutation = useOrganizerReopensRegistrations();
-  const startCompetitionMutation = useOrganizerStartsCompetition();
-  const finishCompetitionMutation = useOrganizerFinishesCompetition();
-  const cancelCompetitionMutation = useOrganizerCancelsCompetition();
 
   // API error handling
   const { handleError } = useApiError();
@@ -377,103 +352,6 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
     }
   };
 
-  // Status management handlers
-
-  const handleOpenRegistrations = async () => {
-    if (!competitionId) return;
-
-    try {
-      await openRegistrationsMutation.mutateAsync({ competitionId });
-      toast.success('Rejestracje zostały otwarte!');
-      refetch();
-    } catch (error) {
-      handleError(error);
-    }
-  };
-
-  const handleScheduleCompetition = async () => {
-    if (!competitionId) return;
-
-    try {
-      await scheduleCompetitionMutation.mutateAsync({ competitionId });
-      toast.success('Zawody zostały zaplanowane!');
-      refetch();
-    } catch (error) {
-      handleError(error);
-    }
-  };
-
-  const handleReopenRegistrations = async () => {
-    if (!competitionId) return;
-
-    try {
-      await reopenRegistrationsMutation.mutateAsync({ competitionId });
-      toast.success('Rejestracje zostały ponownie otwarte!');
-      refetch();
-    } catch (error) {
-      handleError(error);
-    }
-  };
-
-  const handleStartCompetition = async () => {
-    if (!competitionId) return;
-
-    try {
-      await startCompetitionMutation.mutateAsync({ competitionId });
-      toast.success('Zawody zostały rozpoczęte!');
-      refetch();
-    } catch (error) {
-      handleError(error);
-    }
-  };
-
-  const handleFinishCompetition = async () => {
-    if (!competitionId) return;
-
-    try {
-      await finishCompetitionMutation.mutateAsync({ competitionId });
-      toast.success('Zawody zostały zakończone!');
-      refetch();
-    } catch (error) {
-      handleError(error);
-    }
-  };
-
-  const handleCancelCompetition = async () => {
-    if (!competitionId) return;
-
-    const reason = prompt('Podaj powód anulowania zawodów:');
-    if (!reason) return;
-
-    try {
-      await cancelCompetitionMutation.mutateAsync({
-        competitionId,
-        data: { reason }
-      });
-      toast.success('Zawody zostały anulowane!');
-      refetch();
-    } catch (error) {
-      handleError(error);
-    }
-  };
-
-  const handleSetToDraft = async () => {
-    if (!competitionId) return;
-
-    const reason = prompt('Podaj powód przywrócenia do szkicu:') || 'Przywrócono do szkicu';
-
-    try {
-      await setToDraftMutation.mutateAsync({
-        competitionId,
-        data: { competitionId, reason }
-      });
-      toast.success('Zawody zostały przywrócone do szkicu!');
-      refetch();
-    } catch (error) {
-      handleError(error);
-    }
-  };
-
   return (
     <div className="space-y-6">
       <PageHeader onBack={() => (window.location.href = `/competitions/${competitionId}`)} />
@@ -503,209 +381,6 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
             <div className="text-center">
               <div className="text-2xl font-bold text-foreground">{competition.categories?.length || 0}</div>
               <div className="text-sm text-muted-foreground">Kategorii</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Competition Status Management */}
-      <div className="overflow-hidden rounded-lg bg-card shadow">
-        <div className="bg-slate-800 text-slate-100 relative flex h-10 flex-shrink-0 items-center space-x-2 p-3">
-          <div className="relative z-10 flex items-center space-x-2">
-            <Settings className="h-4 w-4" />
-            <span className="text-xs font-medium truncate">Zarządzanie Statusem</span>
-          </div>
-        </div>
-        <div className="p-4">
-          <div className="space-y-2">
-            {/* Status Flow */}
-            <div className="flex flex-col space-y-1">
-              {/* Draft */}
-              <Button
-                variant="outline"
-                className="flex items-center justify-between p-2 h-auto text-left w-full cursor-pointer hover:cursor-pointer"
-                onClick={() => {
-                  handleSetToDraft();
-                }}
-              >
-                <div className="flex items-center">
-                  <div
-                    className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
-                      competition.status === CompetitionStatus.Draft
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-blue-200 text-blue-700'
-                    }`}
-                  >
-                    <FileText className="h-3 w-3" />
-                  </div>
-                  <span className="ml-2 text-sm font-medium">Szkic</span>
-                </div>
-                {competition.status === CompetitionStatus.Draft && (
-                  <Badge variant="default" className="bg-blue-500 text-white">
-                    Aktualny
-                  </Badge>
-                )}
-              </Button>
-
-              {/* Arrow */}
-              <div className="flex justify-center py-1">
-                <ChevronDown className="h-3 w-3 text-gray-400" />
-              </div>
-
-              {/* Accepting Registrations */}
-              <Button
-                variant="outline"
-                className="flex items-center justify-between p-2 h-auto text-left w-full cursor-pointer hover:cursor-pointer"
-                onClick={() => {
-                  handleOpenRegistrations();
-                }}
-              >
-                <div className="flex items-center">
-                  <div
-                    className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
-                      competition.status === CompetitionStatus.AcceptingRegistrations
-                        ? 'bg-green-500 text-white'
-                        : 'bg-green-200 text-green-700'
-                    }`}
-                  >
-                    <Users className="h-3 w-3" />
-                  </div>
-                  <span className="ml-2 text-sm font-medium">Przyjmuje rejestracje</span>
-                </div>
-                {competition.status === CompetitionStatus.AcceptingRegistrations && (
-                  <Badge variant="default" className="bg-green-500 text-white">
-                    Aktualny
-                  </Badge>
-                )}
-              </Button>
-
-              {/* Arrow */}
-              <div className="flex justify-center py-1">
-                <ChevronDown className="h-3 w-3 text-gray-400" />
-              </div>
-
-              {/* Scheduled */}
-              <Button
-                variant="outline"
-                className="flex items-center justify-between p-2 h-auto text-left w-full cursor-pointer hover:cursor-pointer"
-                onClick={() => {
-                  handleScheduleCompetition();
-                }}
-              >
-                <div className="flex items-center">
-                  <div
-                    className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
-                      competition.status === CompetitionStatus.Scheduled
-                        ? 'bg-purple-500 text-white'
-                        : 'bg-purple-200 text-purple-700'
-                    }`}
-                  >
-                    <Calendar className="h-3 w-3" />
-                  </div>
-                  <span className="ml-2 text-sm font-medium">Zaplanowane</span>
-                </div>
-                {competition.status === CompetitionStatus.Scheduled && (
-                  <Badge variant="default" className="bg-purple-500 text-white">
-                    Aktualny
-                  </Badge>
-                )}
-              </Button>
-
-              {/* Arrow */}
-              <div className="flex justify-center py-1">
-                <ChevronDown className="h-3 w-3 text-gray-400" />
-              </div>
-
-              {/* Ongoing */}
-              <Button
-                variant="outline"
-                className="flex items-center justify-between p-2 h-auto text-left w-full cursor-pointer hover:cursor-pointer"
-                onClick={() => {
-                  handleStartCompetition();
-                }}
-              >
-                <div className="flex items-center">
-                  <div
-                    className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
-                      competition.status === CompetitionStatus.Ongoing
-                        ? 'bg-emerald-500 text-white'
-                        : 'bg-emerald-200 text-emerald-700'
-                    }`}
-                  >
-                    <Play className="h-3 w-3" />
-                  </div>
-                  <span className="ml-2 text-sm font-medium">W trakcie</span>
-                </div>
-                {competition.status === CompetitionStatus.Ongoing && (
-                  <Badge variant="default" className="bg-emerald-500 text-white">
-                    Aktualny
-                  </Badge>
-                )}
-              </Button>
-
-              {/* Arrow */}
-              <div className="flex justify-center py-1">
-                <ChevronDown className="h-3 w-3 text-gray-400" />
-              </div>
-
-              {/* Finished */}
-              <Button
-                variant="outline"
-                className="flex items-center justify-between p-2 h-auto text-left w-full cursor-pointer hover:cursor-pointer"
-                onClick={() => {
-                  handleFinishCompetition();
-                }}
-              >
-                <div className="flex items-center">
-                  <div
-                    className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
-                      competition.status === CompetitionStatus.Finished
-                        ? 'bg-slate-600 text-white'
-                        : 'bg-slate-200 text-slate-700'
-                    }`}
-                  >
-                    <CheckCircle className="h-3 w-3" />
-                  </div>
-                  <span className="ml-2 text-sm font-medium">Zakończone</span>
-                </div>
-                {competition.status === CompetitionStatus.Finished && (
-                  <Badge variant="default" className="bg-slate-600 text-white">
-                    Aktualny
-                  </Badge>
-                )}
-              </Button>
-
-              {/* Arrow */}
-              <div className="flex justify-center py-1">
-                <ChevronDown className="h-3 w-3 text-gray-400" />
-              </div>
-
-              {/* Cancelled Status */}
-              <Button
-                variant="outline"
-                className="flex items-center justify-between p-2 h-auto text-left w-full cursor-pointer hover:cursor-pointer"
-                onClick={() => {
-                  handleCancelCompetition();
-                }}
-              >
-                <div className="flex items-center">
-                  <div
-                    className={`flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${
-                      competition.status === CompetitionStatus.Cancelled
-                        ? 'bg-red-500 text-white'
-                        : 'bg-red-200 text-red-700'
-                    }`}
-                  >
-                    <XCircle className="h-3 w-3" />
-                  </div>
-                  <span className="ml-2 text-sm font-medium">Anulowane</span>
-                </div>
-                {competition.status === CompetitionStatus.Cancelled && (
-                  <Badge variant="default" className="bg-red-500 text-white">
-                    Aktualny
-                  </Badge>
-                )}
-              </Button>
             </div>
           </div>
         </div>
@@ -1022,17 +697,6 @@ function ManagementSkeleton() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
               <Skeleton key={i} className="h-10 w-full" />
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="overflow-hidden rounded-lg bg-card shadow">
-        <div className="bg-slate-800 h-10"></div>
-        <div className="p-4">
-          <div className="space-y-4">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <Skeleton key={i} className="h-16 w-full" />
             ))}
           </div>
         </div>
