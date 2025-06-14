@@ -15,19 +15,22 @@ public class GetPublicCompetitionResultsQueryHandler : IRequestHandler<GetPublic
 
     public async Task<PublicCompetitionResultsDto?> Handle(GetPublicCompetitionResultsQuery request, CancellationToken cancellationToken)
     {
+        // Znajdź zawody po tokenie
         var competition = await _context.Competitions
-            .AsNoTracking()
             .Include(c => c.Fishery)
-            .Include(c => c.Categories)
-                .ThenInclude(cc => cc.CategoryDefinition)
-            .Include(c => c.Categories)
-                .ThenInclude(cc => cc.FishSpecies)
-            .Include(c => c.Participants)
+            .Include(c => c.Categories.Where(cat => cat.IsEnabled))
+                .ThenInclude(cat => cat.CategoryDefinition)
+            .Include(c => c.Categories.Where(cat => cat.IsEnabled))
+                .ThenInclude(cat => cat.FishSpecies)
+            .Include(c => c.Participants.Where(p => p.Status == ParticipantStatus.Approved && p.Role == ParticipantRole.Competitor))
                 .ThenInclude(p => p.User)
             .Include(c => c.FishCatches)
+                .ThenInclude(fc => fc.Participant)
+                    .ThenInclude(p => p.User)
+            .Include(c => c.FishCatches)
                 .ThenInclude(fc => fc.FishSpecies)
-            .Include(c => c.FishCatches) // Ponowne dołączenie, aby EF Core załadował wszystkie powiązane dane dla FishCatches
-                .ThenInclude(fc => fc.Participant) // Potrzebne do identyfikacji uczestnika przy połowie
+            .Include(c => c.FishCatches)
+                .ThenInclude(fc => fc.Judge)
             .FirstOrDefaultAsync(c => c.ResultsToken == request.ResultsToken, cancellationToken);
 
         if (competition == null)
@@ -35,298 +38,337 @@ public class GetPublicCompetitionResultsQueryHandler : IRequestHandler<GetPublic
             return null;
         }
 
-        var now = _timeProvider.GetUtcNow();
-        var effectiveStatus = DetermineEffectiveStatus(competition, now);
+        // Pobierz tylko zatwierdzonych uczestników-zawodników
+        var approvedParticipants = competition.Participants
+            .Where(p => p.Status == ParticipantStatus.Approved && p.Role == ParticipantRole.Competitor)
+            .ToList();
 
-        var primaryScoringCategory = competition.Categories
-            .FirstOrDefault(c => c.IsPrimaryScoring && c.IsEnabled);
+        // Pobierz wszystkie połowy dla zawodów
+        var allCatches = competition.FishCatches.ToList();
 
-        var dto = new PublicCompetitionResultsDto
+        // Oblicz wyniki dla każdej kategorii równolegle
+        var categoryTasks = competition.Categories
+            .Where(c => c.IsEnabled)
+            .OrderBy(c => c.SortOrder)
+            .Select(category => CalculateCategoryResults(category, approvedParticipants, allCatches))
+            .ToArray();
+
+        var categoryResults = await Task.WhenAll(categoryTasks);
+
+        return new PublicCompetitionResultsDto
         {
             CompetitionId = competition.Id,
             CompetitionName = competition.Name,
             StartTime = competition.Schedule.Start,
             EndTime = competition.Schedule.End,
+            Status = competition.Status,
             FisheryName = competition.Fishery?.Name,
+            FisheryLocation = competition.Fishery?.Location,
             CompetitionImageUrl = competition.ImageUrl,
-            Status = effectiveStatus,
-            Rules = competition.Rules,
-            PrimaryScoringCategoryName = primaryScoringCategory?.CustomNameOverride ?? primaryScoringCategory?.CategoryDefinition.Name,
-            PrimaryScoringMetric = primaryScoringCategory?.CategoryDefinition.Metric
-        };
-
-        switch (effectiveStatus)
-        {
-            case CompetitionStatus.Scheduled:
-            case CompetitionStatus.AcceptingRegistrations:
-                dto = dto with { UpcomingMessage = $"Zawody '{competition.Name}' rozpoczną się {competition.Schedule.Start:g}. Zapraszamy!" };
-                break;
-
-            case CompetitionStatus.Ongoing:
-                dto = dto with { LiveRankingPlaceholderMessage = "Ranking jest aktualizowany na bieżąco." };
-                dto = dto with { MainRanking = await CalculateMainRankingAsync(competition, primaryScoringCategory, cancellationToken) };
-                break;
-
-            case CompetitionStatus.Finished:
-                dto = dto with { MainRanking = await CalculateMainRankingAsync(competition, primaryScoringCategory, cancellationToken) };
-                dto = dto with { SpecialCategoriesResults = await CalculateSpecialCategoriesResultsAsync(competition, cancellationToken) };
-                dto = dto with { FinishedChartsPlaceholderMessage = "Wykresy i dodatkowe analizy będą dostępne wkrótce." };
-                break;
-
-            case CompetitionStatus.Cancelled:
-                dto = dto with { UpcomingMessage = $"Zawody '{competition.Name}' zostały anulowane." };
-                break;
-        }
-
-        return dto;
-    }
-
-    private CompetitionStatus DetermineEffectiveStatus(Competition competition, DateTimeOffset now)
-    {
-        return competition.Status;
-    }
-
-    private async Task<List<PublicResultParticipantDto>> CalculateMainRankingAsync(
-        Competition competition,
-        CompetitionCategory? primaryScoringCategory,
-        CancellationToken cancellationToken)
-    {
-        var ranking = new List<PublicResultParticipantDto>();
-        if (primaryScoringCategory == null) return ranking;
-
-        var metric = primaryScoringCategory.CategoryDefinition.Metric;
-        var calcLogic = primaryScoringCategory.CategoryDefinition.CalculationLogic;
-
-        foreach (var participant in competition.Participants.Where(p => p.Role == ParticipantRole.Competitor))
-        {
-            var participantCatches = competition.FishCatches
-                .Where(fc => fc.ParticipantId == participant.Id)
-                .ToList();
-
-            decimal totalScore = 0;
-            int fishCount = participantCatches.Count;
-
-            if (calcLogic == CategoryCalculationLogic.SumValue)
-            {
-                switch (metric)
-                {
-                    case CategoryMetric.WeightKg:
-                        totalScore = participantCatches.Sum(fc => fc.Weight?.Value ?? 0);
-                        break;
-                    case CategoryMetric.LengthCm:
-                        totalScore = participantCatches.Sum(fc => fc.Length?.Value ?? 0);
-                        break;
-                    case CategoryMetric.FishCount:
-                        totalScore = fishCount;
-                        break;
-                }
-            }
-            else if (calcLogic == CategoryCalculationLogic.MaxValue) // Np. dla "Największa Ryba" jako główna kategoria
-            {
-                switch (metric)
-                {
-                    case CategoryMetric.WeightKg:
-                        totalScore = participantCatches.Any() ? participantCatches.Max(fc => fc.Weight?.Value ?? 0) : 0;
-                        break;
-                    case CategoryMetric.LengthCm:
-                        totalScore = participantCatches.Any() ? participantCatches.Max(fc => fc.Length?.Value ?? 0) : 0;
-                        break;
-                    case CategoryMetric.FishCount: // MaxValue dla FishCount nie ma sensu jako główna kategoria sumująca, ale dla kompletności
-                        totalScore = fishCount > 0 ? 1 : 0; // Lub po prostu fishCount, jeśli to jedyna kategoria
-                        break;
-                }
-            }
-            // TODO: Dodać obsługę MinValue, FirstOccurrence, LastOccurrence, ManualAssignment (choć Manual dla głównej jest rzadkie)
-
-            ranking.Add(new PublicResultParticipantDto
-            {
-                ParticipantId = participant.Id,
-                Name = participant.User?.Name ?? participant.GuestName ?? "Uczestnik",
-                TotalScore = totalScore,
-                FishCount = fishCount
-            });
-        }
-
-        // Sortowanie: Domyślnie większy wynik jest lepszy.
-        // Jeśli metryka lub logika wskazuje inaczej (np. MinValue), trzeba by odwrócić sortowanie.
-        // Na razie zakładamy, że większy TotalScore jest lepszy.
-        var result = ranking
-    .OrderByDescending(r => r.TotalScore)
-    .ThenByDescending(r => r.FishCount) // Dodatkowe kryterium przy remisie
-    .ToList();
-
-        return await Task.FromResult(result);
-    }
-
-    private async Task<List<PublicResultSpecialCategoryDto>> CalculateSpecialCategoriesResultsAsync(
-        Competition competition,
-        CancellationToken cancellationToken)
-    {
-        var specialCategoriesResults = new List<PublicResultSpecialCategoryDto>();
-        var specialCategories = competition.Categories
-            .Where(c => !c.IsPrimaryScoring && c.IsEnabled) // Bierzemy wszystkie nie-główne, aktywne
-            .OrderBy(c => c.SortOrder)
-            .ToList();
-
-        foreach (var categoryConfig in specialCategories)
-        {
-            var definition = categoryConfig.CategoryDefinition;
-            var categoryResult = new PublicResultSpecialCategoryDto
-            {
-                CategoryName = categoryConfig.CustomNameOverride ?? definition.Name,
-                CategoryDescription = categoryConfig.CustomDescriptionOverride ?? definition.Description,
-                Winners = new List<PublicResultCategoryWinnerDto>()
-            };
-
-            // Logika dla kategorii opartych na pojedynczym połowie (FishCatch)
-            if (definition.EntityType == CategoryEntityType.FishCatch)
-            {
-                IEnumerable<CompetitionFishCatch> relevantCatches = competition.FishCatches;
-                if (definition.RequiresSpecificFishSpecies && categoryConfig.FishSpeciesId.HasValue)
-                {
-                    relevantCatches = relevantCatches.Where(fc => fc.FishSpeciesId == categoryConfig.FishSpeciesId.Value);
-                }
-
-                CompetitionFishCatch? winningCatch = null;
-                decimal winningValue = 0;
-
-                switch (definition.CalculationLogic)
-                {
-                    case CategoryCalculationLogic.MaxValue:
-                        if (definition.Metric == CategoryMetric.WeightKg)
-                        {
-                            winningCatch = relevantCatches.Where(fc => fc.Weight != null)
-                                .OrderByDescending(fc => fc.Weight!.Value).FirstOrDefault();
-                            winningValue = winningCatch?.Weight?.Value ?? 0;
-                        }
-                        else if (definition.Metric == CategoryMetric.LengthCm)
-                        {
-                            winningCatch = relevantCatches.Where(fc => fc.Length != null)
-                                .OrderByDescending(fc => fc.Length!.Value).FirstOrDefault();
-                            winningValue = winningCatch?.Length?.Value ?? 0;
-                        }
-                        // Inne metryki dla MaxValue...
-                        break;
-
-                    case CategoryCalculationLogic.MinValue: // Np. Najmniejsza ryba (jeśli taka kategoria)
-                        if (definition.Metric == CategoryMetric.WeightKg)
-                        {
-                            winningCatch = relevantCatches.Where(fc => fc.Weight != null)
-                                .OrderBy(fc => fc.Weight!.Value).FirstOrDefault();
-                            winningValue = winningCatch?.Weight?.Value ?? 0;
-                        }
-                        else if (definition.Metric == CategoryMetric.LengthCm)
-                        {
-                            winningCatch = relevantCatches.Where(fc => fc.Length != null)
-                                .OrderBy(fc => fc.Length!.Value).FirstOrDefault();
-                            winningValue = winningCatch?.Length?.Value ?? 0;
-                        }
-                        break;
-
-                    case CategoryCalculationLogic.FirstOccurrence: // Np. Pierwsza złowiona ryba danego gatunku
-                        if (definition.Metric == CategoryMetric.TimeOfCatch) // Lub dowolna inna metryka, jeśli czas jest decydujący
-                        {
-                            winningCatch = relevantCatches.OrderBy(fc => fc.CatchTime).FirstOrDefault();
-                            // winningValue tutaj może nie być istotne, lub to czas
-                        }
-                        break;
-                        // TODO: Dodać LastOccurrence
-                }
-
-                if (winningCatch != null)
-                {
-                    var winnerParticipant = competition.Participants.First(p => p.Id == winningCatch.ParticipantId);
-                    categoryResult.Winners.Add(new PublicResultCategoryWinnerDto
-                    {
-                        ParticipantId = winnerParticipant.Id,
-                        ParticipantName = winnerParticipant.User?.Name ?? winnerParticipant.GuestName ?? "Uczestnik",
-                        FishSpeciesName = winningCatch.FishSpecies?.Name,
-                        Value = GetMetricValue(winningCatch, definition.Metric),
-                        Unit = GetMetricUnit(definition.Metric)
-                    });
-                }
-            }
-            // Logika dla kategorii opartych na agregacji połowów uczestnika (ParticipantAggregateCatches)
-            else if (definition.EntityType == CategoryEntityType.ParticipantAggregateCatches)
-            {
-                var participantScores = new List<(CompetitionParticipant participant, decimal score, int fishCount)>();
-
-                foreach (var participant in competition.Participants.Where(p => p.Role == ParticipantRole.Competitor))
-                {
-                    var participantCatches = competition.FishCatches.Where(fc => fc.ParticipantId == participant.Id);
-                    if (definition.RequiresSpecificFishSpecies && categoryConfig.FishSpeciesId.HasValue)
-                    {
-                        participantCatches = participantCatches.Where(fc => fc.FishSpeciesId == categoryConfig.FishSpeciesId.Value);
-                    }
-
-                    decimal currentScore = 0;
-                    if (definition.CalculationLogic == CategoryCalculationLogic.SumValue)
-                    {
-                        if (definition.Metric == CategoryMetric.FishCount) currentScore = participantCatches.Count();
-                        else if (definition.Metric == CategoryMetric.WeightKg) currentScore = participantCatches.Sum(fc => fc.Weight?.Value ?? 0);
-                        else if (definition.Metric == CategoryMetric.LengthCm) currentScore = participantCatches.Sum(fc => fc.Length?.Value ?? 0);
-                        // TODO: SpeciesVariety
-                    }
-                    // Inne logiki obliczeniowe dla agregacji...
-                    participantScores.Add((participant, currentScore, participantCatches.Count()));
-                }
-
-                // Wybierz zwycięzcę(ów) na podstawie CalculationLogic (np. MaxValue dla sumy)
-                if (definition.CalculationLogic == CategoryCalculationLogic.SumValue || definition.CalculationLogic == CategoryCalculationLogic.MaxValue) // MaxValue dla zagregowanej sumy
-                {
-                    var winners = participantScores.OrderByDescending(ps => ps.score)
-                                                   .ThenByDescending(ps => ps.fishCount) // Dodatkowe kryterium
-                                                   .Take(categoryConfig.MaxWinnersToDisplay);
-                    foreach (var winner in winners)
-                    {
-                        if (winner.score > 0 || definition.Metric == CategoryMetric.FishCount) // Pokaż zwycięzcę, jeśli ma wynik lub liczymy sztuki
-                        {
-                            categoryResult.Winners.Add(new PublicResultCategoryWinnerDto
-                            {
-                                ParticipantId = winner.participant.Id,
-                                ParticipantName = winner.participant.User?.Name ?? winner.participant.GuestName ?? "Uczestnik",
-                                Value = winner.score,
-                                Unit = GetMetricUnit(definition.Metric),
-                                FishSpeciesName = (definition.RequiresSpecificFishSpecies && categoryConfig.FishSpeciesId.HasValue)
-                                   ? categoryConfig.FishSpecies?.Name // Nazwa gatunku z konfiguracji kategorii
-                                   : null
-                            });
-                        }
-                    }
-                }
-                // TODO: Inne logiki dla agregacji
-            }
-            // TODO: Logika dla CategoryEntityType.ParticipantProfile (np. najmłodszy/najstarszy uczestnik)
-            // TODO: Logika dla CategoryCalculationLogic.ManualAssignment (pobranie ręcznie przypisanych zwycięzców)
-
-            if (categoryResult.Winners.Any() || definition.AllowManualWinnerAssignment)
-            {
-                specialCategoriesResults.Add(categoryResult);
-            }
-        }
-        return await Task.FromResult(specialCategoriesResults);
-    }
-
-    private decimal? GetMetricValue(CompetitionFishCatch fishCatch, CategoryMetric metric)
-    {
-        return metric switch
-        {
-            CategoryMetric.WeightKg => fishCatch.Weight?.Value,
-            CategoryMetric.LengthCm => fishCatch.Length?.Value,
-            CategoryMetric.FishCount => 1, // Dla pojedynczego połowu to zawsze 1
-            CategoryMetric.TimeOfCatch => fishCatch.CatchTime.ToUnixTimeSeconds(), // Przykład
-            _ => null
+            TotalParticipants = approvedParticipants.Count,
+            TotalCatches = allCatches.Count,
+            LastUpdated = _timeProvider.GetUtcNow(),
+            CategoryResults = categoryResults.ToList()
         };
     }
 
-    private string? GetMetricUnit(CategoryMetric metric)
+    private Task<CategoryResultDto> CalculateCategoryResults(
+        CompetitionCategory category,
+        List<CompetitionParticipant> participants,
+        List<CompetitionFishCatch> allCatches)
+    {
+        var categoryResult = new CategoryResultDto
+        {
+            CategoryId = category.Id,
+            CategoryName = category.CustomNameOverride ?? category.CategoryDefinition.Name,
+            CategoryDescription = category.CustomDescriptionOverride ?? category.CategoryDefinition.Description,
+            IsPrimaryScoring = category.IsPrimaryScoring,
+            CategoryType = category.CategoryDefinition.Type,
+            Metric = category.CategoryDefinition.Metric,
+            CalculationLogic = category.CategoryDefinition.CalculationLogic,
+            EntityType = category.CategoryDefinition.EntityType,
+            FishSpeciesName = category.FishSpecies?.Name,
+            MaxWinnersToDisplay = category.MaxWinnersToDisplay,
+            MetricUnit = GetMetricUnit(category.CategoryDefinition.Metric),
+            Rankings = CalculateRankings(category, participants, allCatches)
+        };
+
+        return Task.FromResult(categoryResult);
+    }
+
+    private List<ParticipantResultDto> CalculateRankings(
+        CompetitionCategory category,
+        List<CompetitionParticipant> participants,
+        List<CompetitionFishCatch> allCatches)
+    {
+        var participantResults = new List<ParticipantResultDto>();
+
+        foreach (var participant in participants)
+        {
+            // Filtruj połowy dla danego uczestnika i kategorii
+            var participantCatches = FilterCatchesForCategory(category, participant, allCatches);
+
+            if (!participantCatches.Any() && category.CategoryDefinition.EntityType != CategoryEntityType.ParticipantProfile)
+            {
+                // Jeśli uczestnik nie ma połowów w tej kategorii, dodaj go z wartością 0
+                participantResults.Add(new ParticipantResultDto
+                {
+                    ParticipantId = participant.Id,
+                    ParticipantName = participant.User?.Name ?? participant.GuestName ?? "Nieznany uczestnik",
+                    Position = 0, // Zostanie ustawione później
+                    Value = 0,
+                    ValueDisplay = "0",
+                    CatchesCount = 0,
+                    BestCatch = null,
+                    AllCatches = []
+                });
+                continue;
+            }
+
+            var result = CalculateParticipantValue(category, participant, participantCatches);
+            participantResults.Add(result);
+        }
+
+        // Sortuj i przypisz pozycje
+        var sortedResults = SortParticipantResults(participantResults, category.CategoryDefinition);
+        AssignPositions(sortedResults);
+
+        // Ogranicz do maksymalnej liczby zwycięzców do wyświetlenia
+        return sortedResults.Take(Math.Max(category.MaxWinnersToDisplay, participants.Count)).ToList();
+    }
+
+    private List<CompetitionFishCatch> FilterCatchesForCategory(
+        CompetitionCategory category,
+        CompetitionParticipant participant,
+        List<CompetitionFishCatch> allCatches)
+    {
+        var catches = allCatches.Where(c => c.ParticipantId == participant.Id).ToList();
+
+        // Jeśli kategoria wymaga konkretnego gatunku ryby
+        if (category.FishSpeciesId.HasValue)
+        {
+            catches = catches.Where(c => c.FishSpeciesId == category.FishSpeciesId.Value).ToList();
+        }
+
+        // Dodatkowe filtrowanie na podstawie metryki
+        return category.CategoryDefinition.Metric switch
+        {
+            CategoryMetric.LengthCm => catches.Where(c => c.Length?.Value > 0).ToList(),
+            CategoryMetric.WeightKg => catches.Where(c => c.Weight?.Value > 0).ToList(),
+            CategoryMetric.FishCount => catches, // Wszystkie połowy liczą się do liczby ryb
+            CategoryMetric.SpeciesVariety => catches, // Wszystkie połowy liczą się do różnorodności
+            CategoryMetric.TimeOfCatch => catches, // Wszystkie połowy mają czas
+            _ => catches
+        };
+    }
+
+    private ParticipantResultDto CalculateParticipantValue(
+        CompetitionCategory category,
+        CompetitionParticipant participant,
+        List<CompetitionFishCatch> participantCatches)
+    {
+        var participantName = participant.User?.Name ?? participant.GuestName ?? "Nieznany uczestnik";
+        var catchSummaries = participantCatches.Select(c => new CatchSummaryDto
+        {
+            CatchId = c.Id,
+            FishSpeciesName = c.FishSpecies?.Name,
+            LengthInCm = c.Length?.Value,
+            WeightInKg = c.Weight?.Value,
+            CatchTime = c.CatchTime
+        }).ToList();
+
+        // Oblicz wartość na podstawie typu kalkulacji i metryki
+        var (value, bestCatch) = category.CategoryDefinition.EntityType switch
+        {
+            CategoryEntityType.FishCatch => CalculateFishCatchValue(category, participantCatches),
+            CategoryEntityType.ParticipantAggregateCatches => CalculateAggregateValue(category, participantCatches),
+            CategoryEntityType.ParticipantProfile => CalculateProfileValue(category, participant),
+            _ => (0m, null)
+        };
+
+        return new ParticipantResultDto
+        {
+            ParticipantId = participant.Id,
+            ParticipantName = participantName,
+            Position = 0, // Zostanie ustawione później
+            Value = value,
+            ValueDisplay = FormatValueDisplay(value, category.CategoryDefinition.Metric),
+            CatchesCount = participantCatches.Count,
+            BestCatch = bestCatch,
+            AllCatches = catchSummaries
+        };
+    }
+
+    private (decimal value, BestCatchDetailsDto? bestCatch) CalculateFishCatchValue(
+        CompetitionCategory category,
+        List<CompetitionFishCatch> catches)
+    {
+        if (!catches.Any()) return (0, null);
+
+        var bestCatchEntity = category.CategoryDefinition.CalculationLogic switch
+        {
+            CategoryCalculationLogic.MaxValue => GetMaxValueCatch(catches, category.CategoryDefinition.Metric),
+            CategoryCalculationLogic.MinValue => GetMinValueCatch(catches, category.CategoryDefinition.Metric),
+            CategoryCalculationLogic.FirstOccurrence => catches.OrderBy(c => c.CatchTime).First(),
+            CategoryCalculationLogic.LastOccurrence => catches.OrderByDescending(c => c.CatchTime).First(),
+            _ => catches.First()
+        };
+
+        if (bestCatchEntity == null) return (0, null);
+
+        var value = ExtractValueFromCatch(bestCatchEntity, category.CategoryDefinition.Metric);
+        var bestCatch = new BestCatchDetailsDto
+        {
+            CatchId = bestCatchEntity.Id,
+            FishSpeciesName = bestCatchEntity.FishSpecies?.Name,
+            LengthInCm = bestCatchEntity.Length?.Value,
+            WeightInKg = bestCatchEntity.Weight?.Value,
+            CatchTime = bestCatchEntity.CatchTime,
+            JudgeName = bestCatchEntity.Judge?.Name ?? "Nieznany sędzia"
+        };
+
+        return (value, bestCatch);
+    }
+
+    private (decimal value, BestCatchDetailsDto? bestCatch) CalculateAggregateValue(
+        CompetitionCategory category,
+        List<CompetitionFishCatch> catches)
+    {
+        if (!catches.Any()) return (0, null);
+
+        var value = category.CategoryDefinition.Metric switch
+        {
+            CategoryMetric.LengthCm => catches.Sum(c => c.Length?.Value ?? 0),
+            CategoryMetric.WeightKg => catches.Sum(c => c.Weight?.Value ?? 0),
+            CategoryMetric.FishCount => catches.Count,
+            CategoryMetric.SpeciesVariety => catches.Where(c => c.FishSpeciesId.HasValue)
+                                                   .Select(c => c.FishSpeciesId!.Value)
+                                                   .Distinct()
+                                                   .Count(),
+            _ => 0
+        };
+
+        // Dla kategorii agregujących, najlepszy połów to ten z najwyższą wartością w danej metryce
+        var bestCatchEntity = GetMaxValueCatch(catches, category.CategoryDefinition.Metric);
+        var bestCatch = bestCatchEntity != null ? new BestCatchDetailsDto
+        {
+            CatchId = bestCatchEntity.Id,
+            FishSpeciesName = bestCatchEntity.FishSpecies?.Name,
+            LengthInCm = bestCatchEntity.Length?.Value,
+            WeightInKg = bestCatchEntity.Weight?.Value,
+            CatchTime = bestCatchEntity.CatchTime,
+            JudgeName = bestCatchEntity.Judge?.Name ?? "Nieznany sędzia"
+        } : null;
+
+        return (value, bestCatch);
+    }
+
+    private (decimal value, BestCatchDetailsDto? bestCatch) CalculateProfileValue(
+        CompetitionCategory category,
+        CompetitionParticipant participant)
+    {
+        // Kategorie profilowe mogą być rozszerzone w przyszłości
+        // Na razie zwracamy 0, ponieważ nie mamy zdefiniowanych metryk profilowych
+        return (0, null);
+    }
+
+    private static CompetitionFishCatch? GetMaxValueCatch(List<CompetitionFishCatch> catches, CategoryMetric metric)
     {
         return metric switch
         {
-            CategoryMetric.WeightKg => "kg",
+            CategoryMetric.LengthCm => catches.Where(c => c.Length?.Value > 0).OrderByDescending(c => c.Length!.Value).FirstOrDefault(),
+            CategoryMetric.WeightKg => catches.Where(c => c.Weight?.Value > 0).OrderByDescending(c => c.Weight!.Value).FirstOrDefault(),
+            CategoryMetric.TimeOfCatch => catches.OrderByDescending(c => c.CatchTime).FirstOrDefault(),
+            _ => catches.FirstOrDefault()
+        };
+    }
+
+    private static CompetitionFishCatch? GetMinValueCatch(List<CompetitionFishCatch> catches, CategoryMetric metric)
+    {
+        return metric switch
+        {
+            CategoryMetric.LengthCm => catches.Where(c => c.Length?.Value > 0).OrderBy(c => c.Length!.Value).FirstOrDefault(),
+            CategoryMetric.WeightKg => catches.Where(c => c.Weight?.Value > 0).OrderBy(c => c.Weight!.Value).FirstOrDefault(),
+            CategoryMetric.TimeOfCatch => catches.OrderBy(c => c.CatchTime).FirstOrDefault(),
+            _ => catches.FirstOrDefault()
+        };
+    }
+
+    private static decimal ExtractValueFromCatch(CompetitionFishCatch fishCatch, CategoryMetric metric)
+    {
+        return metric switch
+        {
+            CategoryMetric.LengthCm => fishCatch.Length?.Value ?? 0,
+            CategoryMetric.WeightKg => fishCatch.Weight?.Value ?? 0,
+            CategoryMetric.FishCount => 1, // Każdy połów liczy się jako 1 ryba
+            CategoryMetric.TimeOfCatch => fishCatch.CatchTime.ToUnixTimeSeconds(), // Czas jako liczba sekund
+            _ => 0
+        };
+    }
+
+    private static List<ParticipantResultDto> SortParticipantResults(
+        List<ParticipantResultDto> results,
+        CategoryDefinition categoryDefinition)
+    {
+        return categoryDefinition.CalculationLogic switch
+        {
+            CategoryCalculationLogic.MaxValue or CategoryCalculationLogic.SumValue =>
+                results.OrderByDescending(r => r.Value).ThenBy(r => r.ParticipantName).ToList(),
+            CategoryCalculationLogic.MinValue =>
+                results.OrderBy(r => r.Value).ThenBy(r => r.ParticipantName).ToList(),
+            CategoryCalculationLogic.FirstOccurrence =>
+                results.OrderBy(r => r.BestCatch?.CatchTime ?? DateTimeOffset.MaxValue).ThenBy(r => r.ParticipantName).ToList(),
+            CategoryCalculationLogic.LastOccurrence =>
+                results.OrderByDescending(r => r.BestCatch?.CatchTime ?? DateTimeOffset.MinValue).ThenBy(r => r.ParticipantName).ToList(),
+            _ => results.OrderByDescending(r => r.Value).ThenBy(r => r.ParticipantName).ToList()
+        };
+    }
+
+    private static void AssignPositions(List<ParticipantResultDto> sortedResults)
+    {
+        for (int i = 0; i < sortedResults.Count; i++)
+        {
+            var currentResult = sortedResults[i];
+
+            // Sprawdź, czy poprzedni wynik ma taką samą wartość (remis)
+            if (i > 0 && sortedResults[i - 1].Value == currentResult.Value)
+            {
+                // Remis - przypisz tę samą pozycję co poprzedni
+                currentResult.Position = sortedResults[i - 1].Position;
+            }
+            else
+            {
+                // Nowa pozycja
+                currentResult.Position = i + 1;
+            }
+        }
+    }
+
+    private static string GetMetricUnit(CategoryMetric metric)
+    {
+        return metric switch
+        {
             CategoryMetric.LengthCm => "cm",
+            CategoryMetric.WeightKg => "kg",
             CategoryMetric.FishCount => "szt.",
-            _ => null
+            CategoryMetric.SpeciesVariety => "gatunków",
+            CategoryMetric.TimeOfCatch => "",
+            _ => ""
+        };
+    }
+
+    private static string FormatValueDisplay(decimal? value, CategoryMetric metric)
+    {
+        if (!value.HasValue || value == 0) return "0";
+
+        return metric switch
+        {
+            CategoryMetric.LengthCm => $"{value:F1} cm",
+            CategoryMetric.WeightKg => $"{value:F2} kg",
+            CategoryMetric.FishCount => $"{value:F0} szt.",
+            CategoryMetric.SpeciesVariety => $"{value:F0} gatunków",
+            CategoryMetric.TimeOfCatch => value.HasValue ? DateTimeOffset.FromUnixTimeSeconds((long)value.Value).ToString("HH:mm:ss") : "00:00:00",
+            _ => value?.ToString() ?? "0"
         };
     }
 }

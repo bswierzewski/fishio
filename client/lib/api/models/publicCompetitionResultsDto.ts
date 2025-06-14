@@ -4,10 +4,8 @@
  * Fishio API
  * OpenAPI spec version: v1
  */
-import type { CategoryMetric } from './categoryMetric';
+import type { CategoryResultDto } from './categoryResultDto';
 import type { CompetitionStatus } from './competitionStatus';
-import type { PublicResultParticipantDto } from './publicResultParticipantDto';
-import type { PublicResultSpecialCategoryDto } from './publicResultSpecialCategoryDto';
 
 export interface PublicCompetitionResultsDto {
   competitionId?: number;
@@ -15,24 +13,16 @@ export interface PublicCompetitionResultsDto {
   competitionName?: string | null;
   startTime?: string;
   endTime?: string;
+  status?: CompetitionStatus;
   /** @nullable */
   fisheryName?: string | null;
   /** @nullable */
+  fisheryLocation?: string | null;
+  /** @nullable */
   competitionImageUrl?: string | null;
-  status?: CompetitionStatus;
+  totalParticipants?: number;
+  totalCatches?: number;
+  lastUpdated?: string;
   /** @nullable */
-  rules?: string | null;
-  /** @nullable */
-  primaryScoringCategoryName?: string | null;
-  primaryScoringMetric?: CategoryMetric;
-  /** @nullable */
-  upcomingMessage?: string | null;
-  /** @nullable */
-  mainRanking?: PublicResultParticipantDto[] | null;
-  /** @nullable */
-  liveRankingPlaceholderMessage?: string | null;
-  /** @nullable */
-  specialCategoriesResults?: PublicResultSpecialCategoryDto[] | null;
-  /** @nullable */
-  finishedChartsPlaceholderMessage?: string | null;
+  categoryResults?: CategoryResultDto[] | null;
 }

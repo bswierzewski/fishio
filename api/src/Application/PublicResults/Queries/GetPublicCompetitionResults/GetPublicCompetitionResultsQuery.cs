@@ -20,55 +20,74 @@ public class GetPublicCompetitionResultsQueryValidator : AbstractValidator<GetPu
     }
 }
 
-// --- DTOs składowe ---
-public record PublicResultParticipantDto
-{
-    public int ParticipantId { get; init; } // Może to być ID CompetitionParticipant
-    public string Name { get; init; } = string.Empty; // Imię/Nazwisko/Ksywka
-    public decimal TotalScore { get; init; } // Główny wynik (np. suma wag, suma długości)
-    public int FishCount { get; init; }
-    // Można dodać inne zagregowane dane, jeśli potrzebne
-}
-
-public record PublicResultCategoryWinnerDto
-{
-    public int ParticipantId { get; init; }
-    public string ParticipantName { get; init; } = string.Empty;
-    public string? FishSpeciesName { get; init; } // Jeśli kategoria dotyczy konkretnej ryby
-    public decimal? Value { get; init; } // Wartość, która dała zwycięstwo (np. długość, waga)
-    public string? Unit { get; init; } // Jednostka dla wartości (cm, kg)
-}
-
-public record PublicResultSpecialCategoryDto
-{
-    public string CategoryName { get; init; } = string.Empty;
-    public string? CategoryDescription { get; init; }
-    public List<PublicResultCategoryWinnerDto> Winners { get; init; } = new();
-}
-
 // --- Główne DTO ---
 public record PublicCompetitionResultsDto
 {
-    // Informacje o zawodach
     public int CompetitionId { get; init; }
     public string CompetitionName { get; init; } = string.Empty;
     public DateTimeOffset StartTime { get; init; }
     public DateTimeOffset EndTime { get; init; }
-    public string? FisheryName { get; init; }
-    public string? CompetitionImageUrl { get; init; }
     public CompetitionStatus Status { get; init; }
-    public string? Rules { get; init; }
+    public string? FisheryName { get; init; }
+    public string? FisheryLocation { get; init; }
+    public string? CompetitionImageUrl { get; init; }
+    public int TotalParticipants { get; init; }
+    public int TotalCatches { get; init; }
+    public DateTimeOffset LastUpdated { get; init; }
 
-    // Informacje o głównej kategorii punktacji
-    public string? PrimaryScoringCategoryName { get; init; }
-    public CategoryMetric? PrimaryScoringMetric { get; init; } // Np. Długość, Waga
+    // Kategorie z rankingami
+    public List<CategoryResultDto> CategoryResults { get; init; } = [];
+}
 
-    // Dane zależne od statusu
-    public string? UpcomingMessage { get; init; } // Dla statusu Upcoming
+public record CategoryResultDto
+{
+    public int CategoryId { get; init; }
+    public string CategoryName { get; init; } = string.Empty;
+    public string? CategoryDescription { get; init; }
+    public bool IsPrimaryScoring { get; init; }
+    public CategoryType CategoryType { get; init; }
+    public CategoryMetric Metric { get; init; }
+    public CategoryCalculationLogic CalculationLogic { get; init; }
+    public CategoryEntityType EntityType { get; init; }
+    public string? FishSpeciesName { get; init; }
+    public int MaxWinnersToDisplay { get; init; }
+    public string MetricUnit { get; init; } = string.Empty; // np. "cm", "kg", "szt."
 
-    public List<PublicResultParticipantDto> MainRanking { get; init; } = new(); // Dla Ongoing i Finished
-    public string? LiveRankingPlaceholderMessage { get; init; } // Dla Ongoing
+    // Ranking uczestników w tej kategorii
+    public List<ParticipantResultDto> Rankings { get; init; } = [];
+}
 
-    public List<PublicResultSpecialCategoryDto> SpecialCategoriesResults { get; init; } = new(); // Dla Finished
-    public string? FinishedChartsPlaceholderMessage { get; init; } // Dla Finished
+public record ParticipantResultDto
+{
+    public int ParticipantId { get; init; }
+    public string ParticipantName { get; init; } = string.Empty;
+    public int Position { get; set; }
+    public decimal? Value { get; init; } // Wartość w danej kategorii
+    public string ValueDisplay { get; init; } = string.Empty; // Sformatowana wartość do wyświetlenia
+    public int CatchesCount { get; init; } // Liczba połowów uczestnika w tej kategorii
+
+    // Szczegóły najlepszego połowu (dla kategorii FishCatch)
+    public BestCatchDetailsDto? BestCatch { get; init; }
+
+    // Lista wszystkich połowów (dla kategorii agregujących)
+    public List<CatchSummaryDto> AllCatches { get; init; } = [];
+}
+
+public record BestCatchDetailsDto
+{
+    public int CatchId { get; init; }
+    public string? FishSpeciesName { get; init; }
+    public decimal? LengthInCm { get; init; }
+    public decimal? WeightInKg { get; init; }
+    public DateTimeOffset CatchTime { get; init; }
+    public string JudgeName { get; init; } = string.Empty;
+}
+
+public record CatchSummaryDto
+{
+    public int CatchId { get; init; }
+    public string? FishSpeciesName { get; init; }
+    public decimal? LengthInCm { get; init; }
+    public decimal? WeightInKg { get; init; }
+    public DateTimeOffset CatchTime { get; init; }
 }

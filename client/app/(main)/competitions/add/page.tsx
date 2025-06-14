@@ -51,7 +51,9 @@ export default function AddCompetitionPage() {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const { data: fisheries, isLoading: isLoadingFisheries } = useGetAllFisheries({ PageNumber: 1, PageSize: 100 });
-  const { data: categoryDefinitions, isLoading: isLoadingCategories } = useGetGlobalCategoryDefinitions();
+  const { data: categoryDefinitions, isLoading: isLoadingCategories } = useGetGlobalCategoryDefinitions({
+    FilterByType: CategoryType.MainScoring
+  });
   const { data: specialCategoryDefinitions, isLoading: isLoadingSpecialCategories } = useGetGlobalCategoryDefinitions({
     FilterByType: CategoryType.SpecialAchievement
   });

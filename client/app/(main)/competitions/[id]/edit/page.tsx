@@ -40,6 +40,7 @@ export default function EditCompetitionPage({ params }: { params: Promise<{ id: 
     null
   );
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isImageMarkedForRemoval, setIsImageMarkedForRemoval] = useState(false);
 
   // Resolve params properly with useEffect
   useEffect(() => {
@@ -379,16 +380,18 @@ export default function EditCompetitionPage({ params }: { params: Promise<{ id: 
             id="competition-photo-input"
             label="Zdjęcie Zawodów (Opcjonalne)"
             folderName="competitions"
-            currentImageUrl={competition.imageUrl}
+            currentImageUrl={isImageMarkedForRemoval ? null : competition.imageUrl}
             onImageSelect={(imageData) => {
               setSelectedImageData(imageData);
               // If user removes the image (imageData is null), mark for removal
               if (!imageData && competition.imageUrl) {
                 form.setFieldValue('removeCurrentImage', true);
                 form.setFieldValue('imageUrl', null);
+                setIsImageMarkedForRemoval(true);
               } else if (imageData) {
                 // If user selects a new image, don't remove the current one
                 form.setFieldValue('removeCurrentImage', false);
+                setIsImageMarkedForRemoval(false);
               }
             }}
             onUploadReady={(uploadFn) => {

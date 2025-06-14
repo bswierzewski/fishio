@@ -47,16 +47,19 @@ public class UpdateCompetitionCommandHandler : IRequestHandler<UpdateCompetition
         }
 
         string? newImageUrl = competitionToUpdate.ImageUrl;
+        string? newImagePublicId = competitionToUpdate.ImagePublicId;
 
         if (request.RemoveCurrentImage && !string.IsNullOrEmpty(competitionToUpdate.ImageUrl))
         {
             newImageUrl = null;
+            newImagePublicId = null;
         }
 
         if (!string.IsNullOrEmpty(request.ImageUrl))
         {
             // Use the provided image URL
             newImageUrl = request.ImageUrl;
+            newImagePublicId = request.ImagePublicId;
         }
 
         // Convert to UTC to avoid PostgreSQL timezone issues
@@ -70,7 +73,8 @@ public class UpdateCompetitionCommandHandler : IRequestHandler<UpdateCompetition
             type: request.Type,
             fishery: fishery,
             rules: request.Rules,
-            imageUrl: newImageUrl
+            imageUrl: newImageUrl,
+            imagePublicId: newImagePublicId
         );
 
         // TODO: Handle category updates if needed
