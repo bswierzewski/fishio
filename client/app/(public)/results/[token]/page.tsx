@@ -2,7 +2,7 @@
 
 import { format } from 'date-fns';
 import { pl } from 'date-fns/locale';
-import { Award, Calendar, Clock, Fish, Home, MapPin, Medal, Star, Trophy } from 'lucide-react';
+import { Award, Calendar, Clock, ExternalLink, Fish, Home, MapPin, Medal, Star, Trophy } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
@@ -10,6 +10,7 @@ import { useGetResultsByToken } from '@/lib/api/endpoints/public-results';
 import { CategoryMetric, CompetitionStatus } from '@/lib/api/models';
 
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function PublicResultsPage() {
@@ -187,7 +188,15 @@ export default function PublicResultsPage() {
             <div className="p-6">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900 mb-2">{competitionResults.competitionName}</h1>
+                  {competitionResults.competitionId ? (
+                    <Link href={`/competitions/${competitionResults.competitionId}`}>
+                      <h1 className="text-2xl font-bold text-gray-900 mb-2 hover:text-blue-600 transition-colors cursor-pointer">
+                        {competitionResults.competitionName}
+                      </h1>
+                    </Link>
+                  ) : (
+                    <h1 className="text-2xl font-bold text-gray-900 mb-2">{competitionResults.competitionName}</h1>
+                  )}
                   <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4 text-blue-500" />
