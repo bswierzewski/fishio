@@ -34,9 +34,13 @@ public record PublicCompetitionResultsDto
     public int TotalParticipants { get; init; }
     public int TotalCatches { get; init; }
     public DateTimeOffset LastUpdated { get; init; }
+    public bool UsesSectors { get; init; } // Czy zawody używają sektorów
 
-    // Kategorie z rankingami
+    // Kategorie z rankingami (globalne lub per sektor)
     public List<CategoryResultDto> CategoryResults { get; init; } = [];
+
+    // Wyniki per sektor (tylko gdy UsesSectors = true)
+    public List<SectorResultDto> SectorResults { get; init; } = [];
 }
 
 public record CategoryResultDto
@@ -90,4 +94,25 @@ public record CatchSummaryDto
     public decimal? LengthInCm { get; init; }
     public decimal? WeightInKg { get; init; }
     public DateTimeOffset CatchTime { get; init; }
+}
+
+// --- DTO dla wyników sektorów ---
+public record SectorResultDto
+{
+    public string SectorName { get; init; } = string.Empty;
+    public int ParticipantsCount { get; init; }
+    public int CatchesCount { get; init; }
+
+    // Kategorie z rankingami dla tego sektora
+    public List<CategoryResultDto> CategoryResults { get; init; } = [];
+
+    // Lista uczestników z ich stanowiskami
+    public List<SectorParticipantDto> Participants { get; init; } = [];
+}
+
+public record SectorParticipantDto
+{
+    public int ParticipantId { get; init; }
+    public string ParticipantName { get; init; } = string.Empty;
+    public string? Stand { get; init; } // Stanowisko uczestnika
 }

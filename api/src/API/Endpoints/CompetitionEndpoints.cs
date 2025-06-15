@@ -22,6 +22,8 @@ using Fishio.Application.Competitions.Queries.GetCompetitionCatches;
 using Fishio.Application.Competitions.Queries.GetCompetitionDetails;
 using Fishio.Application.Competitions.Queries.GetMyCompetitions;
 using Fishio.Application.Competitions.Queries.GetOpenCompetitions;
+using Fishio.Application.Competitions.Queries.GetCompetitionParticipantsWithAssignments;
+using Fishio.Application.Competitions.Commands.UpdateParticipantAssignment;
 
 namespace Fishio.API.Endpoints;
 
@@ -191,8 +193,22 @@ public static class CompetitionsEndpoints
             .RequireAuthorization(); // Zarządzanie kategoriami wymaga autoryzacji (organizator)
 
         categoryManagementGroup.MapPut("/{competitionCategoryId:int}", OrganizerUpdatesCompetitionCategory)
-            .WithName(nameof(OrganizerUpdatesCompetitionCategory))
-            .Produces(StatusCodes.Status204NoContent)
+    .WithName(nameof(OrganizerUpdatesCompetitionCategory))
+    .Produces(StatusCodes.Status204NoContent)
+    .ProducesValidationProblem().ProducesProblem(StatusCodes.Status400BadRequest)
+    .ProducesProblem(StatusCodes.Status404NotFound).ProducesProblem(StatusCodes.Status401Unauthorized)
+    .ProducesProblem(StatusCodes.Status403Forbidden);
+
+        // --- Participant Assignment Management ---
+        participantsGroup.MapGet("/assignments", GetCompetitionParticipantsWithAssignments)
+            .WithName(nameof(GetCompetitionParticipantsWithAssignments))
+            .Produces<CompetitionParticipantsWithAssignmentsDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound).ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
+
+        participantsGroup.MapPut("/{participantId:int}/assignment", UpdateParticipantAssignment)
+            .WithName(nameof(UpdateParticipantAssignment))
+            .Produces<bool>(StatusCodes.Status200OK)
             .ProducesValidationProblem().ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound).ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden);
@@ -385,4 +401,40 @@ public static class CompetitionsEndpoints
         await sender.Send(command, ct);
         return TypedResults.NoContent();
     }
+
+    private static async Task<IResult> GetCompetitionParticipantsWithAssignments(ISender sender, int competitionId, CancellationToken ct)
+    {
+        var query = new GetCompetitionParticipantsWithAssignmentsQuery { CompetitionId = competitionId };
+        var result = await sender.Send(query, ct);
+        return TypedResults.Ok(result);
+    }
+
+    private static async Task<IResult> UpdateParticipantAssignment(
+        ISender sender,
+        int competitionId,
+        int participantId,
+        UpdateParticipantAssignmentRequest request,
+        CancellationToken ct)
+    {
+        var command = new UpdateParticipantAssignmentCommand
+        {
+            CompetitionId = competitionId,
+            ParticipantId = participantId,
+            Sector = request.Sector,
+            Stand = request.Stand
+        };
+        var result = await sender.Send(command, ct);
+        return TypedResults.Ok(result);
+    }
+}
+
+public record RemoveJudgeRequest
+{
+    public int JudgeParticipantEntryId { get; init; }
+}
+
+public record UpdateParticipantAssignmentRequest
+{
+    public string? Sector { get; init; }
+    public string? Stand { get; init; }
 }

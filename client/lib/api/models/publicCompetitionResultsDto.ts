@@ -6,6 +6,7 @@
  */
 import type { CategoryResultDto } from './categoryResultDto';
 import type { CompetitionStatus } from './competitionStatus';
+import type { SectorResultDto } from './sectorResultDto';
 
 export interface PublicCompetitionResultsDto {
   competitionId?: number;
@@ -23,6 +24,9 @@ export interface PublicCompetitionResultsDto {
   totalParticipants?: number;
   totalCatches?: number;
   lastUpdated?: string;
+  usesSectors?: boolean;
   /** @nullable */
   categoryResults?: CategoryResultDto[] | null;
+  /** @nullable */
+  sectorResults?: SectorResultDto[] | null;
 }

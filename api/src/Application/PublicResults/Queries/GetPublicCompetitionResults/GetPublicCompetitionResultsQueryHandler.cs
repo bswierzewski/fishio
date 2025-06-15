@@ -46,14 +46,24 @@ public class GetPublicCompetitionResultsQueryHandler : IRequestHandler<GetPublic
         // Pobierz wszystkie połowy dla zawodów
         var allCatches = competition.FishCatches.ToList();
 
-        // Oblicz wyniki dla każdej kategorii równolegle
-        var categoryTasks = competition.Categories
-            .Where(c => c.IsEnabled)
-            .OrderBy(c => c.SortOrder)
-            .Select(category => CalculateCategoryResults(category, approvedParticipants, allCatches))
-            .ToArray();
+        var usesSectors = competition.UsesSectors();
 
-        var categoryResults = await Task.WhenAll(categoryTasks);
+        List<CategoryResultDto> globalCategoryResults = [];
+        List<SectorResultDto> sectorResults = [];
+
+        if (usesSectors)
+        {
+            // Zawody z sektorami - oblicz wyniki per sektor
+            sectorResults = await CalculateSectorResults(competition, approvedParticipants, allCatches);
+
+            // Opcjonalnie: oblicz także globalne wyniki dla porównania
+            // globalCategoryResults = await CalculateGlobalResults(competition, approvedParticipants, allCatches);
+        }
+        else
+        {
+            // Zawody bez sektorów - oblicz globalne wyniki
+            globalCategoryResults = await CalculateGlobalResults(competition, approvedParticipants, allCatches);
+        }
 
         return new PublicCompetitionResultsDto
         {
@@ -68,8 +78,79 @@ public class GetPublicCompetitionResultsQueryHandler : IRequestHandler<GetPublic
             TotalParticipants = approvedParticipants.Count,
             TotalCatches = allCatches.Count,
             LastUpdated = _timeProvider.GetUtcNow(),
-            CategoryResults = categoryResults.ToList()
+            UsesSectors = usesSectors,
+            CategoryResults = globalCategoryResults,
+            SectorResults = sectorResults
         };
+    }
+
+    private async Task<List<CategoryResultDto>> CalculateGlobalResults(
+        Competition competition,
+        List<CompetitionParticipant> participants,
+        List<CompetitionFishCatch> allCatches)
+    {
+        // Oblicz wyniki dla każdej kategorii równolegle
+        var categoryTasks = competition.Categories
+            .Where(c => c.IsEnabled)
+            .OrderBy(c => c.SortOrder)
+            .Select(category => CalculateCategoryResults(category, participants, allCatches))
+            .ToArray();
+
+        var categoryResults = await Task.WhenAll(categoryTasks);
+        return categoryResults.ToList();
+    }
+
+    private async Task<List<SectorResultDto>> CalculateSectorResults(
+        Competition competition,
+        List<CompetitionParticipant> participants,
+        List<CompetitionFishCatch> allCatches)
+    {
+        var sectorResults = new List<SectorResultDto>();
+
+        foreach (var sectorName in competition.GetUsedSectors())
+        {
+            // Pobierz uczestników przypisanych do tego sektora
+            var sectorParticipants = competition.GetParticipantsInSector(sectorName).ToList();
+
+            if (!sectorParticipants.Any())
+                continue; // Pomiń sektory bez uczestników
+
+            // Pobierz połowy tylko dla uczestników z tego sektora
+            var sectorParticipantIds = sectorParticipants.Select(p => p.Id).ToHashSet();
+            var sectorCatches = allCatches.Where(c => sectorParticipantIds.Contains(c.ParticipantId)).ToList();
+
+            // Oblicz wyniki dla każdej kategorii w tym sektorze
+            var categoryTasks = competition.Categories
+                .Where(c => c.IsEnabled)
+                .OrderBy(c => c.SortOrder)
+                .Select(category => CalculateCategoryResults(category, sectorParticipants, sectorCatches))
+                .ToArray();
+
+            var sectorCategoryResults = await Task.WhenAll(categoryTasks);
+
+            // Stwórz informacje o uczestnikach sektora
+            var sectorParticipantDtos = sectorParticipants
+                .OrderBy(p => p.Stand ?? "")
+                .ThenBy(p => p.User?.Name ?? p.GuestName)
+                .Select(p => new SectorParticipantDto
+                {
+                    ParticipantId = p.Id,
+                    ParticipantName = p.User?.Name ?? p.GuestName ?? "Nieznany uczestnik",
+                    Stand = p.Stand
+                })
+                .ToList();
+
+            sectorResults.Add(new SectorResultDto
+            {
+                SectorName = sectorName,
+                ParticipantsCount = sectorParticipants.Count,
+                CatchesCount = sectorCatches.Count,
+                CategoryResults = sectorCategoryResults.ToList(),
+                Participants = sectorParticipantDtos
+            });
+        }
+
+        return sectorResults.OrderBy(s => s.SectorName).ToList();
     }
 
     private Task<CategoryResultDto> CalculateCategoryResults(

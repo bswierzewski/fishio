@@ -27,6 +27,7 @@ import type {
   CancelCompetitionCommand,
   CompetitionDetailsDto,
   CompetitionFishCatchDto,
+  CompetitionParticipantsWithAssignmentsDto,
   CompetitionSummaryDtoPaginatedList,
   CreateCompetitionCommand,
   GetOpenCompetitionsListParams,
@@ -36,7 +37,8 @@ import type {
   RecordCompetitionFishCatchCommand,
   SetToDraftCommand,
   UpdateCompetitionCategoryCommand,
-  UpdateCompetitionCommand
+  UpdateCompetitionCommand,
+  UpdateParticipantAssignmentRequest
 } from '../models';
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
@@ -1391,6 +1393,209 @@ export const useOrganizerRejectsParticipant = <TError = ProblemDetails, TContext
   TContext
 > => {
   const mutationOptions = getOrganizerRejectsParticipantMutationOptions(options);
+
+  return useMutation(mutationOptions, queryClient);
+};
+export const getCompetitionParticipantsWithAssignments = (
+  competitionId: number,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal
+) => {
+  return customInstance<CompetitionParticipantsWithAssignmentsDto>(
+    { url: `/api/competitions/${competitionId}/participants/assignments`, method: 'GET', signal },
+    options
+  );
+};
+
+export const getGetCompetitionParticipantsWithAssignmentsQueryKey = (competitionId: number) => {
+  return [`/api/competitions/${competitionId}/participants/assignments`] as const;
+};
+
+export const getGetCompetitionParticipantsWithAssignmentsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getCompetitionParticipantsWithAssignments>>,
+  TError = ProblemDetails
+>(
+  competitionId: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getCompetitionParticipantsWithAssignments>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  }
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetCompetitionParticipantsWithAssignmentsQueryKey(competitionId);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getCompetitionParticipantsWithAssignments>>> = ({ signal }) =>
+    getCompetitionParticipantsWithAssignments(competitionId, requestOptions, signal);
+
+  return { queryKey, queryFn, enabled: !!competitionId, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getCompetitionParticipantsWithAssignments>>,
+    TError,
+    TData
+  > & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type GetCompetitionParticipantsWithAssignmentsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getCompetitionParticipantsWithAssignments>>
+>;
+export type GetCompetitionParticipantsWithAssignmentsQueryError = ProblemDetails;
+
+export function useGetCompetitionParticipantsWithAssignments<
+  TData = Awaited<ReturnType<typeof getCompetitionParticipantsWithAssignments>>,
+  TError = ProblemDetails
+>(
+  competitionId: number,
+  options: {
+    query: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getCompetitionParticipantsWithAssignments>>, TError, TData>
+    > &
+      Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCompetitionParticipantsWithAssignments>>,
+          TError,
+          Awaited<ReturnType<typeof getCompetitionParticipantsWithAssignments>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient
+): DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetCompetitionParticipantsWithAssignments<
+  TData = Awaited<ReturnType<typeof getCompetitionParticipantsWithAssignments>>,
+  TError = ProblemDetails
+>(
+  competitionId: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getCompetitionParticipantsWithAssignments>>, TError, TData>
+    > &
+      Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getCompetitionParticipantsWithAssignments>>,
+          TError,
+          Awaited<ReturnType<typeof getCompetitionParticipantsWithAssignments>>
+        >,
+        'initialData'
+      >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+export function useGetCompetitionParticipantsWithAssignments<
+  TData = Awaited<ReturnType<typeof getCompetitionParticipantsWithAssignments>>,
+  TError = ProblemDetails
+>(
+  competitionId: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getCompetitionParticipantsWithAssignments>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+export function useGetCompetitionParticipantsWithAssignments<
+  TData = Awaited<ReturnType<typeof getCompetitionParticipantsWithAssignments>>,
+  TError = ProblemDetails
+>(
+  competitionId: number,
+  options?: {
+    query?: Partial<
+      UseQueryOptions<Awaited<ReturnType<typeof getCompetitionParticipantsWithAssignments>>, TError, TData>
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient
+): UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+  const queryOptions = getGetCompetitionParticipantsWithAssignmentsQueryOptions(competitionId, options);
+
+  const query = useQuery(queryOptions, queryClient) as UseQueryResult<TData, TError> & {
+    queryKey: DataTag<QueryKey, TData, TError>;
+  };
+
+  query.queryKey = queryOptions.queryKey;
+
+  return query;
+}
+
+export const updateParticipantAssignment = (
+  competitionId: number,
+  participantId: number,
+  updateParticipantAssignmentRequest: UpdateParticipantAssignmentRequest,
+  options?: SecondParameter<typeof customInstance>
+) => {
+  return customInstance<boolean>(
+    {
+      url: `/api/competitions/${competitionId}/participants/${participantId}/assignment`,
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      data: updateParticipantAssignmentRequest
+    },
+    options
+  );
+};
+
+export const getUpdateParticipantAssignmentMutationOptions = <TError = ProblemDetails, TContext = unknown>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateParticipantAssignment>>,
+    TError,
+    { competitionId: number; participantId: number; data: UpdateParticipantAssignmentRequest },
+    TContext
+  >;
+  request?: SecondParameter<typeof customInstance>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateParticipantAssignment>>,
+  TError,
+  { competitionId: number; participantId: number; data: UpdateParticipantAssignmentRequest },
+  TContext
+> => {
+  const mutationKey = ['updateParticipantAssignment'];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateParticipantAssignment>>,
+    { competitionId: number; participantId: number; data: UpdateParticipantAssignmentRequest }
+  > = (props) => {
+    const { competitionId, participantId, data } = props ?? {};
+
+    return updateParticipantAssignment(competitionId, participantId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateParticipantAssignmentMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateParticipantAssignment>>
+>;
+export type UpdateParticipantAssignmentMutationBody = UpdateParticipantAssignmentRequest;
+export type UpdateParticipantAssignmentMutationError = ProblemDetails;
+
+export const useUpdateParticipantAssignment = <TError = ProblemDetails, TContext = unknown>(
+  options?: {
+    mutation?: UseMutationOptions<
+      Awaited<ReturnType<typeof updateParticipantAssignment>>,
+      TError,
+      { competitionId: number; participantId: number; data: UpdateParticipantAssignmentRequest },
+      TContext
+    >;
+    request?: SecondParameter<typeof customInstance>;
+  },
+  queryClient?: QueryClient
+): UseMutationResult<
+  Awaited<ReturnType<typeof updateParticipantAssignment>>,
+  TError,
+  { competitionId: number; participantId: number; data: UpdateParticipantAssignmentRequest },
+  TContext
+> => {
+  const mutationOptions = getUpdateParticipantAssignmentMutationOptions(options);
 
   return useMutation(mutationOptions, queryClient);
 };

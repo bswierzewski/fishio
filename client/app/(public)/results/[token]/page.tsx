@@ -12,6 +12,7 @@ import { CategoryMetric, CompetitionStatus } from '@/lib/api/models';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function PublicResultsPage() {
   const { token } = useParams<{ token: string }>();
@@ -456,6 +457,184 @@ export default function PublicResultsPage() {
               </div>
             </div>
           )}
+
+          {/* Categories Results */}
+          {primaryCategory && (
+            <div className="overflow-hidden rounded-lg border border-border bg-card shadow">
+              <div className="bg-slate-800 text-slate-100 relative flex h-10 flex-shrink-0 items-center space-x-2 p-3">
+                <div className="relative z-10 flex items-center space-x-2">
+                  <Medal className="h-4 w-4 text-amber-400" />
+                  <span className="text-xs font-medium truncate">Ranking Główny - {primaryCategory.categoryName}</span>
+                </div>
+              </div>
+              <div className="p-6">
+                {primaryCategory.rankings && primaryCategory.rankings.length > 0 ? (
+                  <div className="space-y-2">
+                    {primaryCategory.rankings.map((participant, index) => (
+                      <div
+                        key={participant.participantId}
+                        className={`flex items-center justify-between p-4 rounded-lg border transition-colors ${getRankingRowClass(
+                          index
+                        )}`}
+                      >
+                        <div className="flex items-center space-x-4">
+                          <Badge className={`px-3 py-1 font-bold ${getRankingBadgeClass(index)}`}>{index + 1}</Badge>
+                          <div>
+                            <p className="font-semibold text-gray-900">{participant.participantName}</p>
+                            <p className="text-sm text-gray-600">
+                              {participant.catchesCount} {participant.catchesCount === 1 ? 'połów' : 'połowy'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-lg font-bold text-gray-900">
+                            {participant.valueDisplay || formatScore(participant.value || 0, primaryCategory.metric!)}
+                          </p>
+                          {participant.bestCatch && (
+                            <p className="text-sm text-gray-600">
+                              Najlepszy:{' '}
+                              {participant.bestCatch.weightInKg
+                                ? `${participant.bestCatch.weightInKg.toFixed(2)} kg`
+                                : participant.bestCatch.lengthInCm
+                                  ? `${participant.bestCatch.lengthInCm.toFixed(1)} cm`
+                                  : 'Brak danych'}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Fish className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                    <p className="text-gray-600">Brak wyników w tej kategorii</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Sector Results */}
+          {competitionResults.usesSectors &&
+            competitionResults.sectorResults &&
+            competitionResults.sectorResults.length > 0 && (
+              <div className="space-y-6">
+                <div className="text-center">
+                  <h2 className="text-xl font-bold text-gray-900 mb-2">Wyniki per Sektor</h2>
+                  <p className="text-gray-600">
+                    Zawody zostały podzielone na sektory. Poniżej wyniki dla każdego sektora.
+                  </p>
+                </div>
+
+                <Tabs defaultValue={competitionResults.sectorResults[0]?.sectorName || 'default'} className="w-full">
+                  <TabsList className="grid w-full grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-1 h-auto p-1">
+                    {competitionResults.sectorResults.map((sector) => (
+                      <TabsTrigger
+                        key={sector.sectorName}
+                        value={sector.sectorName || 'default'}
+                        className="text-xs md:text-sm p-2 md:p-3 min-h-[3rem] flex flex-col items-center justify-center"
+                      >
+                        <div className="font-medium">{sector.sectorName || 'Domyślny'}</div>
+                        <div className="text-xs opacity-70">
+                          {sector.participantsCount} uczestników, {sector.catchesCount} połowów
+                        </div>
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+
+                  {competitionResults.sectorResults.map((sector) => (
+                    <TabsContent key={sector.sectorName} value={sector.sectorName || 'default'} className="mt-4">
+                      <div className="overflow-hidden rounded-lg border border-border bg-card shadow">
+                        <div className="bg-slate-700 text-slate-100 relative flex h-10 flex-shrink-0 items-center space-x-2 p-3">
+                          <div className="relative z-10 flex items-center space-x-2">
+                            <MapPin className="h-4 w-4 text-blue-400" />
+                            <span className="text-xs font-medium truncate">
+                              Sektor: {sector.sectorName || 'Domyślny'} ({sector.participantsCount} uczestników,{' '}
+                              {sector.catchesCount} połowów)
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="p-6">
+                          {/* Participants in sector */}
+                          {sector.participants && sector.participants.length > 0 && (
+                            <div className="mb-6">
+                              <h4 className="font-medium text-sm mb-3 text-gray-700">Uczestnicy sektora:</h4>
+                              <div className="flex flex-wrap gap-2">
+                                {sector.participants.map((participant) => (
+                                  <Badge key={participant.participantId} variant="outline" className="text-xs">
+                                    {participant.participantName}
+                                    {participant.stand && ` (${participant.stand})`}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Sector category results */}
+                          {sector.categoryResults && sector.categoryResults.length > 0 && (
+                            <div className="space-y-4">
+                              {sector.categoryResults.map((category) => (
+                                <div key={category.categoryId} className="bg-gray-50 rounded-lg p-4">
+                                  <h4 className="font-medium text-sm mb-3 text-gray-700">{category.categoryName}</h4>
+                                  {category.rankings && category.rankings.length > 0 ? (
+                                    <div className="space-y-2">
+                                      {category.rankings.map((participant, index) => (
+                                        <div
+                                          key={participant.participantId}
+                                          className={`flex items-center justify-between p-3 rounded border transition-colors ${getRankingRowClass(
+                                            index
+                                          )}`}
+                                        >
+                                          <div className="flex items-center space-x-3">
+                                            <Badge
+                                              className={`px-2 py-1 text-xs font-bold ${getRankingBadgeClass(index)}`}
+                                            >
+                                              {index + 1}
+                                            </Badge>
+                                            <div>
+                                              <p className="font-medium text-sm">{participant.participantName}</p>
+                                              <p className="text-xs text-gray-600">
+                                                {participant.catchesCount}{' '}
+                                                {participant.catchesCount === 1 ? 'połów' : 'połowy'}
+                                              </p>
+                                            </div>
+                                          </div>
+                                          <div className="text-right">
+                                            <p className="font-bold text-sm">
+                                              {participant.valueDisplay ||
+                                                formatScore(participant.value || 0, category.metric!)}
+                                            </p>
+                                            {participant.bestCatch && (
+                                              <p className="text-xs text-gray-600">
+                                                Najlepszy:{' '}
+                                                {participant.bestCatch.weightInKg
+                                                  ? `${participant.bestCatch.weightInKg.toFixed(2)} kg`
+                                                  : participant.bestCatch.lengthInCm
+                                                    ? `${participant.bestCatch.lengthInCm.toFixed(1)} cm`
+                                                    : 'Brak danych'}
+                                              </p>
+                                            )}
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <p className="text-sm text-gray-600 text-center py-4">
+                                      Brak wyników w tej kategorii
+                                    </p>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </TabsContent>
+                  ))}
+                </Tabs>
+              </div>
+            )}
         </div>
       </div>
     </div>

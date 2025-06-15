@@ -335,4 +335,51 @@ public class Competition : BaseAuditableEntity
         // AddDomainEvent(new FishCatchRecordedEvent(this, fishCatch));
         return fishCatch;
     }
+
+    // --- Zarządzanie Sektorami (uproszczone) ---
+    /// <summary>
+    /// Sprawdza czy zawody używają sektorów (czy jakikolwiek uczestnik ma przypisany sektor)
+    /// </summary>
+    public bool UsesSectors()
+    {
+        return _participants.Any(p => p.Role == ParticipantRole.Competitor &&
+                                     p.Status == ParticipantStatus.Approved &&
+                                     p.HasSectorAssignment());
+    }
+
+    /// <summary>
+    /// Pobiera listę unikalnych sektorów z przypisanymi uczestnikami
+    /// </summary>
+    public IEnumerable<string> GetUsedSectors()
+    {
+        return _participants
+            .Where(p => p.Role == ParticipantRole.Competitor &&
+                       p.Status == ParticipantStatus.Approved &&
+                       p.HasSectorAssignment())
+            .Select(p => p.Sector!)
+            .Distinct()
+            .OrderBy(s => s);
+    }
+
+    /// <summary>
+    /// Pobiera uczestników przypisanych do danego sektora
+    /// </summary>
+    public IEnumerable<CompetitionParticipant> GetParticipantsInSector(string sector)
+    {
+        return _participants
+            .Where(p => p.Role == ParticipantRole.Competitor &&
+                       p.Status == ParticipantStatus.Approved &&
+                       p.Sector == sector);
+    }
+
+    /// <summary>
+    /// Pobiera uczestników nieprzypisanych do żadnego sektora (dla zawodów z sektorami)
+    /// </summary>
+    public IEnumerable<CompetitionParticipant> GetParticipantsWithoutSector()
+    {
+        return _participants
+            .Where(p => p.Role == ParticipantRole.Competitor &&
+                       p.Status == ParticipantStatus.Approved &&
+                       !p.HasSectorAssignment());
+    }
 }

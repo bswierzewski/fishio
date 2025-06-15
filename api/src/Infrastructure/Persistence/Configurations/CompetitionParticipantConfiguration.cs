@@ -29,6 +29,12 @@ public class CompetitionParticipantConfiguration : IEntityTypeConfiguration<Comp
         builder.Property(cp => cp.AddedByOrganizer).IsRequired();
         builder.Property(cp => cp.Status).IsRequired();
 
+        builder.Property(cp => cp.Sector)
+            .HasMaxLength(100);
+
+        builder.Property(cp => cp.Stand)
+            .HasMaxLength(50);
+
         // Unikalny indeks dla (CompetitionId, UserId, Role) jeśli UserId nie jest null - pozwala na wiele ról dla tego samego użytkownika
         builder.HasIndex(cp => new { cp.CompetitionId, cp.UserId, cp.Role })
             .IsUnique()

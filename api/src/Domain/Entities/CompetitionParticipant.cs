@@ -21,6 +21,9 @@ public class CompetitionParticipant : BaseAuditableEntity
     public bool AddedByOrganizer { get; private set; }
     public ParticipantStatus Status { get; private set; }
 
+    public string? Sector { get; private set; }
+    public string? Stand { get; private set; }
+
     public virtual ICollection<CompetitionFishCatch> FishCatches { get; private set; } = [];
 
     // Prywatny konstruktor dla EF Core
@@ -98,5 +101,37 @@ public class CompetitionParticipant : BaseAuditableEntity
 
         Status = ParticipantStatus.Rejected;
         // Można dodać zdarzenie domenowe: ParticipantRejectedEvent
+    }
+
+    public void AssignToSectorAndStand(string? sector, string? stand)
+    {
+        // Można dodać walidację czy Competition pozwala na zmiany
+        // if (!Competition.CanModifyDetails() && Competition.Status != CompetitionStatus.Ongoing)
+        //     throw new InvalidOperationException("Przypisanie do sektora/stanowiska możliwe tylko podczas edycji lub w trakcie zawodów.");
+
+        Sector = string.IsNullOrWhiteSpace(sector) ? null : sector.Trim();
+        Stand = string.IsNullOrWhiteSpace(stand) ? null : stand.Trim();
+    }
+
+    public void ClearSectorAndStand()
+    {
+        Sector = null;
+        Stand = null;
+    }
+
+    /// <summary>
+    /// Sprawdza czy uczestnik ma przypisany sektor
+    /// </summary>
+    public bool HasSectorAssignment()
+    {
+        return !string.IsNullOrWhiteSpace(Sector);
+    }
+
+    /// <summary>
+    /// Sprawdza czy uczestnik ma przypisane stanowisko
+    /// </summary>
+    public bool HasStandAssignment()
+    {
+        return !string.IsNullOrWhiteSpace(Stand);
     }
 }

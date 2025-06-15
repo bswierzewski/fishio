@@ -1,0 +1,1 @@
+export { CompetitionStatusManager } from './CompetitionStatusManager';

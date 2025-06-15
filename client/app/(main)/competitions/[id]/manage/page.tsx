@@ -8,6 +8,8 @@ import {
   Clock,
   Edit3,
   FileCheck,
+  MapPin,
+  Save,
   Search,
   ShieldCheck,
   Trash2,
@@ -28,10 +30,12 @@ import { toast } from 'react-hot-toast';
 import { useApiError } from '@/hooks/use-api-error';
 import {
   useGetCompetitionDetailsById,
+  useGetCompetitionParticipantsWithAssignments,
   useOrganizerAddsParticipant,
   useOrganizerApprovesParticipant,
   useOrganizerRejectsParticipant,
-  useOrganizerRemovesParticipant
+  useOrganizerRemovesParticipant,
+  useUpdateParticipantAssignment
 } from '@/lib/api/endpoints/competitions';
 import { useSearchAvailableUsers } from '@/lib/api/endpoints/users';
 import {
@@ -60,9 +64,16 @@ type ParticipantFormData = {
   userSearchTerm: string;
 };
 
+type EditingParticipant = {
+  id: number;
+  sector: string;
+  stand: string;
+};
+
 export default function CompetitionManagePage({ params }: { params: Promise<{ id: string }> }) {
   const [competitionId, setCompetitionId] = useState<number | null>(null);
   const [paramsResolved, setParamsResolved] = useState(false);
+  const [editingParticipant, setEditingParticipant] = useState<EditingParticipant | null>(null);
 
   // Get current user information (must be called before any early returns)
   const { id: currentUserId, name: currentUserName } = useCurrentUser();
@@ -107,6 +118,17 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
     }
   });
 
+  // Fetch participants with assignments
+  const {
+    data: assignmentsData,
+    isLoading: isAssignmentsLoading,
+    refetch: refetchAssignments
+  } = useGetCompetitionParticipantsWithAssignments(competitionId || 0, {
+    query: {
+      enabled: !!competitionId && paramsResolved
+    }
+  });
+
   // User search
   const {
     data: searchResults,
@@ -129,6 +151,7 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
   const removeParticipantMutation = useOrganizerRemovesParticipant();
   const approveParticipantMutation = useOrganizerApprovesParticipant();
   const rejectParticipantMutation = useOrganizerRejectsParticipant();
+  const updateAssignmentMutation = useUpdateParticipantAssignment();
 
   // API error handling
   const { handleError } = useApiError();
@@ -201,30 +224,34 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
     }
   };
 
-  const getStatusText = (status: ParticipantStatus) => {
+  const getStatusIcon = (status: ParticipantStatus) => {
     switch (status) {
       case ParticipantStatus.Waiting:
-        return 'Oczekuje';
+        return (
+          <div title="Oczekuje na zatwierdzenie">
+            <Clock className="h-4 w-4 text-yellow-500" />
+          </div>
+        );
       case ParticipantStatus.Approved:
-        return 'Zatwierdzony';
+        return (
+          <div title="Zatwierdzony">
+            <CheckCircle className="h-4 w-4 text-green-500" />
+          </div>
+        );
       case ParticipantStatus.Rejected:
-        return 'Odrzucony';
+        return (
+          <div title="Odrzucony">
+            <XCircle className="h-4 w-4 text-red-500" />
+          </div>
+        );
       default:
-        return status;
+        return <Clock className="h-4 w-4 text-gray-500" />;
     }
   };
 
-  const getStatusColor = (status: ParticipantStatus) => {
-    switch (status) {
-      case ParticipantStatus.Waiting:
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case ParticipantStatus.Approved:
-        return 'bg-green-100 text-green-800 border-green-200';
-      case ParticipantStatus.Rejected:
-        return 'bg-red-100 text-red-800 border-red-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
+  // Get assignment data for a participant
+  const getParticipantAssignment = (participantId: number) => {
+    return assignmentsData?.participants?.find((p) => p.id === participantId);
   };
 
   // Handler functions
@@ -297,6 +324,7 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
       toast.success(`${participantName} został dodany jako ${getRoleText(participantForm.role)}!`);
       resetForm();
       refetch();
+      refetchAssignments();
     } catch (error) {
       toast.error('Nie udało się dodać uczestnika');
     }
@@ -315,6 +343,7 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
 
       toast.success('Uczestnik został usunięty');
       refetch();
+      refetchAssignments();
     } catch (error) {
       toast.error('Nie udało się usunąć uczestnika');
     }
@@ -352,6 +381,39 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
     }
   };
 
+  const handleEditAssignment = (participantId: number, currentSector?: string | null, currentStand?: string | null) => {
+    setEditingParticipant({
+      id: participantId,
+      sector: currentSector || '',
+      stand: currentStand || ''
+    });
+  };
+
+  const handleCancelEditAssignment = () => {
+    setEditingParticipant(null);
+  };
+
+  const handleSaveAssignment = async () => {
+    if (!editingParticipant) return;
+
+    try {
+      await updateAssignmentMutation.mutateAsync({
+        competitionId: competitionId,
+        participantId: editingParticipant.id,
+        data: {
+          sector: editingParticipant.sector.trim() || null,
+          stand: editingParticipant.stand.trim() || null
+        }
+      });
+
+      toast.success('Przypisanie zostało zaktualizowane');
+      setEditingParticipant(null);
+      refetchAssignments();
+    } catch (error) {
+      toast.error('Nie udało się zaktualizować przypisania');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader onBack={() => (window.location.href = `/competitions/${competitionId}`)} />
@@ -385,6 +447,56 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
           </div>
         </div>
       </div>
+
+      {/* Sectors and Stands Statistics */}
+      {assignmentsData &&
+        ((assignmentsData.usedSectors?.length || 0) > 0 || (assignmentsData.usedStands?.length || 0) > 0) && (
+          <div className="overflow-hidden rounded-lg bg-card shadow">
+            <div className="bg-slate-800 text-slate-100 relative flex h-10 flex-shrink-0 items-center space-x-2 p-3">
+              <div className="relative z-10 flex items-center space-x-2">
+                <MapPin className="h-4 w-4" />
+                <span className="text-xs font-medium truncate">Sektory i Stanowiska</span>
+              </div>
+            </div>
+            <div className="p-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {(assignmentsData.usedSectors?.length || 0) > 0 && (
+                  <div>
+                    <h4 className="font-medium text-sm mb-2">
+                      Używane sektory ({assignmentsData.usedSectors?.length || 0})
+                    </h4>
+                    <div className="flex flex-wrap gap-1">
+                      {(assignmentsData.usedSectors || []).map((sector) => (
+                        <Badge key={sector} variant="secondary" className="text-xs">
+                          {sector}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {(assignmentsData.usedStands?.length || 0) > 0 && (
+                  <div>
+                    <h4 className="font-medium text-sm mb-2">
+                      Używane stanowiska ({assignmentsData.usedStands?.length || 0})
+                    </h4>
+                    <div className="flex flex-wrap gap-1">
+                      {(assignmentsData.usedStands || []).slice(0, 10).map((stand) => (
+                        <Badge key={stand} variant="outline" className="text-xs">
+                          {stand}
+                        </Badge>
+                      ))}
+                      {(assignmentsData.usedStands?.length || 0) > 10 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{(assignmentsData.usedStands?.length || 0) - 10} więcej
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
       {/* Add Participant Form */}
       <div className="overflow-hidden rounded-lg bg-card shadow">
@@ -545,7 +657,7 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
         </div>
       </div>
 
-      {/* Participants List */}
+      {/* Participants List with Assignments */}
       <div className="overflow-hidden rounded-lg bg-card shadow">
         <div className="bg-slate-800 text-slate-100 relative flex h-10 flex-shrink-0 items-center space-x-2 p-3">
           <div className="relative z-10 flex items-center space-x-2">
@@ -564,103 +676,193 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
                 <thead>
                   <tr className="border-b border-border">
                     <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Uczestnik</th>
-                    <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Rola</th>
-                    <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Status</th>
+                    <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Sektor</th>
+                    <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Stanowisko</th>
                     <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Źródło</th>
                     <th className="text-right py-2 px-3 text-sm font-medium text-muted-foreground">Akcje</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {competition.participantsList.map((participant) => (
-                    <tr key={participant.id} className="border-b border-border hover:bg-muted/50 transition-colors">
-                      <td className="py-3 px-3">
-                        <div className="flex items-center space-x-3">
-                          {!participant.userId ? (
-                            <UserX className="h-4 w-4 text-gray-500" />
+                  {competition.participantsList.map((participant) => {
+                    const assignment = getParticipantAssignment(participant.id!);
+                    const isEditingThis = editingParticipant?.id === participant.id;
+
+                    return (
+                      <tr key={participant.id} className="border-b border-border hover:bg-muted/50 transition-colors">
+                        <td className="py-3 px-3">
+                          <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-2">
+                              {getStatusIcon(participant.status!)}
+                              {getRoleIcon(participant.role!)}
+                            </div>
+                            <div>
+                              <span className="font-medium">{participant.name}</span>
+                              {!participant.userId && (
+                                <Badge variant="outline" className="text-xs ml-2">
+                                  Gość
+                                </Badge>
+                              )}
+                              <div className="text-xs text-muted-foreground">{getRoleText(participant.role!)}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3 px-3">
+                          {isEditingThis ? (
+                            <Input
+                              value={editingParticipant?.sector || ''}
+                              onChange={(e) =>
+                                setEditingParticipant((prev) => (prev ? { ...prev, sector: e.target.value } : null))
+                              }
+                              placeholder="Nazwa sektora"
+                              className="w-32"
+                            />
                           ) : (
-                            getRoleIcon(participant.role!)
+                            <span className="text-sm">
+                              {assignment?.sector ? (
+                                <Badge variant="secondary">{assignment.sector}</Badge>
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
+                            </span>
                           )}
-                          <span className="font-medium">{participant.name}</span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-3">
-                        <span className="text-sm text-muted-foreground">{getRoleText(participant.role!)}</span>
-                      </td>
-                      <td className="py-3 px-3">
-                        <Badge className={`text-xs border ${getStatusColor(participant.status!)}`}>
-                          {getStatusText(participant.status!)}
-                        </Badge>
-                      </td>
-                      <td className="py-3 px-3">
-                        <span className="text-xs text-muted-foreground">
-                          {participant.addedByOrganizer ? 'Dodany przez organizatora' : 'Dołączył samodzielnie'}
-                        </span>
-                      </td>
-                      <td className="py-3 px-3">
-                        <div className="flex items-center justify-end space-x-2">
-                          {participant.role !== ParticipantRole.Organizer && (
-                            <>
-                              {participant.status === ParticipantStatus.Waiting && (
-                                <>
+                        </td>
+                        <td className="py-3 px-3">
+                          {isEditingThis ? (
+                            <Input
+                              value={editingParticipant?.stand || ''}
+                              onChange={(e) =>
+                                setEditingParticipant((prev) => (prev ? { ...prev, stand: e.target.value } : null))
+                              }
+                              placeholder="Nr stanowiska"
+                              className="w-32"
+                            />
+                          ) : (
+                            <span className="text-sm">
+                              {assignment?.stand ? (
+                                <Badge variant="outline">{assignment.stand}</Badge>
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-3">
+                          <span className="text-xs text-muted-foreground">
+                            {participant.addedByOrganizer ? 'Dodany przez organizatora' : 'Dołączył samodzielnie'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3">
+                          <div className="flex items-center justify-end space-x-2">
+                            {/* Assignment Edit Controls */}
+                            {assignmentsData?.canManageAssignments && (
+                              <>
+                                {isEditingThis ? (
+                                  <>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={handleSaveAssignment}
+                                      disabled={updateAssignmentMutation.isPending}
+                                      className="text-green-600 hover:text-green-700"
+                                    >
+                                      <Save className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={handleCancelEditAssignment}
+                                      disabled={updateAssignmentMutation.isPending}
+                                      className="text-gray-600 hover:text-gray-700"
+                                    >
+                                      <X className="h-4 w-4" />
+                                    </Button>
+                                  </>
+                                ) : (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      handleEditAssignment(participant.id!, assignment?.sector, assignment?.stand)
+                                    }
+                                    className="text-blue-600 hover:text-blue-700"
+                                    title="Edytuj sektor i stanowisko"
+                                  >
+                                    <Edit3 className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </>
+                            )}
+
+                            {/* Participant Management Controls */}
+                            {participant.role !== ParticipantRole.Organizer && (
+                              <>
+                                {participant.status === ParticipantStatus.Waiting && (
+                                  <>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleApproveParticipant(participant.id!, participant.name!)}
+                                      disabled={approveParticipantMutation.isPending}
+                                      className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                                      title="Zatwierdź uczestnika"
+                                    >
+                                      <CheckCircle className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleRejectParticipant(participant.id!, participant.name!)}
+                                      disabled={rejectParticipantMutation.isPending}
+                                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                      title="Odrzuć zgłoszenie"
+                                    >
+                                      <XCircle className="h-4 w-4" />
+                                    </Button>
+                                  </>
+                                )}
+                                {participant.status === ParticipantStatus.Rejected && (
                                   <Button
                                     variant="outline"
                                     size="sm"
                                     onClick={() => handleApproveParticipant(participant.id!, participant.name!)}
                                     disabled={approveParticipantMutation.isPending}
                                     className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                                    title="Zatwierdź uczestnika"
                                   >
                                     <CheckCircle className="h-4 w-4" />
                                   </Button>
+                                )}
+                                {participant.status === ParticipantStatus.Approved && (
                                   <Button
                                     variant="outline"
                                     size="sm"
                                     onClick={() => handleRejectParticipant(participant.id!, participant.name!)}
                                     disabled={rejectParticipantMutation.isPending}
                                     className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                    title="Odrzuć uczestnika"
                                   >
                                     <XCircle className="h-4 w-4" />
                                   </Button>
-                                </>
-                              )}
-                              {participant.status === ParticipantStatus.Rejected && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleApproveParticipant(participant.id!, participant.name!)}
-                                  disabled={approveParticipantMutation.isPending}
-                                  className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                                >
-                                  <CheckCircle className="h-4 w-4" />
-                                </Button>
-                              )}
-                              {participant.status === ParticipantStatus.Approved && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleRejectParticipant(participant.id!, participant.name!)}
-                                  disabled={rejectParticipantMutation.isPending}
-                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                >
-                                  <XCircle className="h-4 w-4" />
-                                </Button>
-                              )}
-                              {participant.userId !== currentUserId && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleRemoveParticipant(participant.id!, participant.name!)}
-                                  disabled={removeParticipantMutation.isPending}
-                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                                )}
+                                {participant.userId !== currentUserId && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleRemoveParticipant(participant.id!, participant.name!)}
+                                    disabled={removeParticipantMutation.isPending}
+                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                    title="Usuń uczestnika"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
