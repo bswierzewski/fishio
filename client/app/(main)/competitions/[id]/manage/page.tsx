@@ -326,7 +326,7 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
       refetch();
       refetchAssignments();
     } catch (error) {
-      toast.error('Nie udało się dodać uczestnika');
+      handleError(error);
     }
   };
 
@@ -345,7 +345,7 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
       refetch();
       refetchAssignments();
     } catch (error) {
-      toast.error('Nie udało się usunąć uczestnika');
+      handleError(error);
     }
   };
 
@@ -359,7 +359,7 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
       toast.success(`${participantName} został zatwierdzony`);
       refetch();
     } catch (error) {
-      toast.error('Nie udało się zatwierdzić uczestnika');
+      handleError(error);
     }
   };
 
@@ -377,7 +377,7 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
       toast.success(`Zgłoszenie ${participantName} zostało odrzucone`);
       refetch();
     } catch (error) {
-      toast.error('Nie udało się odrzucić zgłoszenia');
+      handleError(error);
     }
   };
 
@@ -410,7 +410,7 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
       setEditingParticipant(null);
       refetchAssignments();
     } catch (error) {
-      toast.error('Nie udało się zaktualizować przypisania');
+      handleError(error);
     }
   };
 

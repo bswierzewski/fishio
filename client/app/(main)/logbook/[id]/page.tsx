@@ -13,6 +13,7 @@ import { notFound, useParams, useRouter } from 'next/navigation';
 // Import useParams & useRouter
 import { toast } from 'react-hot-toast';
 
+import { useApiError } from '@/hooks/use-api-error';
 import { useDeleteExistingLogbookEntry, useGetLogbookEntryDetailsById } from '@/lib/api/endpoints/logbook';
 import { HttpValidationProblemDetails, LogbookEntryDto, ProblemDetails } from '@/lib/api/models';
 
@@ -45,6 +46,9 @@ export default function LogbookEntryDetailPage() {
   const router = useRouter();
   const queryClient = useQueryClient(); // Get queryClient instance
   const id = params.id as string;
+
+  // API error handling
+  const { handleError } = useApiError();
 
   const {
     data: entry,
@@ -126,7 +130,7 @@ export default function LogbookEntryDetailPage() {
 
   const handleDeleteEntry = () => {
     if (!entry || !entry.id) {
-      toast.error('Błąd: ID wpisu jest nieznane lub wpis nie istnieje.');
+      handleError(new Error('Entry ID is unknown or entry does not exist'));
       return;
     }
 

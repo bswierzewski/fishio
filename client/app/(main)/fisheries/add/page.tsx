@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
+import { useApiError } from '@/hooks/use-api-error';
 import { useCreateFishery } from '@/lib/api/endpoints/fisheries';
 import { useGetAllFishSpecies } from '@/lib/api/endpoints/lookup-data';
 import type { CreateFisheryCommand, FishSpeciesDto } from '@/lib/api/models';
@@ -33,6 +34,9 @@ export default function AddFisheryPage() {
   const { data: fishSpecies, isLoading: isLoadingSpecies } = useGetAllFishSpecies();
   const queryClient = useQueryClient();
 
+  // API error handling
+  const { handleError } = useApiError();
+
   const [selectedImageData, setSelectedImageData] = useState<DeferredImageData | null>(null);
   const [uploadImageFunction, setUploadImageFunction] = useState<(() => Promise<ImageUploadResult | null>) | null>(
     null
@@ -48,7 +52,7 @@ export default function AddFisheryPage() {
       },
       onError: (error) => {
         console.error('Error creating fishery:', error);
-        toast.error('Nie udało się utworzyć łowiska');
+        handleError(error);
       }
     }
   });
@@ -70,7 +74,7 @@ export default function AddFisheryPage() {
         try {
           const uploadResult = await uploadImageFunction();
           if (!uploadResult) {
-            toast.error('Nie udało się przesłać zdjęcia');
+            handleError(new Error('Failed to upload image'));
             return;
           }
           imageUrl = uploadResult.imageUrl;

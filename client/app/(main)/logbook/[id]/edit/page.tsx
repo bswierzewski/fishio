@@ -8,6 +8,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
+import { useApiError } from '@/hooks/use-api-error';
 import { useGetAllFisheries } from '@/lib/api/endpoints/fisheries';
 import { useGetLogbookEntryDetailsById, useUpdateExistingLogbookEntry } from '@/lib/api/endpoints/logbook';
 import { useGetAllFishSpecies } from '@/lib/api/endpoints/lookup-data';
@@ -47,6 +48,10 @@ export default function EditLogbookEntryPage() {
 
   const { data: fisheries } = useGetAllFisheries({ PageNumber: 1, PageSize: 100 });
   const { data: fishSpecies } = useGetAllFishSpecies();
+
+  // API error handling
+  const { handleError } = useApiError();
+
   const { mutate: updateLogbookEntry, isPending: isUpdatingEntry } = useUpdateExistingLogbookEntry({
     mutation: {
       onSuccess: () => {
@@ -55,7 +60,7 @@ export default function EditLogbookEntryPage() {
       },
       onError: (error) => {
         console.error('Error updating logbook entry:', error);
-        toast.error('Nie udało się zaktualizować wpisu');
+        handleError(error);
       }
     }
   });

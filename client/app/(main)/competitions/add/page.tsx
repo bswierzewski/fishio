@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 
+import { useApiError } from '@/hooks/use-api-error';
 import { useCreateNewCompetition } from '@/lib/api/endpoints/competitions';
 import { useGetAllFisheries } from '@/lib/api/endpoints/fisheries';
 import { useGetAllFishSpecies, useGetGlobalCategoryDefinitions } from '@/lib/api/endpoints/lookup-data';
@@ -59,16 +60,19 @@ export default function AddCompetitionPage() {
   });
   const { data: fishSpecies } = useGetAllFishSpecies();
 
-  const { mutate: createCompetition, isPending } = useCreateNewCompetition({
+  // API error handling
+  const { handleError } = useApiError();
+
+  const { mutate: createCompetition, isPending: isCreating } = useCreateNewCompetition({
     mutation: {
       onSuccess: () => {
-        toast.success('Zawody zostały utworzone pomyślnie!');
+        toast.success('Zawody zostały utworzone!');
         queryClient.invalidateQueries({ queryKey: ['competitions'] });
         router.push('/competitions');
       },
       onError: (error) => {
         console.error('Error creating competition:', error);
-        toast.error('Nie udało się utworzyć zawodów');
+        handleError(error);
       }
     }
   });
@@ -97,13 +101,15 @@ export default function AddCompetitionPage() {
         setIsUploadingImage(true);
         try {
           const uploadResult = await uploadImageFunction();
-          if (uploadResult) {
-            imageUrl = uploadResult.imageUrl;
-            imagePublicId = uploadResult.imagePublicId;
+          if (!uploadResult) {
+            handleError(new Error('Failed to upload image'));
+            return;
           }
+          imageUrl = uploadResult.imageUrl;
+          imagePublicId = uploadResult.imagePublicId;
         } catch (error) {
           console.error('Error uploading image:', error);
-          toast.error('Nie udało się przesłać zdjęcia');
+          handleError(error);
           return;
         } finally {
           setIsUploadingImage(false);
@@ -161,7 +167,7 @@ export default function AddCompetitionPage() {
     }
   });
 
-  const isSubmitting = isPending || isUploadingImage;
+  const isSubmitting = isCreating || isUploadingImage;
 
   // Get selected primary category to check if it requires fish species
   const selectedPrimaryCategory = categoryDefinitions?.find(
@@ -570,7 +576,7 @@ export default function AddCompetitionPage() {
             className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
             disabled={isSubmitting}
           >
-            {isUploadingImage ? 'Przesyłanie zdjęcia...' : isPending ? 'Tworzenie zawodów...' : 'Stwórz Zawody'}
+            {isUploadingImage ? 'Przesyłanie zdjęcia...' : isCreating ? 'Tworzenie zawodów...' : 'Stwórz Zawody'}
           </Button>
         </div>
       </form>

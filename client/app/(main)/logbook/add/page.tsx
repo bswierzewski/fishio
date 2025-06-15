@@ -9,6 +9,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'react-hot-toast';
 
+import { useApiError } from '@/hooks/use-api-error';
 import { useGetAllFisheries } from '@/lib/api/endpoints/fisheries';
 import { useCreateNewLogbookEntry } from '@/lib/api/endpoints/logbook';
 import { useGetAllFishSpecies } from '@/lib/api/endpoints/lookup-data';
@@ -45,6 +46,8 @@ export default function AddLogbookEntryPage() {
 
   const { data: fisheries } = useGetAllFisheries({ PageNumber: 1, PageSize: 20 });
   const { data: fishSpecies } = useGetAllFishSpecies();
+  const { handleError } = useApiError();
+
   const { mutate: createNewLogbookEntry, isPending: isCreatingEntry } = useCreateNewLogbookEntry({
     mutation: {
       onSuccess: () => {
@@ -56,7 +59,7 @@ export default function AddLogbookEntryPage() {
       },
       onError: (error) => {
         console.error('Error creating logbook entry:', error);
-        toast.error('Nie udało się dodać wpisu do dziennika');
+        handleError(error);
       }
     }
   });
@@ -89,7 +92,7 @@ export default function AddLogbookEntryPage() {
         try {
           const uploadResult = await uploadImageFunction();
           if (!uploadResult) {
-            toast.error('Nie udało się przesłać zdjęcia');
+            handleError(new Error('Failed to upload image'));
             return;
           }
           imageUrl = uploadResult.imageUrl;

@@ -9,6 +9,7 @@ import { notFound, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
+import { useApiError } from '@/hooks/use-api-error';
 import { useGetCompetitionDetailsById, useUpdateExistingCompetition } from '@/lib/api/endpoints/competitions';
 import { useGetAllFisheries } from '@/lib/api/endpoints/fisheries';
 import type { CompetitionType, UpdateCompetitionCommand } from '@/lib/api/models';
@@ -41,6 +42,9 @@ export default function EditCompetitionPage({ params }: { params: Promise<{ id: 
   );
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isImageMarkedForRemoval, setIsImageMarkedForRemoval] = useState(false);
+
+  // API error handling
+  const { handleError } = useApiError();
 
   // Resolve params properly with useEffect
   useEffect(() => {
@@ -79,17 +83,17 @@ export default function EditCompetitionPage({ params }: { params: Promise<{ id: 
     error: fisheriesError
   } = useGetAllFisheries({ PageNumber: 1, PageSize: 100 });
 
-  const { mutate: updateCompetition, isPending } = useUpdateExistingCompetition({
+  const { mutate: updateCompetition, isPending: isUpdating } = useUpdateExistingCompetition({
     mutation: {
       onSuccess: () => {
-        toast.success('Zawody zostały zaktualizowane pomyślnie!');
+        toast.success('Zawody zostały zaktualizowane!');
         queryClient.invalidateQueries({ queryKey: ['competitions'] });
         queryClient.invalidateQueries({ queryKey: [`/api/competitions/${competitionId}`] });
         router.push(`/competitions/${competitionId}`);
       },
       onError: (error) => {
         console.error('Error updating competition:', error);
-        toast.error('Nie udało się zaktualizować zawodów');
+        handleError(error);
       }
     }
   });
@@ -120,14 +124,16 @@ export default function EditCompetitionPage({ params }: { params: Promise<{ id: 
         setIsUploadingImage(true);
         try {
           const uploadResult = await uploadImageFunction();
-          if (uploadResult) {
-            imageUrl = uploadResult.imageUrl;
-            imagePublicId = uploadResult.imagePublicId;
-            removeCurrentImage = false; // Don't remove if we're adding a new image
+          if (!uploadResult) {
+            handleError(new Error('Nie udało się przesłać zdjęcia'));
+            return;
           }
+          imageUrl = uploadResult.imageUrl;
+          imagePublicId = uploadResult.imagePublicId;
+          removeCurrentImage = false; // Don't remove if we're adding a new image
         } catch (error) {
           console.error('Error uploading image:', error);
-          toast.error('Nie udało się przesłać zdjęcia');
+          handleError(error);
           return;
         } finally {
           setIsUploadingImage(false);
@@ -212,7 +218,7 @@ export default function EditCompetitionPage({ params }: { params: Promise<{ id: 
     notFound();
   }
 
-  const isSubmitting = isPending || isUploadingImage;
+  const isSubmitting = isUpdating || isUploadingImage;
 
   return (
     <div className="space-y-6">
@@ -408,7 +414,7 @@ export default function EditCompetitionPage({ params }: { params: Promise<{ id: 
           >
             {isUploadingImage
               ? 'Przesyłanie zdjęcia...'
-              : isPending
+              : isUpdating
                 ? 'Aktualizowanie zawodów...'
                 : 'Zaktualizuj Zawody'}
           </Button>

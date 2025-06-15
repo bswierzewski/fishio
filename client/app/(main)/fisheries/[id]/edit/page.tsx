@@ -8,6 +8,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-hot-toast';
 
+import { useApiError } from '@/hooks/use-api-error';
 import { useGetFisheryById, useUpdateExistingFishery } from '@/lib/api/endpoints/fisheries';
 import { useGetAllFishSpecies } from '@/lib/api/endpoints/lookup-data';
 import type { FishSpeciesDto, UpdateFisheryCommand } from '@/lib/api/models';
@@ -38,17 +39,21 @@ export default function EditFisheryPage() {
 
   const { data: fishery, isLoading: isLoadingFishery } = useGetFisheryById(fisheryId);
   const { data: fishSpecies, isLoading: isLoadingSpecies } = useGetAllFishSpecies();
-  const { mutate, isPending } = useUpdateExistingFishery({
+
+  // API error handling
+  const { handleError } = useApiError();
+
+  const { mutate: updateFishery, isPending: isUpdating } = useUpdateExistingFishery({
     mutation: {
       onSuccess: () => {
-        toast.success('Łowisko zostało zaktualizowane pomyślnie!');
+        toast.success('Łowisko zostało zaktualizowane!');
         queryClient.invalidateQueries({ queryKey: ['/api/fisheries'] });
         queryClient.invalidateQueries({ queryKey: [`/api/fisheries/${fisheryId}`] });
         router.push('/fisheries');
       },
       onError: (error) => {
         console.error('Error updating fishery:', error);
-        toast.error('Nie udało się zaktualizować łowiska');
+        handleError(error);
       }
     }
   });
@@ -68,7 +73,7 @@ export default function EditFisheryPage() {
         ...value,
         removeCurrentImage: removeCurrentImageFlag
       };
-      mutate({ id: fisheryId, data: payload });
+      updateFishery({ id: fisheryId, data: payload });
     },
     validators: {
       onSubmit: ({ value }) => {
@@ -304,9 +309,9 @@ export default function EditFisheryPage() {
           <Button
             type="submit"
             className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
-            disabled={isPending}
+            disabled={isUpdating}
           >
-            {isPending ? 'Zapisywanie...' : 'Zapisz Zmiany'}
+            {isUpdating ? 'Zapisywanie...' : 'Zapisz Zmiany'}
           </Button>
         </div>
       </form>

@@ -234,14 +234,12 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
     ) || [];
 
   const handleJoinCompetition = async () => {
-    if (!competitionId) return;
-
     try {
       await joinCompetitionMutation.mutateAsync({ competitionId });
       toast.success('Wysłano prośbę o dołączenie do zawodów!');
       refetch();
     } catch (error) {
-      toast.error('Nie udało się wysłać prośby o dołączenie');
+      handleError(error);
     }
   };
 

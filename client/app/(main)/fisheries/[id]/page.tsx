@@ -10,6 +10,7 @@ import { notFound, useParams, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 
+import { useApiError } from '@/hooks/use-api-error';
 import { useDeleteExistingFishery, useGetFisheryById } from '@/lib/api/endpoints/fisheries';
 import { useGetAllFishSpecies } from '@/lib/api/endpoints/lookup-data';
 
@@ -56,6 +57,9 @@ export default function FisheryDetailPage() {
 
   // Delete mutation
   const deleteFisheryMutation = useDeleteExistingFishery();
+
+  // API error handling
+  const { handleError } = useApiError();
 
   useEffect(() => {
     if (isNaN(fisheryId)) {
@@ -120,11 +124,9 @@ export default function FisheryDetailPage() {
   const handleDeleteFishery = async () => {
     if (!fishery.id) return;
 
-    const confirmed = window.confirm(
-      `Czy na pewno chcesz usunąć łowisko "${fishery.name}"?\n\nTa operacja jest nieodwracalna i usunie wszystkie powiązane dane.`
-    );
-
-    if (!confirmed) return;
+    if (!window.confirm('Czy na pewno chcesz usunąć to łowisko? Tej operacji nie można cofnąć.')) {
+      return;
+    }
 
     try {
       await deleteFisheryMutation.mutateAsync({ id: fishery.id });
@@ -132,11 +134,10 @@ export default function FisheryDetailPage() {
       // Invalidate all fisheries queries to refresh the data
       queryClient.invalidateQueries({ queryKey: ['/api/fisheries'] });
 
-      toast.success('Łowisko zostało pomyślnie usunięte');
+      toast.success('Łowisko zostało usunięte!');
       router.push('/fisheries');
     } catch (error) {
-      console.error('Error deleting fishery:', error);
-      toast.error('Nie udało się usunąć łowiska. Spróbuj ponownie.');
+      handleError(error);
     }
   };
 
