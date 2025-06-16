@@ -564,55 +564,84 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
               </div>
             </div>
             <div className="p-4">
-              {competition.status === CompetitionStatus.AcceptingRegistrations ||
-              competition.status === CompetitionStatus.Scheduled ? (
-                <p className="text-sm text-muted-foreground">Ranking będzie dostępny po rozpoczęciu zawodów.</p>
-              ) : competition.status === CompetitionStatus.Ongoing ? (
+              {competition.resultsToken ? (
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <Activity className="h-5 w-5 text-green-600 animate-pulse" />
-                    <div>
-                      <p className="text-sm font-medium text-green-800">Zawody w trakcie!</p>
-                      <p className="text-xs text-green-600">Wyniki są aktualizowane na bieżąco</p>
+                  {/* Status indicator */}
+                  {competition.status === CompetitionStatus.AcceptingRegistrations ||
+                  competition.status === CompetitionStatus.Scheduled ? (
+                    <div className="flex items-center gap-2 p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                      <Clock className="h-5 w-5 text-slate-600" />
+                      <div>
+                        <p className="text-sm font-medium text-slate-800">Zawody zaplanowane</p>
+                        <p className="text-xs text-slate-600">Wyniki będą dostępne po rozpoczęciu</p>
+                      </div>
                     </div>
-                  </div>
-                  {competition.resultsToken && (
-                    <Link href={`/results/${competition.resultsToken}`} className="block">
-                      <Button
-                        variant="default"
-                        className="w-full bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
-                      >
-                        <Activity className="mr-2 h-4 w-4 animate-pulse" />
-                        Zobacz Wyniki na Żywo
-                      </Button>
-                    </Link>
-                  )}
-                </div>
-              ) : competition.status === CompetitionStatus.Finished ? (
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <Trophy className="h-5 w-5 text-blue-600" />
-                    <div>
-                      <p className="text-sm font-medium text-blue-800">Zawody zakończone</p>
-                      <p className="text-xs text-blue-600">Oficjalne wyniki są dostępne</p>
+                  ) : competition.status === CompetitionStatus.Ongoing ? (
+                    <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <Activity className="h-5 w-5 text-green-600 animate-pulse" />
+                      <div>
+                        <p className="text-sm font-medium text-green-800">Zawody w trakcie!</p>
+                        <p className="text-xs text-green-600">Wyniki są aktualizowane na bieżąco</p>
+                      </div>
                     </div>
-                  </div>
-                  {competition.resultsToken && (
-                    <Link href={`/results/${competition.resultsToken}`} className="block">
-                      <Button
-                        variant="default"
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
-                      >
-                        <BarChart3 className="mr-2 h-4 w-4" />
-                        Zobacz Oficjalne Wyniki
-                      </Button>
-                    </Link>
-                  )}
+                  ) : competition.status === CompetitionStatus.Finished ? (
+                    <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <Trophy className="h-5 w-5 text-blue-600" />
+                      <div>
+                        <p className="text-sm font-medium text-blue-800">Zawody zakończone</p>
+                        <p className="text-xs text-blue-600">Oficjalne wyniki są dostępne</p>
+                      </div>
+                    </div>
+                  ) : competition.status === CompetitionStatus.Cancelled ? (
+                    <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <XCircle className="h-5 w-5 text-red-600" />
+                      <div>
+                        <p className="text-sm font-medium text-red-800">Zawody anulowane</p>
+                        <p className="text-xs text-red-600">Można przeglądać zarejestrowane wyniki</p>
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {/* Results link - always shown when resultsToken exists */}
+                  <Link href={`/results/${competition.resultsToken}`} className="block">
+                    <Button
+                      variant="default"
+                      className={`w-full shadow-md hover:shadow-lg transition-all duration-200 ${
+                        competition.status === CompetitionStatus.Ongoing
+                          ? 'bg-green-600 hover:bg-green-700'
+                          : competition.status === CompetitionStatus.Finished
+                            ? 'bg-blue-600 hover:bg-blue-700'
+                            : competition.status === CompetitionStatus.Cancelled
+                              ? 'bg-red-600 hover:bg-red-700'
+                              : 'bg-slate-600 hover:bg-slate-700'
+                      } text-white`}
+                    >
+                      {competition.status === CompetitionStatus.Ongoing ? (
+                        <>
+                          <Activity className="mr-2 h-4 w-4 animate-pulse" />
+                          Zobacz Wyniki na Żywo
+                        </>
+                      ) : competition.status === CompetitionStatus.Finished ? (
+                        <>
+                          <BarChart3 className="mr-2 h-4 w-4" />
+                          Zobacz Oficjalne Wyniki
+                        </>
+                      ) : (
+                        <>
+                          <BarChart3 className="mr-2 h-4 w-4" />
+                          Zobacz Wyniki
+                        </>
+                      )}
+                    </Button>
+                  </Link>
                 </div>
-              ) : competition.status === CompetitionStatus.Cancelled ? (
-                <p className="text-sm text-red-600">Zawody zostały anulowane. Ranking nie jest dostępny.</p>
               ) : (
-                <p className="text-sm text-muted-foreground">Ranking nie jest obecnie dostępny.</p>
+                <div className="text-center py-4">
+                  <div className="flex items-center justify-center w-12 h-12 bg-slate-100 rounded-full mx-auto mb-3">
+                    <BarChart3 className="h-6 w-6 text-slate-400" />
+                  </div>
+                  <p className="text-sm text-muted-foreground">Wyniki nie są jeszcze dostępne</p>
+                </div>
               )}
             </div>
           </div>

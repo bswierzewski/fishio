@@ -51,6 +51,7 @@ import { useCurrentUser } from '@/hooks/use-current-user';
 import { PageHeader, PageHeaderAction } from '@/components/layout/PageHeader';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -74,6 +75,7 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
   const [competitionId, setCompetitionId] = useState<number | null>(null);
   const [paramsResolved, setParamsResolved] = useState(false);
   const [editingParticipant, setEditingParticipant] = useState<EditingParticipant | null>(null);
+  const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
 
   // Get current user information (must be called before any early returns)
   const { id: currentUserId, name: currentUserName } = useCurrentUser();
@@ -381,18 +383,6 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
     }
   };
 
-  const handleEditAssignment = (participantId: number, currentSector?: string | null, currentStand?: string | null) => {
-    setEditingParticipant({
-      id: participantId,
-      sector: currentSector || '',
-      stand: currentStand || ''
-    });
-  };
-
-  const handleCancelEditAssignment = () => {
-    setEditingParticipant(null);
-  };
-
   const handleSaveAssignment = async () => {
     if (!editingParticipant) return;
 
@@ -447,56 +437,6 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
           </div>
         </div>
       </div>
-
-      {/* Sectors and Stands Statistics */}
-      {assignmentsData &&
-        ((assignmentsData.usedSectors?.length || 0) > 0 || (assignmentsData.usedStands?.length || 0) > 0) && (
-          <div className="overflow-hidden rounded-lg bg-card shadow">
-            <div className="bg-slate-800 text-slate-100 relative flex h-10 flex-shrink-0 items-center space-x-2 p-3">
-              <div className="relative z-10 flex items-center space-x-2">
-                <MapPin className="h-4 w-4" />
-                <span className="text-xs font-medium truncate">Sektory i Stanowiska</span>
-              </div>
-            </div>
-            <div className="p-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {(assignmentsData.usedSectors?.length || 0) > 0 && (
-                  <div>
-                    <h4 className="font-medium text-sm mb-2">
-                      Używane sektory ({assignmentsData.usedSectors?.length || 0})
-                    </h4>
-                    <div className="flex flex-wrap gap-1">
-                      {(assignmentsData.usedSectors || []).map((sector) => (
-                        <Badge key={sector} variant="secondary" className="text-xs">
-                          {sector}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {(assignmentsData.usedStands?.length || 0) > 0 && (
-                  <div>
-                    <h4 className="font-medium text-sm mb-2">
-                      Używane stanowiska ({assignmentsData.usedStands?.length || 0})
-                    </h4>
-                    <div className="flex flex-wrap gap-1">
-                      {(assignmentsData.usedStands || []).slice(0, 10).map((stand) => (
-                        <Badge key={stand} variant="outline" className="text-xs">
-                          {stand}
-                        </Badge>
-                      ))}
-                      {(assignmentsData.usedStands?.length || 0) > 10 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{(assignmentsData.usedStands?.length || 0) - 10} więcej
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
 
       {/* Add Participant Form */}
       <div className="overflow-hidden rounded-lg bg-card shadow">
@@ -657,44 +597,52 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
         </div>
       </div>
 
-      {/* Participants List with Assignments */}
+      {/* Staff (Organizers and Judges) */}
       <div className="overflow-hidden rounded-lg bg-card shadow">
         <div className="bg-slate-800 text-slate-100 relative flex h-10 flex-shrink-0 items-center space-x-2 p-3">
           <div className="relative z-10 flex items-center space-x-2">
-            <Users className="h-4 w-4" />
+            <ShieldCheck className="h-4 w-4" />
             <span className="text-xs font-medium truncate">
-              Uczestnicy i Zgłoszenia ({competition.participantsList?.length || 0})
+              Obsługa Zawodów (
+              {competition.participantsList?.filter(
+                (p) =>
+                  p.status === ParticipantStatus.Approved &&
+                  (p.role === ParticipantRole.Organizer || p.role === ParticipantRole.Judge)
+              ).length || 0}
+              )
             </span>
           </div>
         </div>
         <div className="p-4">
-          {!competition.participantsList || competition.participantsList.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">Brak uczestników</p>
+          {!competition.participantsList ||
+          competition.participantsList.filter(
+            (p) =>
+              p.status === ParticipantStatus.Approved &&
+              (p.role === ParticipantRole.Organizer || p.role === ParticipantRole.Judge)
+          ).length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">Brak obsługi zawodów</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Uczestnik</th>
-                    <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Sektor</th>
-                    <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Stanowisko</th>
-                    <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Źródło</th>
+                    <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Osoba</th>
+                    <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Rola</th>
                     <th className="text-right py-2 px-3 text-sm font-medium text-muted-foreground">Akcje</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {competition.participantsList.map((participant) => {
-                    const assignment = getParticipantAssignment(participant.id!);
-                    const isEditingThis = editingParticipant?.id === participant.id;
-
-                    return (
+                  {competition.participantsList
+                    .filter(
+                      (p) =>
+                        p.status === ParticipantStatus.Approved &&
+                        (p.role === ParticipantRole.Organizer || p.role === ParticipantRole.Judge)
+                    )
+                    .map((participant) => (
                       <tr key={participant.id} className="border-b border-border hover:bg-muted/50 transition-colors">
                         <td className="py-3 px-3">
                           <div className="flex items-center space-x-3">
-                            <div className="flex items-center space-x-2">
-                              {getStatusIcon(participant.status!)}
-                              {getRoleIcon(participant.role!)}
-                            </div>
+                            <div className="flex items-center space-x-2">{getRoleIcon(participant.role!)}</div>
                             <div>
                               <span className="font-medium">{participant.name}</span>
                               {!participant.userId && (
@@ -702,98 +650,192 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
                                   Gość
                                 </Badge>
                               )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3 px-3">
+                          <span className="text-sm">{getRoleText(participant.role!)}</span>
+                        </td>
+                        <td className="py-3 px-3">
+                          <div className="flex items-center justify-end space-x-2">
+                            {participant.role !== ParticipantRole.Organizer && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleRemoveParticipant(participant.id!, participant.name!)}
+                                disabled={removeParticipantMutation.isPending}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                title="Usuń z obsługi"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Competitors */}
+      <div className="overflow-hidden rounded-lg bg-card shadow">
+        <div className="bg-slate-800 text-slate-100 relative flex h-10 flex-shrink-0 items-center space-x-2 p-3">
+          <div className="relative z-10 flex items-center space-x-2">
+            <UserCheck className="h-4 w-4" />
+            <span className="text-xs font-medium truncate">
+              Zawodnicy (
+              {competition.participantsList?.filter(
+                (p) => p.status === ParticipantStatus.Approved && p.role === ParticipantRole.Competitor
+              ).length || 0}
+              )
+            </span>
+          </div>
+        </div>
+        <div className="p-4">
+          {!competition.participantsList ||
+          competition.participantsList.filter(
+            (p) => p.status === ParticipantStatus.Approved && p.role === ParticipantRole.Competitor
+          ).length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">Brak zatwierdzonych zawodników</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Zawodnik</th>
+                    <th className="text-right py-2 px-3 text-sm font-medium text-muted-foreground">Akcje</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {competition.participantsList
+                    .filter((p) => p.status === ParticipantStatus.Approved && p.role === ParticipantRole.Competitor)
+                    .map((participant) => {
+                      const assignment = getParticipantAssignment(participant.id!);
+
+                      return (
+                        <tr key={participant.id} className="border-b border-border hover:bg-muted/50 transition-colors">
+                          <td className="py-3 px-3">
+                            <div className="flex items-center space-x-3">
+                              <div className="flex items-center space-x-2">
+                                <UserCheck
+                                  className={`h-4 w-4 ${participant.userId ? 'text-green-500' : 'text-gray-500'}`}
+                                />
+                              </div>
+                              <div>
+                                <div className="font-medium">{participant.name}</div>
+                                <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                                  {assignment?.sector && (
+                                    <div className="flex items-center space-x-1">
+                                      <MapPin className="h-3 w-3" />
+                                      <span>Sektor {assignment.sector}</span>
+                                    </div>
+                                  )}
+                                  {assignment?.stand && (
+                                    <div className="flex items-center space-x-1">
+                                      <span>•</span>
+                                      <span>Stanowisko {assignment.stand}</span>
+                                    </div>
+                                  )}
+                                  {!assignment?.sector && !assignment?.stand && <span>Brak przypisania</span>}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-3 px-3">
+                            <div className="flex items-center justify-end space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setEditingParticipant({
+                                    id: participant.id!,
+                                    sector: assignment?.sector || '',
+                                    stand: assignment?.stand || ''
+                                  });
+                                  setAssignmentDialogOpen(true);
+                                }}
+                                className="text-blue-600 hover:text-blue-700"
+                                title="Edytuj sektor i stanowisko"
+                              >
+                                <Edit3 className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleRejectParticipant(participant.id!, participant.name!)}
+                                disabled={rejectParticipantMutation.isPending}
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                title="Odrzuć zawodnika"
+                              >
+                                <XCircle className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Pending Applications */}
+      <div className="overflow-hidden rounded-lg bg-card shadow">
+        <div className="bg-slate-800 text-slate-100 relative flex h-10 flex-shrink-0 items-center space-x-2 p-3">
+          <div className="relative z-10 flex items-center space-x-2">
+            <FileCheck className="h-4 w-4" />
+            <span className="text-xs font-medium truncate">
+              Zgłoszenia (
+              {competition.participantsList?.filter((p) => p.status !== ParticipantStatus.Approved).length || 0})
+            </span>
+          </div>
+        </div>
+        <div className="p-4">
+          {!competition.participantsList ||
+          competition.participantsList.filter((p) => p.status !== ParticipantStatus.Approved).length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">Brak oczekujących zgłoszeń</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Zgłoszenie</th>
+                    <th className="text-left py-2 px-3 text-sm font-medium text-muted-foreground">Status</th>
+                    <th className="text-right py-2 px-3 text-sm font-medium text-muted-foreground">Akcje</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {competition.participantsList
+                    .filter((p) => p.status !== ParticipantStatus.Approved)
+                    .map((participant) => (
+                      <tr
+                        key={participant.id}
+                        className="border-b border-border hover:bg-muted/50 transition-colors h-16"
+                      >
+                        <td className="py-3 px-3">
+                          <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-2">
+                              <UserCheck
+                                className={`h-4 w-4 ${participant.userId ? 'text-green-500' : 'text-gray-500'}`}
+                              />
+                            </div>
+                            <div>
+                              <span className="font-medium">{participant.name}</span>
                               <div className="text-xs text-muted-foreground">{getRoleText(participant.role!)}</div>
                             </div>
                           </div>
                         </td>
                         <td className="py-3 px-3">
-                          {isEditingThis ? (
-                            <Input
-                              value={editingParticipant?.sector || ''}
-                              onChange={(e) =>
-                                setEditingParticipant((prev) => (prev ? { ...prev, sector: e.target.value } : null))
-                              }
-                              placeholder="Nazwa sektora"
-                              className="w-32"
-                            />
-                          ) : (
-                            <span className="text-sm">
-                              {assignment?.sector ? (
-                                <Badge variant="secondary">{assignment.sector}</Badge>
-                              ) : (
-                                <span className="text-muted-foreground">-</span>
-                              )}
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-3 px-3">
-                          {isEditingThis ? (
-                            <Input
-                              value={editingParticipant?.stand || ''}
-                              onChange={(e) =>
-                                setEditingParticipant((prev) => (prev ? { ...prev, stand: e.target.value } : null))
-                              }
-                              placeholder="Nr stanowiska"
-                              className="w-32"
-                            />
-                          ) : (
-                            <span className="text-sm">
-                              {assignment?.stand ? (
-                                <Badge variant="outline">{assignment.stand}</Badge>
-                              ) : (
-                                <span className="text-muted-foreground">-</span>
-                              )}
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-3 px-3">
-                          <span className="text-xs text-muted-foreground">
-                            {participant.addedByOrganizer ? 'Dodany przez organizatora' : 'Dołączył samodzielnie'}
-                          </span>
+                          <div className="flex items-center">{getStatusIcon(participant.status!)}</div>
                         </td>
                         <td className="py-3 px-3">
                           <div className="flex items-center justify-end space-x-2">
-                            {/* Assignment Edit Controls */}
-                            {assignmentsData?.canManageAssignments && (
-                              <>
-                                {isEditingThis ? (
-                                  <>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={handleSaveAssignment}
-                                      disabled={updateAssignmentMutation.isPending}
-                                      className="text-green-600 hover:text-green-700"
-                                    >
-                                      <Save className="h-4 w-4" />
-                                    </Button>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={handleCancelEditAssignment}
-                                      disabled={updateAssignmentMutation.isPending}
-                                      className="text-gray-600 hover:text-gray-700"
-                                    >
-                                      <X className="h-4 w-4" />
-                                    </Button>
-                                  </>
-                                ) : (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() =>
-                                      handleEditAssignment(participant.id!, assignment?.sector, assignment?.stand)
-                                    }
-                                    className="text-blue-600 hover:text-blue-700"
-                                    title="Edytuj sektor i stanowisko"
-                                  >
-                                    <Edit3 className="h-4 w-4" />
-                                  </Button>
-                                )}
-                              </>
-                            )}
-
-                            {/* Participant Management Controls */}
                             {participant.role !== ParticipantRole.Organizer && (
                               <>
                                 {participant.status === ParticipantStatus.Waiting && (
@@ -832,18 +874,6 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
                                     <CheckCircle className="h-4 w-4" />
                                   </Button>
                                 )}
-                                {participant.status === ParticipantStatus.Approved && (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleRejectParticipant(participant.id!, participant.name!)}
-                                    disabled={rejectParticipantMutation.isPending}
-                                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                                    title="Odrzuć uczestnika"
-                                  >
-                                    <XCircle className="h-4 w-4" />
-                                  </Button>
-                                )}
                                 {participant.userId !== currentUserId && (
                                   <Button
                                     variant="outline"
@@ -861,14 +891,68 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
                           </div>
                         </td>
                       </tr>
-                    );
-                  })}
+                    ))}
                 </tbody>
               </table>
             </div>
           )}
         </div>
       </div>
+
+      {/* Assignment Dialog */}
+      <Dialog open={assignmentDialogOpen} onOpenChange={setAssignmentDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edytuj przypisanie</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="sector" className="text-right">
+                Sektor
+              </Label>
+              <Input
+                id="sector"
+                value={editingParticipant?.sector || ''}
+                onChange={(e) => setEditingParticipant((prev) => (prev ? { ...prev, sector: e.target.value } : null))}
+                placeholder="Nazwa sektora"
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="stand" className="text-right">
+                Stanowisko
+              </Label>
+              <Input
+                id="stand"
+                value={editingParticipant?.stand || ''}
+                onChange={(e) => setEditingParticipant((prev) => (prev ? { ...prev, stand: e.target.value } : null))}
+                placeholder="Nr stanowiska"
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setAssignmentDialogOpen(false);
+                setEditingParticipant(null);
+              }}
+            >
+              Anuluj
+            </Button>
+            <Button
+              onClick={async () => {
+                await handleSaveAssignment();
+                setAssignmentDialogOpen(false);
+              }}
+              disabled={updateAssignmentMutation.isPending}
+            >
+              {updateAssignmentMutation.isPending ? 'Zapisywanie...' : 'Zapisz'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
