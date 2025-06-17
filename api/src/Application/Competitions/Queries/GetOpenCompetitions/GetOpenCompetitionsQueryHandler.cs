@@ -4,16 +4,19 @@ public class GetOpenCompetitionsQueryHandler : IRequestHandler<GetOpenCompetitio
 {
     private readonly IApplicationDbContext _context;
     private readonly TimeProvider _timeProvider;
+    private readonly ICurrentUserService _currentUserService;
 
-    public GetOpenCompetitionsQueryHandler(IApplicationDbContext context, TimeProvider timeProvider)
+    public GetOpenCompetitionsQueryHandler(IApplicationDbContext context, TimeProvider timeProvider, ICurrentUserService currentUserService)
     {
         _context = context;
         _timeProvider = timeProvider;
+        _currentUserService = currentUserService;
     }
 
     public async Task<PaginatedList<CompetitionSummaryDto>> Handle(GetOpenCompetitionsQuery request, CancellationToken cancellationToken)
     {
         var now = _timeProvider.GetUtcNow();
+        var currentUserId = _currentUserService.UserId;
 
         IQueryable<Competition> query = _context.Competitions
             .AsNoTracking()
@@ -24,10 +27,18 @@ public class GetOpenCompetitionsQueryHandler : IRequestHandler<GetOpenCompetitio
             .Include(c => c.Participants)
             .Include(c => c.Categories).ThenInclude(cc => cc.CategoryDefinition);
 
+        // Wyklucz zawody w których użytkownik już uczestniczy jako organizator lub uczestnik
+        if (currentUserId.HasValue && currentUserId.Value > 0)
+        {
+            query = query.Where(c => c.OrganizerId != currentUserId.Value &&
+                                     !c.Participants.Any(p => p.UserId == currentUserId.Value));
+        }
+
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
-            query = query.Where(c => c.Name.Contains(request.SearchTerm) ||
-                                     (c.Fishery != null && c.Fishery.Name.Contains(request.SearchTerm)));
+            var searchTerm = request.SearchTerm.ToLower();
+            query = query.Where(c => c.Name.ToLower().Contains(searchTerm) ||
+                                     (c.Fishery != null && c.Fishery.Name.ToLower().Contains(searchTerm)));
         }
 
         query = query.OrderBy(c => c.Schedule.Start); // Najbliższe najpierw

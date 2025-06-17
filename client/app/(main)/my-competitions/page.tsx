@@ -18,13 +18,15 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useGetUserCompetitionsList } from '@/lib/api/endpoints/competitions';
 import { CompetitionStatus } from '@/lib/api/models/competitionStatus';
 import { MyCompetitionFilter } from '@/lib/api/models/myCompetitionFilter';
 import { MyCompetitionSummaryDto } from '@/lib/api/models/myCompetitionSummaryDto';
 import { ParticipantRole } from '@/lib/api/models/participantRole';
+
+import { useDebounce } from '@/hooks/use-debounce';
 
 import { PageHeader, PageHeaderAction } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
@@ -44,13 +46,19 @@ export default function MyCompetitionsPage() {
   const [pageNumber, setPageNumber] = useState(1);
   const pageSize = 12;
 
+  // Debounce search term to avoid excessive API calls
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  // Track if search is currently pending
+  const isSearchPending = searchTerm !== debouncedSearchTerm;
+
   const {
     data: competitionsData,
     isLoading,
     error,
     refetch
   } = useGetUserCompetitionsList({
-    SearchTerm: searchTerm || undefined,
+    SearchTerm: debouncedSearchTerm || undefined,
     Filter: filter,
     PageNumber: pageNumber,
     PageSize: pageSize
@@ -146,11 +154,10 @@ export default function MyCompetitionsPage() {
     }
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+  // Reset page number when search term changes
+  useEffect(() => {
     setPageNumber(1);
-    refetch();
-  };
+  }, [debouncedSearchTerm]);
 
   if (error) {
     return (
@@ -172,21 +179,23 @@ export default function MyCompetitionsPage() {
       <PageHeader actions={pageActions} />
 
       {/* Pasek Wyszukiwania i Filtrowania */}
-      <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-grow">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search
+            className={`absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transition-colors ${
+              isSearchPending ? 'text-blue-500 animate-pulse' : 'text-muted-foreground'
+            }`}
+          />
           <Input
             type="search"
-            placeholder="Szukaj w moich zawodach..."
-            className="w-full rounded-lg bg-card pl-9 border-border"
-            value={searchTerm}
+            placeholder="Szukaj po nazwie zawodów lub łowisku..."
+            className={`w-full rounded-lg bg-card pl-9 transition-colors ${
+              isSearchPending ? 'border-blue-500 ring-1 ring-blue-500/20' : 'border-border'
+            }`}
+            value={searchTerm || ''}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Button type="submit" variant="outline">
-          <Search className="h-4 w-4 md:mr-2" />
-          <span className="hidden md:inline">Szukaj</span>
-        </Button>
         <Select
           value={filter}
           onValueChange={(value) => {
@@ -206,7 +215,7 @@ export default function MyCompetitionsPage() {
             <SelectItem value={MyCompetitionFilter.Judged}>Sędziowane</SelectItem>
           </SelectContent>
         </Select>
-      </form>
+      </div>
 
       {/* Loading State */}
       {isLoading && (

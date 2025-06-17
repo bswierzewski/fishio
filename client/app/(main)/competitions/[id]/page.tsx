@@ -20,6 +20,7 @@ import {
   UserCheck,
   UserPlus,
   Users,
+  Users2,
   XCircle
 } from 'lucide-react';
 import Image from 'next/image';
@@ -273,7 +274,7 @@ export default function CompetitionDetailPage({ params }: { params: Promise<{ id
     pageActions.push({
       label: 'Uczestnicy',
       href: `/competitions/${competitionId}/manage`,
-      icon: <ListChecks className="h-4 w-4" />
+      icon: <Users2 className="h-4 w-4" />
     });
     pageActions.push({
       label: 'Edytuj',

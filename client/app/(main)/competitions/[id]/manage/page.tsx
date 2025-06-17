@@ -447,11 +447,8 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
           </div>
         </div>
         <div className="p-4 space-y-4">
-          <p className="text-muted-foreground">
-            Dodaj nowego uczestnika do zawodów. Możesz wybrać zarejestrowanego użytkownika lub dodać gościa.
-          </p>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* First row: Participant Type and Role */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Participant Type Selection */}
             <div className="space-y-2">
               <Label>Typ uczestnika</Label>
@@ -478,61 +475,6 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
               </Select>
             </div>
 
-            {/* User Selection or Guest Name */}
-            <div className="space-y-2">
-              {participantForm.participantType === 'user' ? (
-                <>
-                  <Label>Wybierz użytkownika</Label>
-                  {participantForm.selectedUser ? (
-                    <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                      <div className="flex items-center space-x-2">
-                        <User className="h-4 w-4" />
-                        <div>
-                          <p className="font-medium text-sm">{participantForm.selectedUser.name}</p>
-                          <p className="text-xs text-muted-foreground">{participantForm.selectedUser.email}</p>
-                        </div>
-                      </div>
-                      <Button variant="ghost" size="sm" onClick={handleClearUserSelection}>
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex space-x-2">
-                      <Input
-                        placeholder="Wyszukaj użytkownika..."
-                        value={participantForm.userSearchTerm}
-                        onChange={(e) => setParticipantForm((prev) => ({ ...prev, userSearchTerm: e.target.value }))}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            handleUserSearch();
-                          }
-                        }}
-                      />
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleUserSearch}
-                        disabled={isSearching || participantForm.userSearchTerm.trim().length < 2}
-                      >
-                        <Search className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <>
-                  <Label htmlFor="guestName">Nazwa gościa</Label>
-                  <Input
-                    id="guestName"
-                    value={participantForm.guestName}
-                    onChange={(e) => setParticipantForm((prev) => ({ ...prev, guestName: e.target.value }))}
-                    placeholder="Wprowadź nazwę gościa"
-                  />
-                </>
-              )}
-            </div>
-
             {/* Role Selection */}
             <div className="space-y-2">
               <Label>Rola</Label>
@@ -554,14 +496,72 @@ export default function CompetitionManagePage({ params }: { params: Promise<{ id
                 <p className="text-xs text-muted-foreground">Goście mogą mieć tylko rolę Zawodnik</p>
               )}
             </div>
+          </div>
 
-            {/* Add Button */}
-            <div className="space-y-2">
-              <Label>&nbsp;</Label>
-              <Button onClick={handleAddParticipant} disabled={addParticipantMutation.isPending} className="w-full">
-                {addParticipantMutation.isPending ? 'Dodawanie...' : 'Dodaj'}
-              </Button>
-            </div>
+          {/* Second row: User Selection or Guest Name */}
+          <div className="space-y-2">
+            {participantForm.participantType === 'user' ? (
+              <>
+                <Label>Wybierz użytkownika</Label>
+                {participantForm.selectedUser ? (
+                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <User className="h-4 w-4" />
+                      <div>
+                        <p className="font-medium text-sm">{participantForm.selectedUser.name}</p>
+                        <p className="text-xs text-muted-foreground">{participantForm.selectedUser.email}</p>
+                      </div>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={handleClearUserSelection}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex space-x-2">
+                    <Input
+                      placeholder="Wyszukaj użytkownika..."
+                      value={participantForm.userSearchTerm}
+                      onChange={(e) => setParticipantForm((prev) => ({ ...prev, userSearchTerm: e.target.value }))}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleUserSearch();
+                        }
+                      }}
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleUserSearch}
+                      disabled={isSearching || participantForm.userSearchTerm.trim().length < 2}
+                    >
+                      <Search className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <Label htmlFor="guestName">Nazwa gościa</Label>
+                <Input
+                  id="guestName"
+                  value={participantForm.guestName}
+                  onChange={(e) => setParticipantForm((prev) => ({ ...prev, guestName: e.target.value }))}
+                  placeholder="Wprowadź nazwę gościa"
+                />
+              </>
+            )}
+          </div>
+
+          {/* Third row: Add Button */}
+          <div className="flex justify-end">
+            <Button
+              onClick={handleAddParticipant}
+              disabled={addParticipantMutation.isPending}
+              className="w-full sm:w-auto"
+            >
+              {addParticipantMutation.isPending ? 'Dodawanie...' : 'Dodaj uczestnika'}
+            </Button>
           </div>
 
           {/* User Search Results */}

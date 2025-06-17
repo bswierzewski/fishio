@@ -9,6 +9,8 @@ import { useGetOpenCompetitionsList } from '@/lib/api/endpoints/competitions';
 import { CompetitionSummaryDto } from '@/lib/api/models';
 import { CompetitionStatus } from '@/lib/api/models/competitionStatus';
 
+import { useDebounce } from '@/hooks/use-debounce';
+
 import { PageHeader, PageHeaderAction } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,8 +23,15 @@ const cardTextColorClass = 'text-foreground';
 const cardMutedTextColorClass = 'text-muted-foreground';
 
 export default function CompetitionsPage() {
+  const [searchTerm, setSearchTerm] = useState('');
   const [pageNumber, setPageNumber] = useState(1);
   const pageSize = 12; // Show more competitions per page
+
+  // Debounce search term to avoid excessive API calls
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  // Track if search is currently pending
+  const isSearchPending = searchTerm !== debouncedSearchTerm;
 
   // Fetch open competitions using the API
   const {
@@ -32,12 +41,18 @@ export default function CompetitionsPage() {
     refetch
   } = useGetOpenCompetitionsList({
     PageNumber: pageNumber,
-    PageSize: pageSize
+    PageSize: pageSize,
+    SearchTerm: debouncedSearchTerm || undefined
   });
 
   const openCompetitions = competitionsResponse?.items || [];
   const hasNextPage = competitionsResponse?.hasNextPage || false;
   const hasPreviousPage = competitionsResponse?.hasPreviousPage || false;
+
+  // Reset page number when search term changes
+  useEffect(() => {
+    setPageNumber(1);
+  }, [debouncedSearchTerm]);
 
   const getStatusStyles = (status?: CompetitionStatus) => {
     switch (status) {
@@ -116,8 +131,10 @@ export default function CompetitionsPage() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Szukaj zawodów..."
+              placeholder="Szukaj po nazwie zawodów lub łowisku..."
               className="w-full rounded-lg bg-card pl-9 border-border"
+              value={searchTerm || ''}
+              onChange={(e) => setSearchTerm(e.target.value)}
               disabled
             />
           </div>
@@ -168,11 +185,19 @@ export default function CompetitionsPage() {
       {/* Pasek Wyszukiwania i Filtrowania */}
       <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-grow">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search
+            className={`absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transition-colors ${
+              isSearchPending ? 'text-blue-500 animate-pulse' : 'text-muted-foreground'
+            }`}
+          />
           <Input
             type="search"
-            placeholder="Szukaj zawodów..."
-            className="w-full rounded-lg bg-card pl-9 border-border"
+            placeholder="Szukaj po nazwie zawodów lub łowisku..."
+            className={`w-full rounded-lg bg-card pl-9 transition-colors ${
+              isSearchPending ? 'border-blue-500 ring-1 ring-blue-500/20' : 'border-border'
+            }`}
+            value={searchTerm || ''}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <Button variant="outline">
@@ -271,14 +296,32 @@ export default function CompetitionsPage() {
       ) : (
         <div className="mt-8 rounded-lg border border-dashed border-border bg-card p-8 text-center">
           <p className="text-muted-foreground">
-            {/* {searchTerm ? 'Nie znaleziono zawodów pasujących do wyszukiwania.' : 'Nie znaleziono otwartych zawodów.'} */}
-            {'Nie znaleziono otwartych zawodów.'}
+            {debouncedSearchTerm
+              ? `Nie znaleziono zawodów pasujących do "${debouncedSearchTerm}".`
+              : 'Nie znaleziono otwartych zawodów, do których możesz dołączyć.'}
           </p>
-          <Link href="/competitions/add" className="mt-4 inline-block">
-            <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
-              <Plus className="mr-2 h-4 w-4" /> Stwórz Pierwsze Zawody
-            </Button>
-          </Link>
+          <p className="text-sm text-muted-foreground mt-2">
+            {debouncedSearchTerm
+              ? 'Spróbuj innych słów kluczowych lub sprawdź sekcję "Moje Zawody".'
+              : 'Sprawdź sekcję "Moje Zawody", aby zobaczyć zawody w których już uczestniczysz.'}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-2 justify-center mt-4">
+            {debouncedSearchTerm && (
+              <Button variant="outline" onClick={() => setSearchTerm('')} className="mb-2 sm:mb-0">
+                <Search className="mr-2 h-4 w-4" /> Wyczyść Wyszukiwanie
+              </Button>
+            )}
+            <Link href="/competitions/add" className="inline-block">
+              <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
+                <Plus className="mr-2 h-4 w-4" /> Stwórz Nowe Zawody
+              </Button>
+            </Link>
+            <Link href="/my-competitions" className="inline-block">
+              <Button variant="outline">
+                <Trophy className="mr-2 h-4 w-4" /> Moje Zawody
+              </Button>
+            </Link>
+          </div>
         </div>
       )}
     </div>

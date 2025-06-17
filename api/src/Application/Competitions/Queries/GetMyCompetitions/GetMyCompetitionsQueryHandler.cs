@@ -51,8 +51,9 @@ public class GetMyCompetitionsQueryHandler : IRequestHandler<GetMyCompetitionsQu
 
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {
-            query = query.Where(c => c.Name.Contains(request.SearchTerm) ||
-                                     (c.Fishery != null && c.Fishery.Name.Contains(request.SearchTerm)));
+            var searchTerm = request.SearchTerm.ToLower();
+            query = query.Where(c => c.Name.ToLower().Contains(searchTerm) ||
+                                     (c.Fishery != null && c.Fishery.Name.ToLower().Contains(searchTerm)));
         }
 
         query = query.OrderByDescending(c => c.Schedule.Start);
