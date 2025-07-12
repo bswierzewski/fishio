@@ -1,157 +1,94 @@
-# 🐟 Fishio — Aplikacja dla wędkarzy i organizatorów zawodów
+# 🐟 Fishio — Nowoczesna Platforma dla Wędkarzy i Organizatorów Zawodów 🎣
 
-**Fishio** to platforma webowa (zoptymalizowana pod kątem urządzeń mobilnych) służąca do organizacji i uczestnictwa w zawodach wędkarskich. Głównym celem jest zapewnienie intuicyjnego narzędzia, które ułatwi zarządzanie zawodami dla organizatorów i usprawni udział dla wędkarzy na różnych poziomach zaawansowania.
+> Budujemy społeczność 👥, upraszczamy organizację ⚙️, celebrujemy zwycięstwa 🏆.
 
-## 🎯 Główne Założenia
+**Fishio** to nowoczesna platforma webowa, zoptymalizowana pod kątem urządzeń mobilnych, służąca do kompleksowej organizacji i uczestnictwa w zawodach wędkarskich. Niezależnie od tego, czy organizujesz duże, komercyjne wydarzenie, **wieloetapową ligę z punktacją generalną**, czy po prostu nieformalne spotkanie z przyjaciółmi nad wodą, Fishio dostarcza wszystkich narzędzi potrzebnych do łatwej organizacji, rejestracji, **pobierania opłat** i śledzenia wyników.
 
-- **Publiczna Strona Powitalna (`/`):** Prezentuje aplikację i zachęca do rejestracji/logowania.
-- **Dashboard (`/dashboard`):** Główny widok dla zalogowanego użytkownika, podsumowujący aktywności.
-- **Nawigacja Mobilna:** Informacja o aplikacji z tytułem strony i ikoną użytkownika (Clerk). Dolny pasek nawigacyjny z głównymi sekcjami i centralnym przyciskiem akcji.
-- **Informacje o Wersji:** Dostępne na dedykowanej stronie "O Aplikacji".
+## 🎯 Czym jest Fishio?
 
-## 🛠️ Stack technologiczny
+Fishio łączy światy organizatorów i wędkarzy 🤝. To centralne miejsce do odkrywania nadchodzących zawodów i **cykli wędkarskich** oraz potężne narzędzie do zarządzania każdym aspektem rywalizacji – od zapisów i **płatności online**, aż po ostateczną tabelę wyników. Naszym celem jest budowanie prężnej społeczności 🌍 wokół wędkarstwa sportowego poprzez dostarczanie przejrzystego, elastycznego i przyjaznego oprogramowania.
 
-- **Backend**: .NET 9
-- **Frontend**: Next.js
-- **UI**: [shadcn/ui](https://ui.shadcn.dev/) + TailwindCSS
-- **Zarządzanie Użytkownikami**: Clerk
-- **Zarządzanie Stanem (Klient):** Zustand (globalny), TanStack Query (stan serwera)
-- **Formularze:** TanStack Form
-- **Baza danych**: PostgreSQL
-- **Hosting Zdjęć**: Zewnętrzny serwis (np. Cloudinary)
+## 🌟 Kluczowe Funkcjonalności MVP 🌟
 
-## ✅ Kluczowe Funkcjonalności (Zakres MVP)
+### 1. 🌐 Publiczny Portal Społeczności Wędkarskiej
 
-Poniższe funkcjonalności stanowią rdzeń aplikacji planowany na pierwszą wersję.
+Publicznie dostępny portal, który jest sercem społeczności. Wędkarze mogą z łatwością wyszukiwać i odkrywać imprezy, korzystając z zaawansowanych opcji wyszukiwania i filtrowania.
 
-### 🏆 Zarządzanie Zawodami
+- 📅 **Kalendarz Zawodów i Lig:**
 
-- Tworzenie zawodów przez zalogowanych użytkowników (stają się Organizatorami).
-  - Definiowanie typu zawodów: Otwarte (każdy zalogowany może dołączyć) lub Zamknięte (uczestnicy dodawani tylko przez Organizatora).
-  - Konfiguracja danych: Nazwa, Data/Czas rozpoczęcia i zakończenia, Lokalizacja (tekstowo), Regulamin (tekstowo), opcjonalne zdjęcie zawodów.
-  - **Wybór Głównej Kategorii Punktacji:** Określenie, jak będzie liczony główny ranking (np. suma wag, suma długości).
-  - **Wybór Kategorii Specjalnych:** Możliwość zdefiniowania dodatkowych kategorii (np. Największa Ryba, Najdłuższa Ryba, Najwięcej Sztuk).
-  - Automatyczne generowanie unikalnego tokena (`resultsToken`) dla publicznego linku do wyników przy tworzeniu zawodów.
-- Przeglądanie listy otwartych zawodów (z informacją o kategoriach).
-- Przeglądanie listy "Moje Zawody" (zawody organizowane, sędziowane lub w których użytkownik bierze udział, z wizualnym rozróżnieniem statusu i informacją o kategoriach).
-- Widok szczegółów zawodów (z informacją o kategoriach i linkiem do publicznych wyników).
+  - ✅ **Przegląd zawodów:** Filtrowanie po dyscyplinie (np. Karpiowe, Spinning, Method Feeder), lokalizacji (województwo, miasto) i zakresie dat.
+  - ✅ **Przegląd Lig/Cyklów:** Dedykowana sekcja prezentująca aktywne ligi. Użytkownicy mogą zobaczyć listę powiązanych zawodów oraz **dynamicznie aktualizowaną tabelę klasyfikacji generalnej cyklu**.
 
-### 👤 Zarządzanie Uczestnikami i Rolami w Zawodach
+- 📇 **Profile Publiczne:**
 
-- **Model Hybrydowy Uczestnictwa:**
-  - Możliwość samodzielnego dołączania do zawodów _Otwartych_ przez zalogowanych użytkowników.
-  - Możliwość _ręcznego dodawania_ uczestników do zawodów przez Organizatora:
-    - Dodawanie zarejestrowanych użytkowników (wyszukiwanie).
-    - Dodawanie uczestników-gości bez konta (wymagane Imię/Nazwisko/Ksywka, opcjonalny unikalny identyfikator).
-- **System Ról w Kontekście Zawodów:**
-  - **Organizator (Zalogowany):** Tworzy zawody, zarządza uczestnikami, sędziami, kategoriami.
-  - **Sędzia/Wagowy (Zalogowany):** Wyznaczony przez Organizatora; jedyna osoba mogąca rejestrować połowy _podczas zawodów_.
-  - **Uczestnik (Zalogowany/Gość):** Bierze udział w zawodach.
-- Możliwość wyznaczenia/usunięcia Sędziego (zarejestrowanego użytkownika) dla zawodów przez Organizatora.
-- Możliwość usunięcia uczestnika przez Organizatora (przed startem zawodów).
+  - ✅ **Profile Łowisk i Organizatorów:** Każde łowisko i organizator posiadają własną stronę-wizytówkę, która agreguje wszystkie powiązane z nimi zawody (nadchodzące i archiwalne), budując ich markę i historię w społeczności.
 
-### 📊 Wyniki i Rankingi (w Zawodach)
+- 🔴 **Wyniki na Żywo:**
+  - ✅ Każde zawody, zarówno pojedyncze, jak i w ramach ligi, posiadają publiczną stronę z wynikami aktualizowaną w czasie rzeczywistym.
 
-- Rejestracja złowionych ryb _wyłącznie przez Sędziego_ podczas trwania zawodów (wybór uczestnika, dane ryby, zdjęcie).
-- **Publiczna Strona Wyników (`/results/[token]`):**
-  - Dostępna przez unikalny, zawsze aktywny link.
-  - Dynamicznie wyświetla zawartość w zależności od statusu zawodów:
-    - **Zaplanowane (Upcoming):** Informacja o nadchodzących zawodach.
-    - **Trwające (Ongoing):** Symulowane/rzeczywiste wyniki "na żywo", placeholder dla wykresu bieżącego rankingu.
-    - **Zakończone (Finished):** Oficjalna tabela wyników (główna klasyfikacja), sekcje dla zwycięzców zdefiniowanych kategorii specjalnych, placeholdery dla dwóch wykresów (np. wizualizacja rankingu ogólnego i analiza kategorii).
-- Wyświetlanie informacji o głównej kategorii punktacji i kategoriach specjalnych na stronie szczegółów zawodów.
+### 2. 👤 Spersonalizowany Panel Użytkownika
 
-### 📱 Interfejs i Użytkownicy
+Po zalogowaniu każdy użytkownik otrzymuje dostęp do osobistego panelu, który podsumowuje całą jego aktywność wędkarską:
 
-- **Dashboard (`/dashboard`):** Spersonalizowany widok dla zalogowanego użytkownika
-- Profil użytkownika (obsługiwany przez Clerk `<UserProfile />` na ścieżce catch-all `/profile/[[...user-profile]]`).
-- Strona "O Aplikacji" (`/about`) z informacjami o wersji i buildzie.
-- Uwierzytelnianie i zarządzanie sesją przez **Clerk**.
-- Responsywny design z optymalizacją dla urządzeń mobilnych (Mobile-first).
+- 📋 **Moje Aktywności:**
+  - ➡️ **Moje Zawody:** Wydarzenia, które organizujesz.
+  - ➡️ **Sędziowane Zawody:** Imprezy, na których pełnisz rolę sędziego.
+  - ➡️ **Nadchodzące Starty:** Zaplanowane zawody, w których bierzesz udział, **wraz z aktualnym statusem opłaty wpisowego**.
+  - ➡️ **Moje Ligi:** Śledzenie postępów w cyklach, w których bierzesz udział, z szybkim dostępem do Twojej pozycji w klasyfikacji generalnej.
+  - ➡️ **Historia:** Pełne archiwum Twoich poprzednich wyników.
+- 💳 **Płatności i Zapisy:**
+  - ➡️ Prosty proces zapisu na zawody.
+  - ➡️ **Możliwość dokonania bezpiecznej opłaty wpisowego online** poprzez zintegrowaną bramkę płatności.
+- 🔔 **System Powiadomień:**
+  - ➡️ Użytkownicy otrzymują automatyczne powiadomienia e-mail (oraz w aplikacji) o zapisie, potwierdzeniu płatności, zbliżających się startach czy publikacji wyników.
 
-### ⚙️ Backend i Infrastruktura
+### 3. 🛠️ Zaawansowane Narzędzia dla Organizatorów
 
-- Automatyczne generowanie informacji o wersji aplikacji (tag/SHA Git, data buildu) podczas procesu CI/CD (GitHub Actions).
-- Dockerfile zoptymalizowany pod kątem Next.js (`standalone` output) dla wdrożeń.
-- Podstawowa konfiguracja `docker-compose.yml` z możliwością automatycznych aktualizacji obrazu klienta (np. przez Watchtower).
+Sercem Fishio jest jego niezwykle elastyczny system do tworzenia i konfiguracji wydarzeń.
 
-## 🚀 Plany na Przyszłość (Poza MVP)
+- 🏆 **Tworzenie Zawodów i Lig:**
 
-Następujące funkcjonalności są planowane w dalszym rozwoju aplikacji, po wdrożeniu i zebraniu feedbacku z wersji MVP+:
+  - 📢 **Publiczne:** Widoczne w głównym kalendarzu.
+  - 🔒 **Prywatne:** Ukryte, z dostępem tylko przez prywatny link.
+  - ⛓️ **Kompleksowe Zarządzanie Ligami:** Możliwość **łączenia wielu zawodów w jeden cykl** z globalną punktacją i własnym regulaminem.
 
-- **Zaawansowane Zarządzanie Zawodami:**
-  - Obsługa wpisowego i integracja z systemami płatności online.
-  - Zarządzanie sektorami i stanowiskami na łowisku.
-  - Możliwość definiowania przez organizatora niestandardowych pól dla zgłoszeń ryb (np. metoda połowu, przynęta).
-  - Archiwum zawodów z zaawansowanym wyszukiwaniem i filtrowaniem.
-- **Komunikacja i Powiadomienia:**
-  - Rozbudowany system powiadomień (np. Uczestnik -> Sędzia: "Złowiłem rybę"; Sędzia -> Uczestnicy: "Nowy wpis w rankingu"; o starcie zawodów). Panel powiadomień w Navbarze.
-  - Moduł komunikacji wewnętrznej (czat w ramach zawodów, ogłoszenia).
-- **Statystyki i Analizy:**
-  - Szczegółowe statystyki i analizy połowów (indywidualne i zbiorcze).
-  - Implementacja rzeczywistych wykresów na stronie wyników.
-  - Zaawansowane opcje filtrowania i sortowania danych na listach.
-- **Obsługa stowarzyszeń wędkarskich:**
-  - Zarządzanie członkami stworzyszenia
-  - (Potencjalnie) Rozbudowane profile publiczne, listy znajomych, możliwość udostępniania połowów.
-- **Społeczność i Reputacja:**
-  - System ocen i reputacji organizatorów oraz łowisk.
-  - (Potencjalnie) Rozbudowane profile publiczne, listy znajomych, możliwość udostępniania połowów.
-- **Administracja i Narzędzia:**
-  - Rozbudowany Panel Administracyjny (zarządzanie użytkownikami, globalne zarządzanie łowiskami, gatunkami ryb, zawodami, moderacja).
-  - Import/Eksport danych (np. lista uczestników w CSV, wyniki).
-- **Lokalizacja:**
-  - Wsparcie dla wielu języków (i18n).
-- **Zaawansowane Zarządzanie Łowiskami:**
-  - Integracja z mapami interaktywnymi, dodawanie współrzędnych, rysowanie granic łowisk.
-  - Możliwość dodawania przez użytkowników zdjęć łowisk, komentarzy.
-- **Ulepszenia UX/UI:**
-  - Implementacja menu bocznego (sidebar/drawer) otwieranego ikoną hamburgera.
-  - Bardziej zaawansowane komponenty wyboru (np. MultiSelect dla gatunków ryb, kategorii specjalnych).
+- 💰 **Zintegrowane Płatności Online:**
 
-### 💡 Nowe Kierunki Rozwoju (Wizja Długoterminowa)
+  - ➡️ **Pełna kontrola nad wpisowym:** Zdefiniuj kwotę i **aktywuj płatności online**, eliminując potrzebę ręcznego zbierania opłat.
+  - ➡️ Panel organizatora zapewnia **podgląd statusu płatności** każdego uczestnika w czasie rzeczywistym.
 
-Poniższe funkcje reprezentują bardziej zaawansowane lub innowacyjne kierunki, które mogłyby zostać zaimplementowane w dalszej perspektywie, po ugruntowaniu pozycji aplikacji i zebraniu szerszego feedbacku:
+- 💡 **Twórz Dowolne Rankingi, Jakie Tylko Sobie Wyobrazisz:**
+  Zapomnij o sztywnych ograniczeniach. Stwórz **nieograniczoną liczbę niezależnych rankingów** w ramach jednego wydarzenia, wybierając logikę:
+  - ⚖️ **Suma wag** wszystkich ryb lub `X` największych.
+  - 📏 **Suma długości** wszystkich ryb lub `X` największych.
+  - 🐠 **Największa ryba** zawodów lub **konkretnego gatunku**.
+  - 🏅 **Rankingi wg kategorii:** Najlepsza kobieta, najlepszy junior, etc.
+- 🎁 **Strukturyzowane Zarządzanie Nagrodami i Sponsorami:**
+  - ➡️ Do każdej klasyfikacji przypisz nagrodę, jej wartość oraz **powiąż ją z konkretnym sponsorem**, którego logo będzie dumnie prezentowane przy wynikach.
 
-#### 🧠 Inteligentne Funkcje i Personalizacja (AI):
+### 4. 📊 Wyniki i Rankingi na Żywo
 
-- Automatyczne Rozpoznawanie Gatunku Ryby: Integracja z modelem AI umożliwiającym rozpoznawanie gatunku ryby na podstawie przesłanego zdjęcia, co mogłoby usprawnić proces dodawania połowów.
-- Spersonalizowane Rekomendacje: System rekomendujący łowiska, przynęty, techniki czy pory połowu, bazujący na historii użytkownika, danych pogodowych, fazach księżyca, aktywności innych wędkarzy (z pełnym poszanowaniem prywatności i anonimizacją danych zbiorczych) oraz popularności określonych metod na danym łowisku.
-- Predykcyjne Analizy Brań: Zaawansowane analizy sugerujące prawdopodobieństwo dobrych brań określonych gatunków na wybranych łowiskach w określonym czasie, uwzględniające wiele czynników.
+- 🔄 **Aktualizacje w Czasie Rzeczywistym:** Sędziowie za pomocą prostego interfejsu mogą rejestrować połowy natychmiast (z opcją dodania zdjęcia).
+- 🖥️ **Dynamiczna Strona Wyników:** Każde zawody otrzymują unikalną stronę z wynikami, która dynamicznie generuje osobną tabelę dla **każdej klasyfikacji**. Uczestnicy i kibice mogą płynnie przełączać się między rankingami.
 
-#### 🏆 Zaawansowana Gamifikacja i Elementy Społecznościowe:
+## 💻 Stack Technologiczny
 
-- Globalny System Osiągnięć i Odznak: Rozbudowany system nagradzania użytkowników za różnorodne aktywności (np. "Mistrz Okonia Mazowsza", "Odkrywca 100 Łowisk", "Ekspert Metody Spławikowej", "Ambasador C&R").
-- Wyzwania Wędkarskie: Możliwość tworzenia i uczestniczenia w cyklicznych lub jednorazowych wyzwaniach (np. "Złów największego szczupaka miesiąca w Polsce", "Skompletuj 5 gatunków ryb drapieżnych w sezonie").
-- Kluby/Drużyny Wędkarskie: Funkcjonalność tworzenia i zarządzania wirtualnymi klubami lub drużynami wędkarskimi w aplikacji, z własnymi forami dyskusyjnymi, wewnętrznymi rankingami i planowaniem wspólnych wypraw czy startów w zawodach.
-- Interaktywna Mapa Połowów (Heatmapa): Zanonimizowana, agregująca dane mapa pokazująca ogólne trendy i "gorące" miejsca połowów (wymagająca zgody użytkowników na udostępnianie zanonimizowanych danych lokalizacyjnych połowów).
+- **Backend**: .NET 9 ⚙️
+- **Frontend**: Next.js 🖥️
+- **UI**: shadcn/ui + TailwindCSS 🎨
+- **Zarządzanie Użytkownikami**: Clerk 🔑
+- **Zarządzanie Stanem (Klient):** Zustand, TanStack Query 🧠
+- **Formularze:** TanStack Form 📝
+- **Baza danych**: PostgreSQL 🐘
+- **Hosting Plików**: Cloudinary ☁️
+- **Płatności**: Integracja z bramką płatniczą (np. Stripe, PayU) 💳
 
-#### 🔗 Integracja z Ekosystemem Wędkarskim i IoT:
+## 🚀 Dalszy Rozwój (Roadmap)
 
-- Zaawansowana Integracja Pogodowa: Szczegółowe dane pogodowe dla lokalizacji łowisk (temperatura wody, ciśnienie atmosferyczne, kierunek i siła wiatru, nasłonecznienie) oraz alerty pogodowe.
-- Kalendarz Brań i Fazy Księżyca: Zintegrowany, konfigurowalny kalendarz brań oparty o różne teorie i fazy księżyca.
-- Zgłaszanie Stanu Wody i Środowiska: Możliwość zgłaszania przez użytkowników i przeglądania informacji o stanie wody (np. przejrzystość, poziom), zanieczyszczeniach, zakwitach glonów czy innych ważnych czynnikach środowiskowych na łowiskach.
-- (Opcjonalnie) Integracja z Urządzeniami Zewnętrznymi: Możliwość importu danych z popularnych urządzeń wędkarskich (np. logi z echosond, dane z smartwatchy dotyczące aktywności).
+Fishio będzie stale rozwijane. Po udostępnieniu wersji MVP, skupimy się na kolejnych funkcjach:
 
-#### 📚 Edukacja, Bezpieczeństwo i Odpowiedzialne Wędkarstwo:
-
-- Rozbudowana Baza Wiedzy: Interaktywna encyklopedia gatunków ryb (z dokładnymi opisami, zdjęciami, mapami występowania, okresami i wymiarami ochronnymi obowiązującymi w różnych regionach/wodach PZW), technik połowu, sprzętu, przynęt.
-- Moduł Zgłaszania Nieprawidłowości: Dedykowany system zgłaszania przypadków kłusownictwa, zanieczyszczenia wód, czy innych nielegalnych działań, z możliwością (za zgodą użytkownika) przekazania informacji odpowiednim służbom (np. PSR, WIOŚ) lub organizacjom (np. PZW).
-- Promowanie Zasad "Złów i Wypuść" (Catch & Release): Specjalne oznaczenia dla wędkarzy i zawodów promujących C&R, dedykowane rankingi C&R, materiały edukacyjne na temat prawidłowego obchodzenia się z rybami.
-- Lokalne Regulaminy i Przepisy: Dostęp do aktualnych regulaminów amatorskiego połowu ryb (RAPR PZW) oraz specyficznych regulaminów dla poszczególnych łowisk (jeśli dostępne).
-
-#### 🌐 Funkcjonalności Offline i Dostępność:
-
-- Tryb Offline dla Kluczowych Funkcji: Możliwość dodawania wpisów do osobistego dziennika połowów, przeglądania pobranych wcześniej danych o łowiskach i gatunkach ryb bez dostępu do internetu, z automatyczną synchronizacją danych po odzyskaniu połączenia.
-- Ułatwienia Dostępu (Accessibility): Dalsze prace nad zapewnieniem zgodności z WCAG dla osób z niepełnosprawnościami.
-
-#### 💰 Zaawansowane Opcje Monetyzacji (jeśli aplikacja ma generować przychód):
-
-- Konta Premium (Subskrypcje): Wprowadzenie płatnych kont premium oferujących dodatkowe korzyści, np. zaawansowane statystyki i analizy, nielimitowane miejsce na zdjęcia, brak reklam (jeśli takowe się pojawią w wersji darmowej), wcześniejszy dostęp do nowych funkcji, ekskluzywne odznaki.
-- Płatne Promowanie: Możliwość płatnego wyróżniania zawodów, łowisk komercyjnych, sklepów wędkarskich czy usług przewodników wędkarskich w dedykowanych sekcjach aplikacji.
-- Marketplace Wędkarski: Stworzenie wewnątrz aplikacji bezpiecznej platformy do handlu nowym i używanym sprzętem wędkarskim, rękodziełem (np. przynęty) lub usługami (np. rezerwacja miejsc u przewodników wędkarskich).
-
----
-
-> Projekt przygotowany przez [Bartosz Świerzewski]
-> Kontakt: [swierzewski.bartosz@gmail.com]
+- ➡️ **Aplikacja Mobilna (PWA/Natywna):** Jeszcze szybszy i wygodniejszy dostęp do platformy z poziomu telefonu.
+- ➡️ **Zaawansowane Profile Społecznościowe:** Możliwość dodawania znajomych, tworzenia grup i śledzenia ich aktywności.
+- ➡️ **Integracje z Mediami Społecznościowymi:** Automatyczne generowanie i udostępnianie grafik z wynikami i listami startowymi.
+- ➡️ **System Rezerwacji Stanowisk:** Moduł dla właścicieli łowisk do zarządzania rezerwacjami poza zawodami.
+- ➡️ **Zaawansowany Moduł Sponsoringu:** Dedykowane panele dla sponsorów ze statystykami i możliwościami promocyjnymi.
