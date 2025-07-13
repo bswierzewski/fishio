@@ -17,8 +17,6 @@ public class CurrentUserService : ICurrentUserService
         _dbContext = dbContext;
     }
 
-    public int? UserId => GetUserId();
-
     public string? ClerkId => GetClerkId();
 
     public string? Email => GetEmail();
@@ -35,48 +33,53 @@ public class CurrentUserService : ICurrentUserService
         if (string.IsNullOrEmpty(clerkId))
             return null;
 
-        return await _dbContext.Users
+        var existingUser = await _dbContext.Users
             .FirstOrDefaultAsync(u => u.ClerkId == clerkId, cancellationToken);
-    }
 
-    public async Task<User> GetRequiredUserAsync(CancellationToken cancellationToken = default)
-    {
-        var user = await GetCurrentUserAsync(cancellationToken);
-        if (user == null)
+        if (existingUser == null)
         {
-            throw new UnauthorizedAccessException("Użytkownik nie jest zalogowany.");
+            var email = GetEmail();
+            var firstName = GetFirstName();
+            var lastName = GetLastName();
+
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName))
+                return null; // Incomplete user claims
+
+            var newUser = new User(clerkId, email, firstName, lastName);
+            _dbContext.Users.Add(newUser);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
+            return newUser;
         }
 
-        return user;
-    }
+        // Update user information if it has changed
+        var currentEmail = GetEmail();
+        var currentFirstName = GetFirstName();
+        var currentLastName = GetLastName();
 
-    public async Task EnsureUserExistsAsync(CancellationToken cancellationToken = default)
-    {
-        var clerkId = GetClerkId();
-        if (string.IsNullOrEmpty(clerkId))
-            return;
-
-        var exists = await _dbContext.Users
-            .AnyAsync(u => u.ClerkId == clerkId, cancellationToken);
-
-        if (!exists)
+        if (!string.IsNullOrEmpty(currentFirstName) && !string.IsNullOrEmpty(currentLastName) &&
+            (existingUser.FirstName != currentFirstName || existingUser.LastName != currentLastName))
         {
-            // This should not happen if UserSyncMiddleware is working properly
-            throw new InvalidOperationException("Użytkownik nie istnieje w bazie danych.");
+            existingUser.UpdateProfile(currentFirstName, currentLastName);
+            await _dbContext.SaveChangesAsync(cancellationToken);
         }
+
+        return existingUser;
     }
 
-    private int? GetUserId()
+    public async Task<User?> FindUserAsync(CancellationToken cancellationToken = default)
     {
         var clerkId = GetClerkId();
         if (string.IsNullOrEmpty(clerkId))
             return null;
 
-        // This is a synchronous operation, but since we're in a web context
-        // and the UserSyncMiddleware should ensure the user exists, this should be fast
-        var user = _dbContext.Users
-            .FirstOrDefault(u => u.ClerkId == clerkId);
+        return await _dbContext.Users
+            .FirstOrDefaultAsync(u => u.ClerkId == clerkId, cancellationToken);
+    }
 
+    public async Task<int?> GetUserIdAsync(CancellationToken cancellationToken = default)
+    {
+        var user = await FindUserAsync(cancellationToken);
         return user?.Id;
     }
 

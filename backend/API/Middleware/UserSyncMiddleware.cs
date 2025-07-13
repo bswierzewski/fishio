@@ -1,10 +1,12 @@
-using System.Security.Claims;
-using Microsoft.EntityFrameworkCore;
 using Fishio.Application.Common.Interfaces;
-using Fishio.Domain.Entities;
 
 namespace Fishio.API.Middleware;
 
+/// <summary>
+/// Middleware to ensure that an authenticated user from Clerk
+/// is provisioned or available as a domain user.
+/// This should be placed after authentication middleware and before authorization or endpoint execution.
+/// </summary>
 public class UserSyncMiddleware
 {
     private readonly RequestDelegate _next;
@@ -12,81 +14,44 @@ public class UserSyncMiddleware
 
     public UserSyncMiddleware(RequestDelegate next, ILogger<UserSyncMiddleware> logger)
     {
-        _next = next;
-        _logger = logger;
+        _next = next ?? throw new ArgumentNullException(nameof(next));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task InvokeAsync(HttpContext context, IApplicationDbContext dbContext)
+    public async Task InvokeAsync(HttpContext context, ICurrentUserService currentUserService)
     {
-        if (context.User.Identity?.IsAuthenticated == true)
+        if (context.User?.Identity?.IsAuthenticated == true)
         {
+            _logger.LogDebug("User is authenticated. Attempting to get current user for ClerkUserId: {ClerkUserId}", currentUserService.ClerkId);
+
             try
             {
-                await EnsureUserExistsAsync(context, dbContext);
+                var user = await currentUserService.GetCurrentUserAsync(context.RequestAborted);
+
+                if (user != null)
+                {
+                    _logger.LogDebug("Domain user {UserId} successfully retrieved or provisioned for ClerkUserId: {ClerkUserId}", user.Id, currentUserService.ClerkId);
+                }
+                else if (!string.IsNullOrEmpty(currentUserService.ClerkId))
+                {
+                    // User is authenticated but domain user couldn't be provisioned
+                    _logger.LogWarning("Nie udało się pobrać lub utworzyć użytkownika domenowego dla ClerkUserId: {ClerkUserId}. Prawdopodobnie brakuje wymaganych danych w claims.", currentUserService.ClerkId);
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error synchronizing user with database");
-                // Continue execution even if user sync fails
+                _logger.LogError(ex, "An unhandled exception occurred during user provisioning for ClerkUserId: {ClerkUserId}.", currentUserService.ClerkId);
+
+                // Allow global exception handler to deal with the error
+                // In production, you might want to handle this differently based on your requirements
+                throw;
             }
-        }
-
-        await _next(context);
-    }
-
-    private async Task EnsureUserExistsAsync(HttpContext context, IApplicationDbContext dbContext)
-    {
-        var clerkId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(clerkId))
-        {
-            _logger.LogWarning("User is authenticated but ClerkId is missing");
-            return;
-        }
-
-        var existingUser = await dbContext.Users
-            .FirstOrDefaultAsync(u => u.ClerkId == clerkId);
-
-        if (existingUser == null)
-        {
-            var email = context.User.FindFirst(ClaimTypes.Email)?.Value;
-            var firstName = context.User.FindFirst(ClaimTypes.GivenName)?.Value;
-            var lastName = context.User.FindFirst(ClaimTypes.Surname)?.Value;
-
-            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName))
-            {
-                _logger.LogWarning("User claims are incomplete: Email={Email}, FirstName={FirstName}, LastName={LastName}",
-                    email, firstName, lastName);
-                return;
-            }
-
-            var newUser = new User(clerkId, email, firstName, lastName);
-
-            dbContext.Users.Add(newUser);
-            await dbContext.SaveChangesAsync();
-
-            _logger.LogInformation("Created new user with ClerkId: {ClerkId}", clerkId);
         }
         else
         {
-            // Update user information if it has changed
-            var currentEmail = context.User.FindFirst(ClaimTypes.Email)?.Value;
-            var currentFirstName = context.User.FindFirst(ClaimTypes.GivenName)?.Value;
-            var currentLastName = context.User.FindFirst(ClaimTypes.Surname)?.Value;
-
-            if (!string.IsNullOrEmpty(currentEmail) && existingUser.Email != currentEmail)
-            {
-                // Email update would require more complex logic due to unique constraint
-                _logger.LogWarning("Email change detected for user {ClerkId}. Manual intervention may be required.", clerkId);
-            }
-
-            if (!string.IsNullOrEmpty(currentFirstName) && !string.IsNullOrEmpty(currentLastName) &&
-                (existingUser.FirstName != currentFirstName || existingUser.LastName != currentLastName))
-            {
-                existingUser.UpdateProfile(currentFirstName, currentLastName);
-                await dbContext.SaveChangesAsync();
-
-                _logger.LogInformation("Updated user profile for ClerkId: {ClerkId}", clerkId);
-            }
+            _logger.LogTrace("User is not authenticated. Skipping domain user provisioning.");
         }
+
+        await _next(context);
     }
 }

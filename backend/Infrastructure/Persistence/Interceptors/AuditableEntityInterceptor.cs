@@ -22,27 +22,25 @@ public class AuditableEntityInterceptor : SaveChangesInterceptor
 
     public override InterceptionResult<int> SavingChanges(DbContextEventData eventData, InterceptionResult<int> result)
     {
-        UpdateEntities(eventData.Context);
-
-        return base.SavingChanges(eventData, result);
+        throw new NotSupportedException("Synchroniczne operacje SaveChanges nie są obsługiwane. Użyj SaveChangesAsync.");
     }
 
-    public override ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
+    public override async ValueTask<InterceptionResult<int>> SavingChangesAsync(DbContextEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
     {
-        UpdateEntities(eventData.Context);
+        await UpdateEntitiesAsync(eventData.Context, cancellationToken);
 
-        return base.SavingChangesAsync(eventData, result, cancellationToken);
+        return await base.SavingChangesAsync(eventData, result, cancellationToken);
     }
 
-    public void UpdateEntities(DbContext? context)
+    private async Task UpdateEntitiesAsync(DbContext? context, CancellationToken cancellationToken = default)
     {
         if (context == null) return;
 
-        // Rozwiązujemy IUserService dynamicznie wewnątrz metody, używając scope'u
         using (var scope = _serviceProvider.CreateScope())
         {
             var user = scope.ServiceProvider.GetService<ICurrentUserService>();
             var utcNow = _dateTime.GetUtcNow();
+            var userId = user != null ? await user.GetUserIdAsync(cancellationToken) : null;
 
             foreach (var entry in context.ChangeTracker.Entries<BaseAuditableEntity>())
             {
@@ -50,10 +48,10 @@ public class AuditableEntityInterceptor : SaveChangesInterceptor
                 {
                     if (entry.State == EntityState.Added)
                     {
-                        entry.Entity.CreatedBy = user?.UserId;
+                        entry.Entity.CreatedBy = userId;
                         entry.Entity.Created = utcNow;
                     }
-                    entry.Entity.LastModifiedBy = user?.UserId;
+                    entry.Entity.LastModifiedBy = userId;
                     entry.Entity.LastModified = utcNow;
                 }
             }
