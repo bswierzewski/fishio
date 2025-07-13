@@ -1,0 +1,66 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Fishio.Domain.Entities;
+using Fishio.Domain.Enums;
+
+namespace Fishio.Infrastructure.Persistence.Configurations;
+
+public class UserConfiguration : IEntityTypeConfiguration<User>
+{
+    public void Configure(EntityTypeBuilder<User> builder)
+    {
+        builder.Property(u => u.ClerkId)
+            .IsRequired()
+            .HasMaxLength(100);
+
+        builder.HasIndex(u => u.ClerkId)
+            .IsUnique();
+
+        builder.Property(u => u.Email)
+            .IsRequired()
+            .HasMaxLength(256);
+
+        builder.HasIndex(u => u.Email)
+            .IsUnique();
+
+        builder.Property(u => u.FirstName)
+            .IsRequired()
+            .HasMaxLength(100);
+
+        builder.Property(u => u.LastName)
+            .IsRequired()
+            .HasMaxLength(100);
+
+        builder.Property(u => u.City)
+            .HasMaxLength(100);
+
+        builder.Property(u => u.Province)
+            .HasMaxLength(100);
+
+        builder.Property(u => u.ProfileDescription)
+            .HasMaxLength(1000);
+
+        builder.Property(u => u.ProfilePictureUrl)
+            .HasMaxLength(500);
+
+        builder.Property(u => u.DateOfBirth)
+            .HasColumnType("date");
+
+        builder.Property(u => u.Gender)
+            .HasConversion<int>()
+            .IsRequired(false);
+
+        builder.Property(u => u.Role)
+    .HasConversion<int>()
+    .IsRequired()
+    .HasDefaultValue(UserRole.Angler);
+
+        builder.Property(u => u.IsProfilePublic)
+            .IsRequired()
+            .HasDefaultValue(true);
+
+        builder.Property(u => u.NotificationsEnabled)
+            .IsRequired()
+            .HasDefaultValue(true);
+    }
+}

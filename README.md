@@ -1,4 +1,4 @@
-# 🐟 Fishio — Nowoczesna Platforma dla Wędkarzy i Organizatorów Zawodów 🎣
+# 🐟 Fishio — Nowoczesna Platforma dla Organizatorów Zawodów 🎣
 
 > Budujemy społeczność 👥, upraszczamy organizację ⚙️, celebrujemy zwycięstwa 🏆.
 

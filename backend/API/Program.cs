@@ -1,41 +1,45 @@
+using Fishio.Application;
+using Fishio.Infrastructure;
+using Fishio.API;
+using Fishio.API.Middleware;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// Add services from all layers
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddAPI(builder.Configuration, builder.Environment);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Fishio API V1");
+        c.RoutePrefix = string.Empty; // Serve Swagger UI at the root
+    });
+
+    app.UseCors(); // Uses default policy configured in AddAPI
 }
 
-app.UseHttpsRedirection();
+// Add custom exception handling
+app.UseExceptionHandler();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+app.UseAuthentication();
+app.UseMiddleware<UserSyncMiddleware>(); // Synchronize user data with database after authentication
+app.UseAuthorization();
 
-app.MapGet("/weatherforecast", () =>
+// Health check endpoint
+app.MapGet("/api/health", () =>
 {
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
+    return Results.Ok(new { Status = "Healthy", Timestamp = DateTime.UtcNow });
 })
-.WithName("GetWeatherForecast");
+.WithName("HealthCheck")
+.WithOpenApi();
+
+// Map minimal API endpoints (no controllers needed)
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
