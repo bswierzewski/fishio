@@ -2,6 +2,7 @@ using Fishio.Application;
 using Fishio.Infrastructure;
 using Fishio.API;
 using Fishio.API.Middleware;
+using Fishio.API.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,6 +41,7 @@ app.MapGet("/api/health", () =>
 .WithName("HealthCheck")
 .WithOpenApi();
 
-// Map minimal API endpoints (no controllers needed)
+// Map minimal API endpoints
+app.MapUserApi();
 
 app.Run();

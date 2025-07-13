@@ -98,18 +98,54 @@ alwaysApply: false
     - Each command/query is a separate class (often a `record`) implementing `IRequest` or `IRequest<TResponse>`.
     - Place them in the structure `Application/[FeatureName]/Commands/[CommandName]/` or `Application/[FeatureName]/Queries/[QueryName]/`.
     - Names: `CreateCompetitionCommand.cs`, `GetCompetitionDetailsQuery.cs`.
+    - **CRITICAL RULE: Commands and their validators MUST be in the same file for better cohesion.**
+    - **CRITICAL RULE: Queries and their DTOs MUST be in the same file for better cohesion.**
 2.  **MediatR Handlers:**
     - Each command/query must have its handler implementing `IRequestHandler<TRequest, TResponse>`.
     - Names: `CreateCompetitionCommandHandler.cs`, `GetCompetitionDetailsQueryHandler.cs`.
     - Handlers inject dependencies (e.g., `IApplicationDbContext`, other services) via the constructor.
     - Use-case-specific business logic resides here.
 3.  **DTOs (Data Transfer Objects):**
-    - Use DTOs to transfer data between layers, especially as parameters for commands/queries and as results from queries.
-    - Define them close to the commands/queries they relate to, or in a dedicated `Dtos` folder within the module.
+
+    - Use DTOs to transfer data between layers, especially as results from queries.
+    - **DTOs MUST be defined in the same file as the query that uses them.**
+    - This improves code cohesion and makes maintenance easier.
+    - Example structure:
+
+      ```csharp
+      public record GetCompetitionDetailsQuery(int CompetitionId) : IRequest<CompetitionDetailsDto>;
+
+      public class CompetitionDetailsDto
+      {
+          public int Id { get; set; }
+          public string Name { get; set; } = string.Empty;
+          // ... other properties
+      }
+      ```
+
 4.  **Validation (FluentValidation):**
+
     - For each command (and sometimes query) requiring validation, create a validator class inheriting from `AbstractValidator<TCommand>`.
-    - Place the validator in the same folder as the command/query.
+    - **Validators MUST be defined in the same file as the command they validate.**
+    - This ensures that command and its validation rules are always together.
+    - Example structure:
+
+      ```csharp
+      public record CreateCompetitionCommand(string Name, DateTime Date) : IRequest<int>;
+
+      public class CreateCompetitionCommandValidator : AbstractValidator<CreateCompetitionCommand>
+      {
+          public CreateCompetitionCommandValidator()
+          {
+              RuleFor(x => x.Name)
+                  .NotEmpty().WithMessage("Nazwa jest wymagana.")
+                  .MaximumLength(100).WithMessage("Nazwa nie może przekraczać 100 znaków.");
+          }
+      }
+      ```
+
     - Register validators in `Application/DependencyInjection.cs`.
+
 5.  **Application Interfaces:**
     - Define interfaces for application services (e.g., `ICurrentUserService`, `IDateTimeService`) in `Application/Common/Interfaces/`.
 
@@ -150,12 +186,10 @@ Let's assume we are adding a "Report Fishery Issues" feature:
 2.  **Application:**
     - Create a folder `Application/FisheryIssues/`.
     - Inside it:
-      - `Commands/ReportIssue/ReportFisheryIssueCommand.cs` (with `FisheryId`, `Description`).
+      - `Commands/ReportIssue/ReportFisheryIssueCommand.cs` (with `FisheryId`, `Description` + validator in the same file).
       - `Commands/ReportIssue/ReportFisheryIssueCommandHandler.cs` (save logic, use `IApplicationDbContext`, `ICurrentUserService`).
-      - `Commands/ReportIssue/ReportFisheryIssueCommandValidator.cs` (validation).
-      - `Queries/GetFisheryIssues/GetFisheryIssuesQuery.cs` (e.g., by `FisheryId`).
+      - `Queries/GetFisheryIssues/GetFisheryIssuesQuery.cs` (e.g., by `FisheryId` + DTO in the same file).
       - `Queries/GetFisheryIssues/GetFisheryIssuesQueryHandler.cs`.
-      - `Queries/GetFisheryIssues/FisheryIssueDto.cs`.
     - Register handlers and the validator in `Application/DependencyInjection.cs`.
 3.  **Infrastructure:**
     - Add `DbSet<FisheryIssue>` to `ApplicationDbContext.cs`.
