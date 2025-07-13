@@ -1,0 +1,29 @@
+# This docker-compose file sets up a complete local development environment for Fishio.
+# It includes the API, Client, PostgreSQL Database, and Caddy reverse proxy.
+# Environment variables are expected to be in a .env file in the root directory.
+
+services:
+  # fishio_db: PostgreSQL Database Service
+  fishio_db:
+    image: postgres:16-alpine
+    container_name: fishio_db
+    environment:
+      - POSTGRES_DB=fishio
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${DB_PASSWORD} # Loaded from .env file
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Persists database data
+    ports:
+      - "5432:5432" # Expose DB port for local development tools (e.g., pgAdmin)
+    networks:
+      - fishio_network
+    restart: unless-stopped # Ensures DB stays up during development
+
+# Define shared network for service communication
+networks:
+  fishio_network:
+    driver: bridge
+
+# Define persistent named volumes
+volumes:
+  postgres_data: # For PostgreSQL data
