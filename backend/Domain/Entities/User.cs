@@ -20,11 +20,8 @@ public class User : BaseAuditableEntity
     // Public profile data
     public string? ProfileDescription { get; private set; }
     public string? ProfilePictureUrl { get; private set; }
-    public string? City { get; private set; }
-    public string? Province { get; private set; }
 
     // Account settings
-    public bool IsProfilePublic { get; private set; } = true;
     public bool NotificationsEnabled { get; private set; } = true;
 
     // Navigation properties for competitions, results, etc. will be added later
@@ -39,12 +36,10 @@ public class User : BaseAuditableEntity
         LastName = lastName ?? throw new ArgumentNullException(nameof(lastName));
     }
 
-    public void UpdateProfile(string firstName, string lastName, string? city = null, string? province = null)
+    public void UpdateProfile(string firstName, string lastName)
     {
         FirstName = firstName ?? throw new ArgumentNullException(nameof(firstName));
         LastName = lastName ?? throw new ArgumentNullException(nameof(lastName));
-        City = city;
-        Province = province;
     }
 
     public void UpdateOptionalData(DateTime? dateOfBirth = null, Gender? gender = null)
@@ -66,11 +61,6 @@ public class User : BaseAuditableEntity
     public void SetRole(UserRole role)
     {
         Role = role;
-    }
-
-    public void SetProfileVisibility(bool isPublic)
-    {
-        IsProfilePublic = isPublic;
     }
 
     public void SetNotifications(bool enabled)

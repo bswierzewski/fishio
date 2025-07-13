@@ -82,7 +82,7 @@ public class UserSyncMiddleware
             if (!string.IsNullOrEmpty(currentFirstName) && !string.IsNullOrEmpty(currentLastName) &&
                 (existingUser.FirstName != currentFirstName || existingUser.LastName != currentLastName))
             {
-                existingUser.UpdateProfile(currentFirstName, currentLastName, existingUser.City, existingUser.Province);
+                existingUser.UpdateProfile(currentFirstName, currentLastName);
                 await dbContext.SaveChangesAsync();
 
                 _logger.LogInformation("Updated user profile for ClerkId: {ClerkId}", clerkId);

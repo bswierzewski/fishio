@@ -9,33 +9,18 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)
     {
+        builder.HasIndex(u => u.ClerkId)
+            .IsUnique();
         builder.Property(u => u.ClerkId)
             .IsRequired()
             .HasMaxLength(100);
 
-        builder.HasIndex(u => u.ClerkId)
-            .IsUnique();
-
-        builder.Property(u => u.Email)
-            .IsRequired()
-            .HasMaxLength(256);
-
         builder.HasIndex(u => u.Email)
             .IsUnique();
-
-        builder.Property(u => u.FirstName)
+        builder.Property(u => u.Email)
             .IsRequired()
-            .HasMaxLength(100);
-
-        builder.Property(u => u.LastName)
-            .IsRequired()
-            .HasMaxLength(100);
-
-        builder.Property(u => u.City)
-            .HasMaxLength(100);
-
-        builder.Property(u => u.Province)
-            .HasMaxLength(100);
+            .HasMaxLength(256)
+            .HasConversion(v => v.ToLowerInvariant(), v => v.ToLowerInvariant());
 
         builder.Property(u => u.ProfileDescription)
             .HasMaxLength(1000);
@@ -51,13 +36,9 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired(false);
 
         builder.Property(u => u.Role)
-    .HasConversion<int>()
-    .IsRequired()
-    .HasDefaultValue(UserRole.Angler);
-
-        builder.Property(u => u.IsProfilePublic)
+            .HasConversion<int>()
             .IsRequired()
-            .HasDefaultValue(true);
+            .HasDefaultValue(UserRole.Angler);
 
         builder.Property(u => u.NotificationsEnabled)
             .IsRequired()
