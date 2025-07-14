@@ -15,7 +15,7 @@ public class User : BaseAuditableEntity
     public Gender? Gender { get; private set; }
 
     // User roles
-    public UserRole Role { get; private set; } = UserRole.Angler;
+    public UserRole? Role { get; private set; }
 
     // Public profile data
     public string? ProfileDescription { get; private set; }

@@ -30,7 +30,7 @@ public class GetCurrentUserQueryHandler : IRequestHandler<GetCurrentUserQuery, U
             FullName = user.GetFullName(),
             DateOfBirth = user.DateOfBirth,
             Gender = user.Gender,
-            Role = user.Role,
+            Role = user.Role ?? Domain.Enums.UserRole.None,
             ProfileDescription = user.ProfileDescription,
             ProfilePictureUrl = user.ProfilePictureUrl,
             NotificationsEnabled = user.NotificationsEnabled,

@@ -3,6 +3,7 @@ using Fishio.Infrastructure;
 using Fishio.API;
 using Fishio.API.Middleware;
 using Fishio.API.Endpoints;
+using Fishio.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,9 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddAPI(builder.Configuration, builder.Environment);
 
 var app = builder.Build();
+
+
+await app.InitializeDatabaseAsync();
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())

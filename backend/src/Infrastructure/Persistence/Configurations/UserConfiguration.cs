@@ -37,8 +37,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.Property(u => u.Role)
             .HasConversion<int>()
-            .IsRequired()
-            .HasDefaultValue(UserRole.Angler);
+            .IsRequired(false);
 
         builder.Property(u => u.NotificationsEnabled)
             .IsRequired()
