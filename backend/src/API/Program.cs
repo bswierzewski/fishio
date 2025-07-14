@@ -27,7 +27,7 @@ if (app.Environment.IsDevelopment())
 }
 
 // Add custom exception handling
-app.UseExceptionHandler();
+app.UseExceptionHandler(options => { });
 
 app.UseAuthentication();
 app.UseMiddleware<UserSyncMiddleware>(); // Synchronize user data with database after authentication
