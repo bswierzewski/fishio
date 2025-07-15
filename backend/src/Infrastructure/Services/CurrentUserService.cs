@@ -17,19 +17,19 @@ public class CurrentUserService : ICurrentUserService
         _dbContext = dbContext;
     }
 
-    public string? ClerkId => GetClerkId();
+    public string? ClerkId => _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-    public string? Email => GetEmail();
+    public string? Email => _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Email)?.Value;
 
-    public string? FirstName => GetFirstName();
+    public string? FirstName => _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.GivenName)?.Value;
 
-    public string? LastName => GetLastName();
+    public string? LastName => _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Surname)?.Value;
 
     public bool IsAuthenticated => _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated == true;
 
     public async Task<User?> GetCurrentUserAsync(CancellationToken cancellationToken = default)
     {
-        var clerkId = GetClerkId();
+        var clerkId = ClerkId;
         if (string.IsNullOrEmpty(clerkId))
             return null;
 
@@ -38,9 +38,9 @@ public class CurrentUserService : ICurrentUserService
 
         if (existingUser == null)
         {
-            var email = GetEmail();
-            var firstName = GetFirstName();
-            var lastName = GetLastName();
+            var email = Email;
+            var firstName = FirstName;
+            var lastName = LastName;
 
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName))
                 return null; // Incomplete user claims
@@ -53,9 +53,9 @@ public class CurrentUserService : ICurrentUserService
         }
 
         // Update user information if it has changed
-        var currentEmail = GetEmail();
-        var currentFirstName = GetFirstName();
-        var currentLastName = GetLastName();
+        var currentEmail = Email;
+        var currentFirstName = FirstName;
+        var currentLastName = LastName;
 
         if (!string.IsNullOrEmpty(currentFirstName) && !string.IsNullOrEmpty(currentLastName) &&
             (existingUser.FirstName != currentFirstName || existingUser.LastName != currentLastName))
@@ -69,7 +69,7 @@ public class CurrentUserService : ICurrentUserService
 
     public async Task<User?> FindUserAsync(CancellationToken cancellationToken = default)
     {
-        var clerkId = GetClerkId();
+        var clerkId = ClerkId;
         if (string.IsNullOrEmpty(clerkId))
             return null;
 
@@ -81,25 +81,5 @@ public class CurrentUserService : ICurrentUserService
     {
         var user = await FindUserAsync(cancellationToken);
         return user?.Id;
-    }
-
-    private string? GetClerkId()
-    {
-        return _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-    }
-
-    private string? GetEmail()
-    {
-        return _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Email)?.Value;
-    }
-
-    private string? GetFirstName()
-    {
-        return _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.GivenName)?.Value;
-    }
-
-    private string? GetLastName()
-    {
-        return _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Surname)?.Value;
     }
 }
