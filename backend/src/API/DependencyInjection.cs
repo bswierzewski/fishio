@@ -5,6 +5,8 @@ using Application.Common.Options;
 using Microsoft.IdentityModel.Tokens;
 using Fishio.API.Middleware;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using System.Text.Json;
 
 namespace Fishio.API;
 
@@ -16,8 +18,20 @@ public static class DependencyInjection
         services.Configure<ClerkOptions>(configuration.GetSection(ClerkOptions.SectionName));
         services.Configure<CloudinaryOptions>(configuration.GetSection(CloudinaryOptions.SectionName));
 
-        // Add custom exception handler
+        // Configure services for layered error handling.
+        // These services are used by the middleware configured in Program.cs.
+
+        // 1. Add custom exception handler: Registers our custom IExceptionHandler implementation.
+        // This class is responsible for translating specific, application-level exceptions
+        // (e.g., ValidationException, NotFoundException) into detailed, user-friendly
+        // ProblemDetails responses.
         services.AddExceptionHandler<CustomExceptionHandler>();
+
+        // 2. Add ProblemDetails: Registers the default services required for ProblemDetails generation.
+        // This is primarily used by the UseStatusCodePages middleware to handle generic HTTP errors
+        // (like 401 Unauthorized or 404 Not Found when no endpoint is matched) that are not thrown
+        // as exceptions from app logic, ensuring all error responses are standardized.
+        services.AddProblemDetails();
 
         // Suppress model state invalid filter (for FluentValidation)
         services.Configure<ApiBehaviorOptions>(options => options.SuppressModelStateInvalidFilter = true);
@@ -79,9 +93,9 @@ public static class DependencyInjection
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero,
 
-                    // If clerk uses different claim types, change them here
-                    NameClaimType = "sub",
-                    RoleClaimType = "permissions",
+                    // Map claims from Clerk JWT to .NET ClaimsPrincipal
+                    NameClaimType = "sub", // "sub" claim from JWT will be used as the user's unique identifier (ClaimTypes.NameIdentifier)
+                    RoleClaimType = "roles" // "roles" claim from JWT will be used for role-based authorization ([Authorize(Roles = ...)])
                 };
             });
 
