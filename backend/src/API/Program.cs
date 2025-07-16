@@ -47,7 +47,7 @@ app.UseExceptionHandler();
 app.UseStatusCodePages();
 
 app.UseAuthentication();
-app.UseMiddleware<UserSyncMiddleware>(); // Synchronize user data with database after authentication
+app.UseMiddleware<UserMiddleware>(); // Synchronize user data with database after authentication
 app.UseAuthorization();
 
 // Health check endpoint

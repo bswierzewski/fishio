@@ -7,12 +7,12 @@ namespace Fishio.API.Middleware;
 /// is provisioned or available as a domain user.
 /// This should be placed after authentication middleware and before authorization or endpoint execution.
 /// </summary>
-public class UserSyncMiddleware
+public class UserMiddleware
 {
     private readonly RequestDelegate _next;
-    private readonly ILogger<UserSyncMiddleware> _logger;
+    private readonly ILogger<UserMiddleware> _logger;
 
-    public UserSyncMiddleware(RequestDelegate next, ILogger<UserSyncMiddleware> logger)
+    public UserMiddleware(RequestDelegate next, ILogger<UserMiddleware> logger)
     {
         _next = next ?? throw new ArgumentNullException(nameof(next));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
