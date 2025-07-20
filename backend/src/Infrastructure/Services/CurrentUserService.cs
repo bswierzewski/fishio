@@ -33,10 +33,10 @@ public class CurrentUserService : ICurrentUserService
         if (string.IsNullOrEmpty(clerkId))
             return null;
 
-        var existingUser = await _dbContext.Users
+        var user = await _dbContext.Users
             .FirstOrDefaultAsync(u => u.ClerkId == clerkId, cancellationToken);
 
-        if (existingUser == null)
+        if (user == null)
         {
             var email = Email;
             var firstName = FirstName;
@@ -45,26 +45,12 @@ public class CurrentUserService : ICurrentUserService
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName))
                 return null; // Incomplete user claims
 
-            var newUser = new User(clerkId, email, firstName, lastName);
-            _dbContext.Users.Add(newUser);
-            await _dbContext.SaveChangesAsync(cancellationToken);
-
-            return newUser;
-        }
-
-        // Update user information if it has changed
-        var currentEmail = Email;
-        var currentFirstName = FirstName;
-        var currentLastName = LastName;
-
-        if (!string.IsNullOrEmpty(currentFirstName) && !string.IsNullOrEmpty(currentLastName) &&
-            (existingUser.FirstName != currentFirstName || existingUser.LastName != currentLastName))
-        {
-            existingUser.UpdateProfile(currentFirstName, currentLastName);
+            user = new User(clerkId, email, firstName, lastName);
+            _dbContext.Users.Add(user);
             await _dbContext.SaveChangesAsync(cancellationToken);
         }
 
-        return existingUser;
+        return user;
     }
 
     public async Task<User?> FindUserAsync(CancellationToken cancellationToken = default)

@@ -28,15 +28,6 @@ public class GetCurrentUserQueryHandler : IRequestHandler<GetCurrentUserQuery, U
             FirstName = user.FirstName,
             LastName = user.LastName,
             FullName = user.GetFullName(),
-            DateOfBirth = user.DateOfBirth,
-            Gender = user.Gender,
-            Role = user.Role ?? Domain.Enums.UserRole.None,
-            ProfileDescription = user.ProfileDescription,
-            ProfilePictureUrl = user.ProfilePictureUrl,
-            NotificationsEnabled = user.NotificationsEnabled,
-            Created = user.Created,
-            LastModified = user.LastModified,
-            Age = user.GetAge()
         };
     }
 }

@@ -1,6 +1,6 @@
 namespace Fishio.Domain.Enums;
 
-public enum UserRole
+public enum Role
 {
     None = 0,
     Angler = 1,
