@@ -97,6 +97,26 @@ public static class DependencyInjection
                     NameClaimType = "sub", // "sub" claim from JWT will be used as the user's unique identifier (ClaimTypes.NameIdentifier)
                     RoleClaimType = "roles" // "roles" claim from JWT will be used for role-based authorization ([Authorize(Roles = ...)])
                 };
+
+                options.Events = new JwtBearerEvents
+                {
+                    OnTokenValidated = context =>
+                    {
+                        var identity = context?.Principal?.Identity as ClaimsIdentity;
+
+                        void TryMap(string sourceClaim, string targetClaimType)
+                        {
+                            var value = identity?.FindFirst(sourceClaim)?.Value;
+                            if (!string.IsNullOrEmpty(value))
+                                identity?.AddClaim(new Claim(targetClaimType, value));
+                        }
+
+                        TryMap("first_name", ClaimTypes.GivenName);
+                        TryMap("last_name", ClaimTypes.Surname);
+
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
         services.AddAuthorization();
