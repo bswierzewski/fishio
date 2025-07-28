@@ -62,3 +62,8 @@ app.MapGet("/api/health", () =>
 app.MapUserApi();
 
 app.Run();
+
+/// <summary>
+/// Wymagane dla testów integracyjnych.
+/// </summary>
+public partial class Program { }
