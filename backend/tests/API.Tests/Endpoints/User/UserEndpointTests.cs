@@ -3,6 +3,9 @@ using API.Tests.Common;
 using Fishio.Infrastructure.Persistence;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Fishio.Application.Users.Queries.GetCurrentUser;
+using System.Text.Json;
+using System.Net.Http.Json;
 
 namespace API.Tests.Endpoints.User
 {
@@ -23,6 +26,7 @@ namespace API.Tests.Endpoints.User
         {
             // Arrange
             SetAuthorization();
+
             var initialCount = await DbContext.Users.CountAsync();
 
             // Act
@@ -33,6 +37,46 @@ namespace API.Tests.Endpoints.User
 
             initialCount.Should().Be(0);
             finalCount.Should().Be(1);
+        }
+
+        [Fact]
+        public async Task AuthenticateClientCall_WithSpecificUser_Should_ReturnCorrectUserData()
+        {
+            // Arrange
+            SetAuthorization();
+
+            // Act
+            var response = await HttpClient.GetAsync("/api/users/me");
+            response.EnsureSuccessStatusCode();
+
+            var userDto = await response.Content.ReadFromJsonAsync<UserDto>();
+
+            // Assert
+            userDto.Should().NotBeNull();
+            userDto!.ClerkId.Should().Be("user_2wYRiRPEB1wuCn6XhnBCJz8EBjJ");
+            userDto.Email.Should().Be("swierzewski.bartosz@gmail.com");
+            userDto.FirstName.Should().Be("Bartosz");
+            userDto.LastName.Should().Be("Świerzewski");
+            userDto.FullName.Should().Be("Bartosz Świerzewski");
+        }
+
+        [Fact]
+        public async Task AuthenticateClientCall_WithSpecificUser_Should_CreateUserWithCorrectData()
+        {
+            // Arrange
+            SetAuthorization();
+
+            // Act
+            await HttpClient.GetAsync("/api/users/me");
+
+            // Assert
+            var userInDb = await DbContext.Users.FirstOrDefaultAsync(u => u.ClerkId == "user_2wYRiRPEB1wuCn6XhnBCJz8EBjJ");
+
+            userInDb.Should().NotBeNull();
+            userInDb!.Email.Should().Be("swierzewski.bartosz@gmail.com");
+            userInDb.FirstName.Should().Be("Bartosz");
+            userInDb.LastName.Should().Be("Świerzewski");
+            userInDb.GetFullName().Should().Be("Bartosz Świerzewski");
         }
     }
 }
