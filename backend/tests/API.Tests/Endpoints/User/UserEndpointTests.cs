@@ -1,9 +1,8 @@
-﻿using System.Net;
+using System.Net;
 using API.Tests.Common;
 using Fishio.Infrastructure.Persistence;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 
 namespace API.Tests.Endpoints.User
 {
@@ -22,13 +21,8 @@ namespace API.Tests.Endpoints.User
         [Fact]
         public async Task AuthenticateClientCall_Should_CreateUser()
         {
-            var configuration = GetService<IConfiguration>();
-
             // Arrange
-            var jwt = configuration["JWT"] ?? "Invalid token";
-
-            AuthenticateClient(jwt);
-
+            SetAuthorization();
             var initialCount = await DbContext.Users.CountAsync();
 
             // Act
