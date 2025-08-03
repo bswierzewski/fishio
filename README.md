@@ -41,11 +41,38 @@ Przepływ informacji i interakcji w Fishio został zaprojektowany tak, aby był 
 - **Zarządzanie Uczestnikami i Rolami:** Akceptowanie zapisów, ręczne dodawanie gości, przypisywanie roli **Sędziego**.
 - **Zarządzanie Nagrodami i Sponsorami:** Możliwość dodania opisu nagrody, jej wartości oraz powiązania jej z konkretnym sponsorem, którego logo będzie widoczne przy nagrodzie.
 
-## 🧑‍🤝‍🧑 Role w Systemie
+## 🧑‍🤝‍🧑 Role użytkowników — elastyczny model ról
 
-- **Organizator:** Posiada pełne uprawnienia do tworzenia i zarządzania zawodami, uczestnikami oraz finansami. Może również pełnić rolę sędziego.
-- **Sędzia:** Użytkownik wyznaczony przez organizatora, którego głównym zadaniem jest rejestrowanie połowów w trakcie trwania zawodów.
-- **Uczestnik (Wędkarz):** Każdy zarejestrowany użytkownik, który może dołączać do zawodów, śledzić swoje wyniki i zarządzać swoim profilem.
+W Fishio nie przypisujemy stałych ról do użytkowników (np. "sędzia", "organizator", "zawodnik"). Zamiast tego — **rola użytkownika jest kontekstowa i zależna od zawodów**, w których bierze udział.
+
+Rola użytkownika w zawodach zależy od jego relacji z danym wydarzeniem:
+
+| Rola w zawodach | Jak ją uzyskuje użytkownik? |
+|----------------|-----------------------------|
+| **Organizator** | Tworzy zawody w systemie |
+| **Sędzia** | Zostaje przypisany do zawodów przez organizatora |
+| **Zawodnik** | Dołącza do zawodów poprzez publiczny link |
+
+Każdy użytkownik może pełnić różne role w różnych zawodach, np.:
+
+- Użytkownik A może być **organizatorem** jednych zawodów,
+- a jednocześnie **zawodnikiem** w innych,
+- i **sędzią** w jeszcze innych.
+
+Dzięki temu modelowi możliwe jest naturalne odwzorowanie rzeczywistych ról w społeczności wędkarskiej — elastyczne, zależne od kontekstu i zmienne w czasie.
+
+### 🎯 Przykłady:
+
+- **Tomasz** tworzy zawody "Puchar Mazur 2025" → automatycznie staje się ich **organizatorem**.
+- **Anna** otrzymuje od Tomasza uprawnienia sędziego → może dodawać połowy uczestników jako **sędzia**.
+- **Michał** znajduje link do zawodów i zapisuje się → zostaje dodany do listy oczekujących i w zależności od decyzji organizatora staje się **zawodnikiem** w tych zawodach lub jest odrzucony.
+- W tym samym czasie **Michał** może być **organizatorem** innego cyklu zawodów.
+
+### 📋 Szczegółowy opis ról:
+
+- **Organizator:** Posiada pełne uprawnienia do tworzenia i zarządzania zawodami, uczestnikami oraz finansami. Może również pełnić rolę sędziego w swoich zawodach.
+- **Sędzia:** Użytkownik wyznaczony przez organizatora, którego głównym zadaniem jest rejestrowanie połowów w trakcie trwania zawodów. Może być sędzią w wielu różnych zawodach jednocześnie.
+- **Uczestnik (Zawodnik):** Każdy zarejestrowany użytkownik, który dołączył do konkretnych zawodów, może śledzić swoje wyniki i zarządzać swoim profilem. Ten sam użytkownik może być uczestnikiem wielu zawodów równocześnie.
 
 ## 💻 Stos Technologiczny
 
