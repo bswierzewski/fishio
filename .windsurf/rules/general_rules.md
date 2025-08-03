@@ -1,14 +1,12 @@
 ---
 trigger: always_on
-description:
-globs:
 ---
 
 # Important: try to fix things at the cause, not the symptom.
 
 # Important: Be very detailed with summarization and do not miss out things that are important.
 
-# 🎣 Fishio - General Application Rules for Cursor
+# 🎣 Fishio - General Application Rules
 
 **Objective:** This document provides general context and overarching principles for the development of the Fishio application. It aims to ensure that Cursor understands the main project goals, key technologies, and the overall approach to software development, for both the backend (API) and frontend (Client) parts.
 
@@ -90,7 +88,7 @@ globs:
 3.  **Authentication (Shared):**
     - **Clerk**
 
-## 💡 5. General Instructions for Cursor
+## 💡 5. General Instructions
 
 1.  **Context Differentiation:** Always try to understand whether the current task concerns the **backend (API)** or the **frontend (Client)**. This affects the technologies, patterns, and conventions to be used.
 2.  **Using Specific Rules:**

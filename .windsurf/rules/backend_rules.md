@@ -1,6 +1,5 @@
 ---
 trigger: model_decision
-description:
 globs: backend/**
 ---
 
@@ -59,27 +58,6 @@ globs: backend/**
     - Validation error messages in FluentValidation must be Polish.
     - Custom exception classes should have Polish messages in constructors.
 
-4.  **Examples:**
-
-    ```csharp
-    // ✅ CORRECT - User-facing validation (Polish)
-    RuleFor(x => x.Name)
-        .NotEmpty().WithMessage("Nazwa jest wymagana.")
-        .MaximumLength(100).WithMessage("Nazwa nie może przekraczać 100 znaków.");
-
-    // ✅ CORRECT - User-facing exception (Polish)
-    throw new NotFoundException("Zawody nie zostały znalezione.", competitionId.ToString());
-
-    // ✅ CORRECT - Logging (English)
-    _logger.LogError(ex, "Failed to create competition for user {UserId}", userId);
-
-    // ❌ INCORRECT - User-facing message in English
-    throw new ValidationException("Name is required.");
-
-    // ❌ INCORRECT - Log message in Polish
-    _logger.LogError("Błąd podczas tworzenia zawodów");
-    ```
-
 ## 🧬 3. Domain Layer (`Domain`)
 
 1.  **Entities:**
@@ -129,20 +107,6 @@ globs: backend/**
     - **Validators MUST be defined in the same file as the command they validate.**
     - This ensures that command and its validation rules are always together.
     - Example structure:
-
-      ```csharp
-      public record CreateCompetitionCommand(string Name, DateTime Date) : IRequest<int>;
-
-      public class CreateCompetitionCommandValidator : AbstractValidator<CreateCompetitionCommand>
-      {
-          public CreateCompetitionCommandValidator()
-          {
-              RuleFor(x => x.Name)
-                  .NotEmpty().WithMessage("Nazwa jest wymagana.")
-                  .MaximumLength(100).WithMessage("Nazwa nie może przekraczać 100 znaków.");
-          }
-      }
-      ```
 
     - Register validators in `Application/DependencyInjection.cs`.
 
