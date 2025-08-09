@@ -22,22 +22,41 @@ W Fishio rozumiemy, że każde zawody są inne. Dlatego dajemy organizatorom pe�
 
 ### 🏆 Krok 1: Zdefiniuj, o co toczy się gra — Klasyfikacje
 
-W ramach jednych zawodów możesz utworzyć **dowolną liczbę niezależnych rankingów (klasyfikacji)**, z których każdy może mieć własne zasady. Daje to nieograniczone możliwości tworzenia angażujących scenariuszy rywalizacji. Twoja wyobraźnia jest jedynym ograniczeniem!
+W ramach jednych zawodów możesz utworzyć **dowolną liczbę niezależnych rankingów (klasyfikacji)**, z których każdy może mieć własne zasady.  
+Daje to nieograniczone możliwości tworzenia angażujących scenariuszy rywalizacji.  
+Twoja wyobraźnia jest jedynym ograniczeniem!
 
 Oto kilka przykładów klasyfikacji, które możesz skonfigurować:
 
 - **Suma Wag Wszystkich Ryb:** Absolutna klasyka — wygrywa ten, kto uzbiera największy łączny ciężar wszystkich złowionych ryb.
 - **Suma Długości Wszystkich Ryb:** Idealne dla zawodów "złów i wypuść" (catch & release), gdzie liczy się każdy centymetr.
 - **Największa Ryba (Waga lub Długość):** Prestiżowa nagroda dla łowcy pojedynczego, rekordowego okazu. Ty decydujesz, czy liczy się waga, czy długość.
-- **"Big X" - Suma X Największych Ryb:** Bardzo popularna formuła, np. "Big 3" w zawodach karpiowych lub "Big 5" w spinningowych. System automatycznie sumuje wagę/długość X największych ryb danego zawodnika.
+- **"Big X" – Suma X Największych Ryb:** Bardzo popularna formuła, np. "Big 3" w zawodach karpiowych lub "Big 5" w spinningowych. System automatycznie sumuje wagę/długość X największych ryb danego zawodnika.
 - **Punktacja za Gatunki:** Złożone systemy punktacji, np. 1 punkt za każdy centymetr długości plus 100 punktów bonusu za każdy unikalny gatunek powyżej wymiaru ochronnego.
 - **Komplet Gatunków:** Nagroda specjalna dla zawodnika, który jako pierwszy skompletuje określony zestaw, np. złowi szczupaka, okonia i sandacza.
 - **Zwycięzca Sektora:** W przypadku dużych zawodów podzielonych na sektory, możesz stworzyć oddzielny ranking dla każdego z nich.
-- **Najlepszy w Kategorii:** Automatycznie generowane rankingi dla zdefiniowanych grup: **Junior (U18)**, **Kobieta**, **Senior (60+)**, etc. na podstawie danych z profili użytkowników.
+- **Najlepszy w Kategorii:** Automatycznie generowane rankingi dla **dowolnie zdefiniowanych grup uczestników** na podstawie danych z profili (wiek, płeć, lokalizacja, drużyna, metoda połowu, gatunek).
+  - **Przedziały wiekowe ustala organizator** – np. Junior do 15 lat, Senior od 55 lat, Młodzieżowiec 16–25 lat.
+  - Możliwość łączenia kryteriów, np.:
+    - Największa ryba w kategorii 6–12 lat, dziewczynki
+    - Najdłuższa ryba dla wszystkich powyżej 45 lat
+    - Łączna waga ryb w kategorii 20–50 lat
+    - Największy szczupak w kategorii Senior (od 55 lat)
+    - Najdłuższy okoń złowiony przez kobietę w kategorii U18
 - **Dedykowany Ranking Gatunkowy:** Nagroda za największego przedstawiciela konkretnego gatunku, np. "Największy Leszcz Zawodów".
 - **Pierwsza Zgłoszona Ryba Zawodów:** Prosta, ale emocjonująca kategoria dla najszybszego wędkarza.
 - **"Lucky Fish" (Szczęśliwa Ryba):** Ciekawa klasyfikacja losowa, np. nagroda dla zawodnika, którego ryba miała wagę najbliższą określonej wartości (np. 2,50 kg).
+- **LuckyWeight:** Odmiana "Lucky Fish", w której wartość docelowa jest losowana przed zawodami.
 - **Klasyfikacja Drużynowa:** Ranking oparty na połączonych wynikach członków drużyny, np. suma wag dwóch najlepszych zawodników z zespołu.
+- **Mistrz Metody:** Największa ryba złowiona określoną metodą (np. feeder, spinning, mucha).
+- **Król Gatunku:** Największy przedstawiciel wybranego gatunku w danej grupie wiekowej lub płciowej.
+- **Maratonista:** Największa liczba ryb złowionych w określonym czasie (np. w pierwszych 3 godzinach zawodów).
+- **Najlepszy w Regionie:** Ranking dla zawodników z określonego miasta, województwa lub kraju.
+- **Złota Godzina:** Największa ryba złowiona w wyznaczonym przedziale czasowym (np. między 12:00 a 13:00).
+- **MultiSkill:** Suma punktów z różnych metod połowu (np. spinning + grunt).
+- **Najlepszy Drużynowy w Kategorii:** Ranking drużyn w obrębie danej grupy (np. drużyny juniorów).
+- **Pierwszy Gatunek:** Nagroda dla pierwszej osoby w danej kategorii, która złowi określony gatunek.
+- **Najlepszy w Kategorii Wagowej:** Klasyfikacja według masy ciała zawodników (opcjonalne, jeśli dane są w profilu).
 
 ### ⚖️ Krok 2: Ustal precyzyjne zasady — Reguły Rozstrzygania Remisów
 
