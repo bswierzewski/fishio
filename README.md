@@ -16,49 +16,113 @@ Przepływ informacji i interakcji w Fishio został zaprojektowany tak, aby był 
 6.  **Rejestracja Połowów:** W trakcie zawodów, tylko organizator i wyznaczeni sędziowie mogą dodawać ryby do systemu. Robią to za pomocą prostego formularza na urządzeniu mobilnym, wybierając zawodnika z listy i wpisując wagę lub długość ryby.
 7.  **Wyniki na Żywo:** Wszystkie zarejestrowane połowy natychmiast aktualizują tabele wyników. Każdy (uczestnik, kibic, organizator) może śledzić rywalizację w czasie rzeczywistym na publicznej stronie wyników, przełączając się między zdefiniowanymi klasyfikacjami.
 
-## ⚙️ Elastyczna Konfiguracja Zawodów — Dopasuj Zasady do Swoich Potrzeb
+## ⚙️ Uniwersalny Kreator Klasyfikacji — Nieograniczone Możliwości
 
-W Fishio rozumiemy, że każde zawody są inne. Dlatego dajemy organizatorom pełną swobodę w definiowaniu zasad, według których wyłaniani są zwycięzcy. Zapomnij o sztywnych ramach — stwórz unikalne wydarzenie z własnymi regułami gry.
+W Fishio zrewolucjonizowaliśmy sposób tworzenia klasyfikacji zawodów. Zamiast wybierać z ograniczonej listy predefiniowanych typów, dostajesz **uniwersalny kreator**, który pozwala tworzyć klasyfikacje z prostych, ale potężnych klocków kompozycyjnych.
 
-### 🏆 Krok 1: Zdefiniuj, o co toczy się gra — Klasyfikacje
+### 🧩 Jak działa kreator klasyfikacji?
 
-W ramach jednych zawodów możesz utworzyć **dowolną liczbę niezależnych rankingów (klasyfikacji)**, z których każdy może mieć własne zasady.  
-Daje to nieograniczone możliwości tworzenia angażujących scenariuszy rywalizacji.  
-Twoja wyobraźnia jest jedynym ograniczeniem!
+Każda klasyfikacja powstaje z **czterech podstawowych elementów**, które możesz dowolnie kombinować:
 
-Oto kilka przykładów klasyfikacji, które możesz skonfigurować:
+#### **1. 📊 Źródło Danych** — Co liczymy?
 
-- **Suma Wag Wszystkich Ryb:** Absolutna klasyka — wygrywa ten, kto uzbiera największy łączny ciężar wszystkich złowionych ryb.
-- **Suma Długości Wszystkich Ryb:** Idealne dla zawodów "złów i wypuść" (catch & release), gdzie liczy się każdy centymetr.
-- **Największa Ryba (Waga lub Długość):** Prestiżowa nagroda dla łowcy pojedynczego, rekordowego okazu. Ty decydujesz, czy liczy się waga, czy długość.
-- **"Big X" – Suma X Największych Ryb:** Bardzo popularna formuła, np. "Big 3" w zawodach karpiowych lub "Big 5" w spinningowych. System automatycznie sumuje wagę/długość X największych ryb danego zawodnika.
-- **Punktacja za Gatunki:** Złożone systemy punktacji, np. 1 punkt za każdy centymetr długości plus 100 punktów bonusu za każdy unikalny gatunek powyżej wymiaru ochronnego.
-- **Komplet Gatunków:** Nagroda specjalna dla zawodnika, który jako pierwszy skompletuje określony zestaw, np. złowi szczupaka, okonia i sandacza.
-- **Zwycięzca Sektora:** W przypadku dużych zawodów podzielonych na sektory, możesz stworzyć oddzielny ranking dla każdego z nich.
-- **Najlepszy w Kategorii:** Automatycznie generowane rankingi dla **dowolnie zdefiniowanych grup uczestników** na podstawie danych z profili (wiek, płeć, lokalizacja, drużyna, metoda połowu, gatunek).
-  - **Przedziały wiekowe ustala organizator** – np. Junior do 15 lat, Senior od 55 lat, Młodzieżowiec 16–25 lat.
-  - Możliwość łączenia kryteriów, np.:
-    - Największa ryba w kategorii 6–12 lat, dziewczynki
-    - Najdłuższa ryba dla wszystkich powyżej 45 lat
-    - Łączna waga ryb w kategorii 20–50 lat
-    - Największy szczupak w kategorii Senior (od 55 lat)
-    - Najdłuższy okoń złowiony przez kobietę w kategorii U18
-- **Dedykowany Ranking Gatunkowy:** Nagroda za największego przedstawiciela konkretnego gatunku, np. "Największy Leszcz Zawodów".
-- **Pierwsza Zgłoszona Ryba Zawodów:** Prosta, ale emocjonująca kategoria dla najszybszego wędkarza.
-- **"Lucky Fish" (Szczęśliwa Ryba):** Ciekawa klasyfikacja losowa, np. nagroda dla zawodnika, którego ryba miała wagę najbliższą określonej wartości (np. 2,50 kg).
-- **LuckyWeight:** Odmiana "Lucky Fish", w której wartość docelowa jest losowana przed zawodami.
-- **Klasyfikacja Drużynowa:** Ranking oparty na połączonych wynikach członków drużyny, np. suma wag dwóch najlepszych zawodników z zespołu.
-- **Mistrz Metody:** Największa ryba złowiona określoną metodą (np. feeder, spinning, mucha).
-- **Król Gatunku:** Największy przedstawiciel wybranego gatunku w danej grupie wiekowej lub płciowej.
-- **Maratonista:** Największa liczba ryb złowionych w określonym czasie (np. w pierwszych 3 godzinach zawodów).
-- **Najlepszy w Regionie:** Ranking dla zawodników z określonego miasta, województwa lub kraju.
-- **Złota Godzina:** Największa ryba złowiona w wyznaczonym przedziale czasowym (np. między 12:00 a 13:00).
-- **MultiSkill:** Suma punktów z różnych metod połowu (np. spinning + grunt).
-- **Najlepszy Drużynowy w Kategorii:** Ranking drużyn w obrębie danej grupy (np. drużyny juniorów).
-- **Pierwszy Gatunek:** Nagroda dla pierwszej osoby w danej kategorii, która złowi określony gatunek.
-- **Najlepszy w Kategorii Wagowej:** Klasyfikacja według masy ciała zawodników (opcjonalne, jeśli dane są w profilu).
+- **Waga ryb** — klasyczne podejście wagowe
+- **Długość ryb** — idealne dla catch & release
+- **Liczba ryb** — kto złowił najwięcej
+- **Liczba gatunków** — różnorodność połowów
+- **Punkty** — zaawansowane systemy punktowe
 
-### ⚖️ Krok 2: Ustal precyzyjne zasady — Reguły Rozstrzygania Remisów
+#### **2. 🎯 Agregacja** — Jak obliczamy wynik?
+
+- **Suma** — zsumuj wszystkie wartości
+- **Maksimum** — znajdź największą wartość
+- **Top X** — suma X największych (np. Największe 3, Największe 5)
+- **Średnia** — jakość zamiast ilości
+- **Najbliższy celowi** — Lucky Weight i podobne
+- **Liczba** — po prostu policz elementy
+
+#### **3. 🔍 Filtry** — Które ryby/uczestnicy się liczą?
+
+- **Gatunek ryby** — tylko określone gatunki
+- **Przedział czasowy** — Golden Hour, pierwsze 2h zawodów
+- **Wiek uczestnika** — juniorzy, seniorzy, niestandardowe zakresy
+- **Płeć** — kobiety, mężczyźni
+- **Minimalna waga/długość** — tylko większe ryby
+
+### 🎨 Przykłady w praktyce
+
+**🔥 Klasyka:**
+
+> Źródło: Waga → Agregacja: Suma → Filtry: brak → Zakres: Indywidualny  
+> **Rezultat:** "Suma wag wszystkich ryb"
+
+**🏅 Big 3 Karpi:**
+
+> Źródło: Waga → Agregacja: Top 3 → Filtry: Gatunek=Karp → Zakres: Indywidualny  
+> **Rezultat:** "Suma wag 3 największych karpi"
+
+**⭐ Panie Senior:**
+
+> Źródło: Waga → Agregacja: Suma → Filtry: Płeć=Kobieta + Wiek≥55 → Zakres: Indywidualny  
+> **Rezultat:** "Suma wag dla kobiet powyżej 55 lat"
+
+**🌅 Złota Godzina:**
+
+> Źródło: Waga → Agregacja: Maksimum → Filtry: Czas=12:00-13:00 → Zakres: Indywidualny  
+> **Rezultat:** "Największa ryba złowiona w południe"
+
+**🎣 Spinning Master:**
+
+> Źródło: Waga → Agregacja: Top 5 → Filtry: Metoda=Spinning + MinWaga=1000g → Zakres: Indywidualny  
+> **Rezultat:** "Top 5 ryb spinningiem, minimum 1kg każda"
+
+**🤝 Drużyna Szczupaków:**
+
+> Źródło: Waga → Agregacja: Suma → Filtry: Gatunek=Szczupak → Zakres: Drużynowy  
+> **Rezultat:** "Największa łączna waga szczupaków drużyny"
+
+### ✨ Nieograniczone kombinacje
+
+Kreator daje Ci **miliony możliwych kombinacji**! Chcesz stworzyć klasyfikację "Top 3 okonie wypuszczone przez juniorów w sektorze A metodą float między 14:00-16:00"? **Żaden problem!** Po prostu ustaw:
+
+- Źródło: Długość
+- Agregacja: Top 3
+- Filtry: Gatunek=Okoń + Wiek≤18 + Sektor=A + Metoda=Float + Czas=14:00-16:00 + Wypuszczone=Tak
+
+### 💡 Jak korzystać z kreatora? — Proste jak składanie klocków
+
+**Krok 1:** Wybierz **źródło danych** (waga, długość, liczba ryb...)  
+**Krok 2:** Ustaw **sposób agregacji** (suma, maksimum, top X...)  
+**Krok 3:** Dodaj **filtry** według potrzeb (gatunek, wiek...)
+**Krok 4:** Ustaw **reguły rozstrzygania remisów**
+
+System automatycznie generuje **opis klasyfikacji** i sprawdza **poprawność konfiguracji**. Widzisz na żywo, jak będzie wyglądała Twoja klasyfikacja!
+
+### 🎯 Szablony dla szybkiego startu
+
+Nie chcesz budować od zera? Fishio oferuje **gotowe szablony** najpopularniejszych klasyfikacji:
+
+- 🏆 **Klasyka** — suma wag wszystkich ryb
+- 🥇 **Największa Ryba** — pojedynczy największy okaz
+- 🔢 **Big 3/Big 5** — suma największych ryb
+- 👩 **Panie** — klasyfikacja tylko dla kobiet
+- 👦 **Juniorzy** — zawodnicy do 18 lat
+- 🎲 **Lucky Weight** — najbliższy określonej wadze
+
+**Po wybraniu szablonu możesz go dowolnie modyfikować** — to świetny punkt startowy!
+
+### 🚀 Twoja wyobraźnia = jedyne ograniczenie
+
+Dzięki kreatorowi możesz:
+
+- **Łączyć dowolnie filtry** — kombinuj wiek, płeć, gatunek, czas
+- **Tworzyć unikalne nagrody** — np. za najdłuższego karasia złowionego o poranku
+- **Dopasowywać do zawodów** — od prostych po bardzo zaawansowane
+- **Eksperymentować** — każda nowa kombinacja to nowa klasyfikacja
+- **Być kreatywnym** — stwórz klasyfikacje, o których nikt wcześniej nie pomyślał!
+- **Kopiować i modyfikować** — stwórz bazę, a potem rób warianty
+
+### ⚖️ Rozstrzyganie Remisów — Precyzyjne Zasady Sprawiedliwości
 
 Co w sytuacji, gdy dwóch zawodników ma identyczny wynik? Fishio pozwala na zdefiniowanie **kaskadowego systemu rozstrzygania remisów** dla każdej klasyfikacji z osobna. Organizator może ustawić kolejność kryteriów, które będą sprawdzane jedno po drugim, aż do wyłonienia zwycięzcy.
 
@@ -136,7 +200,7 @@ Wędkarstwo to także sport zespołowy. Fishio w pełni wspiera rywalizację dru
 ### **🛠️ Funkcje dla Organizatorów Zawodów**
 
 - **Tworzenie i Zarządzanie Zawodami:** Konfiguracja zawodów publicznych (widocznych w kalendarzu) lub prywatnych (tylko na zaproszenie przez link).
-- **Elastyczne Zarządzanie Klasyfikacjami:** Tworzenie **dowolnej liczby niezależnych rankingów** w ramach jednych zawodów (np. suma wag, największa ryba, top 5 ryb, największy leszcz, etc.).
+- **Uniwersalny Kreator Klasyfikacji:** Tworzenie **nieograniczonej liczby niezależnych rankingów** z kompozycyjnych klocków (źródło danych + agregacja + filtry + zakres) — miliony możliwych kombinacji bez programowania.
 - **Zarządzanie Ligami i Cyklami:** Łączenie wielu zawodów w jeden cykl ze wspólną klasyfikacją generalną i zaawansowanymi zasadami punktacji (np. punkty za miejsca, odrzucanie najsłabszych wyników).
 - **Zaawansowane Zarządzanie Uczestnikami:** Pełna kontrola nad listą startową, w tym akceptowanie/odrzucanie zapisów, przypisywanie ról (np. Sędzia) oraz **możliwość ręcznego dodawania gości — uczestników spoza platformy, którzy nie posiadają konta, ale biorą udział w zawodach.**
 - **Zarządzanie Nagrodami i Sponsorami:** Możliwość dodania opisu nagrody, jej wartości oraz powiązania jej z konkretnym sponsorem, którego logo będzie widoczne przy nagrodzie.
@@ -215,10 +279,10 @@ Platforma jest stale rozwijana. Główne kierunki na przyszłość to:
 - **Zarządzanie sektorami i losowanie stanowisk.**
 - **Szablony zawodów** do szybkiego tworzenia cyklicznych imprez.
 - **Rozbudowane statystyki** dla zawodników i łowisk.
-- **Tie-Breaking Rules**: Automatyczne rozstrzyganie remisów według konfigurowalnych reguł
-- **Elastyczne Metody Obliczania**: Suma wag, długości, największa ryba, top X ryb
-- **Kategorie Uczestników**: Automatyczne rankingi dla kobiet, mężczyzn, juniorów, seniorów
-- **Filtry Gatunków**: Dedykowane rankingi dla konkretnych gatunków ryb
+- **Uniwersalny System Klasyfikacji**: Kompozycyjny kreator zamiast predefiniowanych typów — nieograniczone możliwości
+- **Inteligentne Filtry**: Łączenie filtrów według gatunku, wieku, płci, metody, czasu, sektora
+- **Elastyczne Agregacje**: Suma, maksimum, top X, średnia, lucky weight — wszystko w jednym silniku
+- **Smart Templates**: Gotowe szablony najpopularniejszych klasyfikacji z możliwością modyfikacji
 
 ### **🏆 Strukturalne Ligi i Cykle**
 
