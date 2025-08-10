@@ -49,6 +49,18 @@ Każda klasyfikacja powstaje z **czterech podstawowych elementów**, które moż
 - **Płeć** — kobiety, mężczyźni
 - **Minimalna waga/długość** — tylko większe ryby
 
+#### 🧮 System punktowy — predefiniowany lub definiowany przez użytkownika
+
+System punktowy może być wybrany z gotowych szablonów albo w pełni skonfigurowany przez organizatora. W trybie własnym możesz zdefiniować przeliczniki punktów per jednostka (np. punkty/kg, punkty/cm lub punkty/sztuka) dla poszczególnych gatunków. Wspierane są także wartości ujemne.
+
+Przykładowa konfiguracja własnego systemu punktowego (punkty za 1 kg):
+
+- karp → 5 pkt / 1 kg
+- karaś → 3 pkt / 1 kg
+- szczupak → −5 pkt / 1 kg
+
+Każdy połów jest automatycznie przeliczany na punkty zgodnie z regułami, a następnie agregowany zgodnie z wybraną metodą (np. suma, top X). Filtry i zasady rozstrzygania remisów działają identycznie jak w pozostałych klasyfikacjach.
+
 ### 🎨 Przykłady w praktyce
 
 **🔥 Klasyka:**
