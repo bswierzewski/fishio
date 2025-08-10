@@ -27,7 +27,7 @@ Każda klasyfikacja powstaje z **czterech podstawowych elementów**, które moż
 #### **1. 📊 Źródło Danych** — Co liczymy?
 
 - **Waga ryb** — klasyczne podejście wagowe
-- **Długość ryb** — idealne dla catch & release
+- **Długość ryb** — idealne dla drapieżników
 - **Liczba ryb** — kto złowił najwięcej
 - **Liczba gatunków** — różnorodność połowów
 - **Punkty** — zaawansowane systemy punktowe
@@ -95,11 +95,11 @@ Każdy połów jest automatycznie przeliczany na punkty zgodnie z regułami, a n
 
 ### ✨ Nieograniczone kombinacje
 
-Kreator daje Ci **miliony możliwych kombinacji**! Chcesz stworzyć klasyfikację "Top 3 okonie wypuszczone przez juniorów w sektorze A metodą float między 14:00-16:00"? **Żaden problem!** Po prostu ustaw:
+Kreator daje Ci **miliony możliwych kombinacji**! Chcesz stworzyć klasyfikację "Top 3 okonie złapane przez juniorów w sektorze A metodą float między 14:00-16:00"? **Żaden problem!** Po prostu ustaw:
 
 - Źródło: Długość
 - Agregacja: Top 3
-- Filtry: Gatunek=Okoń + Wiek≤18 + Sektor=A + Metoda=Float + Czas=14:00-16:00 + Wypuszczone=Tak
+- Filtry: Gatunek=Okoń + Wiek≤18 + Sektor=A + Metoda=Float + Czas=14:00-16:00
 
 ### 💡 Jak korzystać z kreatora? — Proste jak składanie klocków
 
