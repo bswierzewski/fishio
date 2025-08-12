@@ -11,7 +11,7 @@ Przepływ informacji i interakcji w Fishio został zaprojektowany tak, aby był 
 1.  **Utworzenie Zawodów:** Organizator tworzy nowe zawody, konfigurując wszystkie szczegóły: nazwę, datę, regulamin, opłatę wpisową oraz definiując dowolną liczbę klasyfikacji (np. "Największa Ryba", "Suma Wag", "Najlepszy Junior", "Punktacja za gatunki").
 2.  **Udostępnienie Linku:** System generuje unikalny, publiczny link do strony zawodów. Organizator może go udostępnić na forach internetowych, w mediach społecznościowych lub wysłać bezpośrednio do zainteresowanych.
 3.  **Zapisy Uczestników:** Każdy, kto otrzyma link, może wejść na stronę zawodów i dołączyć do listy startowej. Jeśli zawody są płatne, system automatycznie przekieruje uczestnika do bramki płatności w celu uiszczenia opłaty.
-4.  **Zarządzanie Zgłoszeniami:** Organizator ma pełną kontrolę nad listą uczestników. Może akceptować lub odrzucać zgłoszenia, **ręcznie dodawać gości (uczestników bez konta w systemie)** oraz na bieżąco monitorować status płatności każdego zawodnika.
+4.  **Zarządzanie Zgłoszeniami:** Organizator ma pełną kontrolę nad listą uczestników. Może akceptować lub odrzucać zgłoszenia, oraz na bieżąco monitorować status płatności każdego zawodnika.
 5.  **Wyznaczenie Sędziów:** Organizator może nadać uprawnienia sędziego wybranym użytkownikom. Sędziowie uzyskują dostęp do specjalnego panelu umożliwiającego rejestrację połowów.
 6.  **Rejestracja Połowów:** W trakcie zawodów, tylko organizator i wyznaczeni sędziowie mogą dodawać ryby do systemu. Robią to za pomocą prostego formularza na urządzeniu mobilnym, wybierając zawodnika z listy i wpisując wagę lub długość ryby.
 7.  **Wyniki na Żywo:** Wszystkie zarejestrowane połowy natychmiast aktualizują tabele wyników. Każdy (uczestnik, kibic, organizator) może śledzić rywalizację w czasie rzeczywistym na publicznej stronie wyników, przełączając się między zdefiniowanymi klasyfikacjami.
@@ -214,7 +214,7 @@ Wędkarstwo to także sport zespołowy. Fishio w pełni wspiera rywalizację dru
 - **Tworzenie i Zarządzanie Zawodami:** Konfiguracja zawodów publicznych (widocznych w kalendarzu) lub prywatnych (tylko na zaproszenie przez link).
 - **Uniwersalny Kreator Klasyfikacji:** Tworzenie **nieograniczonej liczby niezależnych rankingów** z kompozycyjnych klocków (źródło danych + agregacja + filtry + zakres) — miliony możliwych kombinacji bez programowania.
 - **Zarządzanie Ligami i Cyklami:** Łączenie wielu zawodów w jeden cykl ze wspólną klasyfikacją generalną i zaawansowanymi zasadami punktacji (np. punkty za miejsca, odrzucanie najsłabszych wyników).
-- **Zaawansowane Zarządzanie Uczestnikami:** Pełna kontrola nad listą startową, w tym akceptowanie/odrzucanie zapisów, przypisywanie ról (np. Sędzia) oraz **możliwość ręcznego dodawania gości — uczestników spoza platformy, którzy nie posiadają konta, ale biorą udział w zawodach.**
+- **Zaawansowane Zarządzanie Uczestnikami:** Pełna kontrola nad listą startową, w tym akceptowanie/odrzucanie zapisów, przypisywanie ról (np. Sędzia)
 - **Zarządzanie Nagrodami i Sponsorami:** Możliwość dodania opisu nagrody, jej wartości oraz powiązania jej z konkretnym sponsorem, którego logo będzie widoczne przy nagrodzie.
 
 ## 🧑‍🤝‍🧑 Role użytkowników — elastyczny model ról
@@ -237,16 +237,11 @@ Każdy użytkownik może pełnić różne role w różnych zawodach, np.:
 
 Dzięki temu modelowi możliwe jest naturalne odwzorowanie rzeczywistych ról w społeczności wędkarskiej — elastyczne, zależne od kontekstu i zmienne w czasie.
 
-### A co z gośćmi? Uczestnicy spoza platformy
-
-Oprócz zarejestrowanych użytkowników, którzy samodzielnie dołączają do zawodów, organizator ma możliwość **ręcznego dodania 'Gościa'**. Jest to specjalny typ uczestnika, który nie posiada konta w systemie Fishio. Organizator po prostu wpisuje jego imię i nazwisko. Gość taki pojawia się na liście startowej i w tabeli wyników, a sędziowie mogą normalnie rejestrować jego połowy. Jest to idealne rozwiązanie dla osób, które nie chcą się rejestrować, biorą udział jednorazowo lub zostały dopisane w ostatniej chwili.
-
 ### 🎯 Przykłady:
 
 - **Tomasz** tworzy zawody "Puchar Mazur 2025" → automatycznie staje się ich **organizatorem**.
 - **Anna** otrzymuje od Tomasza uprawnienia sędziego → może dodawać połowy uczestników jako **sędzia**.
 - **Michał** znajduje link do zawodów i zapisuje się → zostaje dodany do listy oczekujących i w zależności od decyzji organizatora staje się **zawodnikiem** w tych zawodach lub jest odrzucony.
-- **Tomasz** dodaje ręcznie swojego kolegę **Pawła** jako **gościa**, ponieważ Paweł nie ma konta w serwisie. Paweł pojawia się na liście startowej.
 - W tym samym czasie **Michał** może być **organizatorem** innego cyklu zawodów.
 
 ### 📋 Szczegółowy opis ról:
