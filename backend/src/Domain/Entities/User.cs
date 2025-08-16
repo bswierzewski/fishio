@@ -1,6 +1,3 @@
-using Fishio.Domain.Common;
-using Fishio.Domain.Enums;
-
 namespace Fishio.Domain.Entities;
 
 public class User : BaseAuditableEntity
