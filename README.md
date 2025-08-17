@@ -6,21 +6,15 @@
 
 ## Spis Treści
 
-1.  [Kluczowe Pojęcia (Słownik Domenowy)](#kluczowe-pojęcia-słownik-domenowy)
-2.  [Architektura Logiki Biznesowej](#architektura-logiki-biznesowej-buduj-raz-używaj-wielokrotnie)
-3.  [Jak to działa?](#jak-to-działa)
-4.  [Uniwersalny Kreator Szablonów Klasyfikacji](#uniwersalny-kreator-szablonów-klasyfikacji)
-5.  [Zaawansowana Struktura Rywalizacji](#zaawansowana-struktura-rywalizacji-ligi-sektory-i-drużyny)
-6.  [Główne Funkcjonalności](#główne-funkcjonalności)
-7.  [Role użytkowników](#role-użytkowników--elastyczny-model-ról)
-8.  [Stos Technologiczny](#stos-technologiczny)
-9.  [Kierunki dalszego rozwoju](#kierunki-dalszego-rozwoju)
-
-## Kluczowe Pojęcia (Słownik Domenowy)
-
-- **System Punktowy:** Niezależny, reużywalny zbiór reguł przeliczania połowów na punkty (np. punkty/kg dla danego gatunku). Użytkownik tworzy własną bibliotekę systemów punktowych.
-- **Szablon Klasyfikacji:** Reużywalna, kompletna definicja rankingu. Składa się ze Źródła Danych, Sposobu Agregacji, Filtrów oraz opcjonalnych Zasad Rozstrzygania Remisów. Może (ale nie musi) wykorzystywać System Punktowy.
-- **Klasyfikacja (w Zawodach):** Konkretna instancja _Szablonu Klasyfikacji_ przypisana do danych zawodów. Jest to "żyjący" ranking w ramach jednego wydarzenia.
+1. [Architektura Logiki Biznesowej](#architektura-logiki-biznesowej-buduj-raz-używaj-wielokrotnie)
+2. [Jak to działa?](#jak-to-działa)
+3. [Kreator Systemów Punktowych](#-kreator-systemów-punktowych)
+4. [Uniwersalny Kreator Szablonów Klasyfikacji](#️-uniwersalny-kreator-szablonów-klasyfikacji)
+5. [Zaawansowana Struktura Rywalizacji](#️-zaawansowana-struktura-rywalizacji-ligi-sektory-i-drużyny)
+6. [Główne Funkcjonalności](#-główne-funkcjonalności)
+7. [Role użytkowników](#-role-użytkowników--elastyczny-model-ról)
+8. [Stos Technologiczny](#-stos-technologiczny)
+9. [Kierunki dalszego rozwoju](#-kierunki-dalszego-rozwoju)
 
 ## 🧠 Architektura Logiki Biznesowej: Buduj raz, używaj wielokrotnie
 
@@ -43,6 +37,34 @@ Przepływ informacji i interakcji w Fishio został zaprojektowany tak, aby był 
 5.  **Wyznaczenie Sędziów:** Organizator może nadać uprawnienia sędziego wybranym użytkownikom, którzy uzyskują dostęp do panelu rejestracji połowów.
 6.  **Rejestracja Połowów:** W trakcie zawodów, tylko organizator i wyznaczeni sędziowie mogą dodawać ryby do systemu za pomocą prostego formularza na urządzeniu mobilnym.
 7.  **Wyniki na Żywo:** Wszystkie zarejestrowane połowy natychmiast aktualizują tabele wyników. Każdy może śledzić rywalizację w czasie rzeczywistym, przełączając się między aktywnymi klasyfikacjami.
+
+## 🧮 Kreator Systemów Punktowych
+
+To fundament całego systemu klasyfikacji w Fishio. W tym module definiujesz **własne reguły punktacji za gatunki ryb**, które później możesz wykorzystywać w wielu różnych klasyfikacjach i zawodach.
+
+### ✨ Co możesz skonfigurować?
+
+- **Punkty za wagę lub długość** — np. "karp → 5 pkt / 1 kg", "okoń → 2 pkt / 1 cm".
+- **Kary i bonusy** — np. "szczupak → −5 pkt / 1 kg".
+- **Elastyczne jednostki** — możesz zdecydować, czy punktacja liczona jest od wagi, długości, czy samego faktu złowienia ryby.
+
+### 📚 Biblioteka Systemów
+
+Każdy utworzony system punktowy trafia do Twojej biblioteki. Możesz go:
+
+- **wielokrotnie używać** w różnych zawodach i szablonach klasyfikacji,
+- **kopiować i modyfikować**, aby tworzyć warianty,
+- **dzielić się** nim z innymi organizatorami w ramach współpracy.
+
+### 🛠️ Przykład
+
+_System Punktowy: "Klasyk Karpiowy"_
+
+- karp → 5 pkt / 1 kg
+- karaś → 3 pkt / 1 kg
+- szczupak → −5 pkt / 1 kg
+
+Taki system można następnie przypisać do dowolnego szablonu klasyfikacji opartego na punktach.
 
 ## ⚙️ Uniwersalny Kreator Szablonów Klasyfikacji
 
@@ -86,33 +108,6 @@ _Przykład Systemu Punktowego o nazwie "Klasyk Karpiowy":_
 - karp → 5 pkt / 1 kg
 - karaś → 3 pkt / 1 kg
 - szczupak → −5 pkt / 1 kg
-
-### 🎨 Przykłady szablonów, które możesz stworzyć
-
-**🔥 Szablon "Klasyka":**
-
-> Źródło: Waga → Agregacja: Suma → Filtry: brak
-> **Rezultat:** "Suma wag wszystkich ryb"
-
-**🏅 Szablon "Big 3 Karpi":**
-
-> Źródło: Waga → Agregacja: Top 3 → Filtry: Gatunek=Karp
-> **Rezultat:** "Suma wag 3 największych karpi"
-
-**⭐ Szablon "Panie Senior":**
-
-> Źródło: Waga → Agregacja: Suma → Filtry: Płeć=Kobieta + Wiek≥55
-> **Rezultat:** "Suma wag dla kobiet powyżej 55 lat"
-
-**🌅 Złota Godzina:**
-
-> Źródło: Waga → Agregacja: Maksimum → Filtry: Czas=12:00-13:00 → Zakres: Indywidualny  
-> **Rezultat:** "Największa ryba złowiona w południe"
-
-**🎣 Spinning Master:**
-
-> Źródło: Waga → Agregacja: Top 5 → Filtry: Metoda=Spinning + MinWaga=1000g → Zakres: Indywidualny  
-> **Rezultat:** "Top 5 ryb spinningiem, minimum 1kg każda"
 
 ### 💡 Jak korzystać z kreatora szablonów? — Proste jak składanie klocków
 
