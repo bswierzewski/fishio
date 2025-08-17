@@ -103,12 +103,6 @@ Każdy szablon klasyfikacji powstaje z **czterech podstawowych elementów**, kt�
 
 Klasyfikacje punktowe wykorzystują **reużywalne Systemy Punktowe**, które tworzysz i przechowujesz w osobnej bibliotece. Tutaj po prostu wybierasz odpowiedni z listy.
 
-_Przykład Systemu Punktowego o nazwie "Klasyk Karpiowy":_
-
-- karp → 5 pkt / 1 kg
-- karaś → 3 pkt / 1 kg
-- szczupak → −5 pkt / 1 kg
-
 ### 💡 Jak korzystać z kreatora szablonów? — Proste jak składanie klocków
 
 **Krok 1:** Wejdź do modułu "Moje Szablony Klasyfikacji" i kliknij "Stwórz nowy".
