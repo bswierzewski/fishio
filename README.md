@@ -4,25 +4,75 @@
 
 **Fishio** to nowoczesna platforma webowa, zoptymalizowana pod kątem urządzeń mobilnych, służąca do kompleksowej organizacji i uczestnictwa w zawodach wędkarskich. Niezależnie od tego, czy organizujesz duże, komercyjne wydarzenie, **wieloetapową ligę z punktacją generalną**, czy po prostu nieformalne spotkanie z przyjaciółmi nad wodą, Fishio dostarcza wszystkich narzędzi potrzebnych do łatwej organizacji, rejestracji, **pobierania opłat** i śledzenia wyników na żywo.
 
+## Spis Treści
+
+1. [Architektura Logiki Biznesowej](#architektura-logiki-biznesowej-buduj-raz-używaj-wielokrotnie)
+2. [Jak to działa?](#jak-to-działa)
+3. [Kreator Systemów Punktowych](#-kreator-systemów-punktowych)
+4. [Uniwersalny Kreator Szablonów Klasyfikacji](#️-uniwersalny-kreator-szablonów-klasyfikacji)
+5. [Zaawansowana Struktura Rywalizacji](#️-zaawansowana-struktura-rywalizacji-ligi-sektory-i-drużyny)
+6. [Główne Funkcjonalności](#-główne-funkcjonalności)
+7. [Role użytkowników](#-role-użytkowników--elastyczny-model-ról)
+8. [Stos Technologiczny](#-stos-technologiczny)
+9. [Kierunki dalszego rozwoju](#-kierunki-dalszego-rozwoju)
+
+## 🧠 Architektura Logiki Biznesowej: Buduj raz, używaj wielokrotnie
+
+W Fishio stawiamy na elastyczność i oszczędność Twojego czasu. Zamiast konfigurować wszystko od zera przy każdych zawodach, dajemy Ci narzędzia do budowania **reużywalnych komponentów**:
+
+1.  **Menedżer Systemów Punktowych:** W osobnym module tworzysz i zarządzasz własną biblioteką systemów punktacji (np. "Punktacja PZW Mazowsze", "Punkty za drapieżniki").
+2.  **Kreator Szablonów Klasyfikacji:** W dedykowanym kreatorze budujesz szablony klasyfikacji (np. "Suma Wag", "Top 3 Juniorów", "Punktacja za Gatunki"), wykorzystując m.in. stworzone wcześniej systemy punktowe.
+3.  **Konfigurator Zawodów:** Podczas tworzenia nowych zawodów, skupiasz się już tylko na podstawowych informacjach (data, miejsce, regulamin), a następnie **jednym kliknięciem dodajesz gotowe klasyfikacje z Twojej biblioteki szablonów**.
+
+Dzięki temu podejściu organizacja kolejnych, podobnych wydarzeń staje się błyskawiczna.
+
 ## 🎯 Jak to działa?
 
-Przepływ informacji i interakcji w Fishio został zaprojektowany tak, aby był intuicyjny zarówno dla organizatorów, jak i uczestników.
+Przepływ informacji i interakcji w Fishio został zaprojektowany tak, aby był intuicyjny i efektywny.
 
-1.  **Utworzenie Zawodów:** Organizator tworzy nowe zawody, konfigurując wszystkie szczegóły: nazwę, datę, regulamin, opłatę wpisową oraz definiując dowolną liczbę klasyfikacji (np. "Największa Ryba", "Suma Wag", "Najlepszy Junior", "Punktacja za gatunki").
+1.  **Utworzenie Zawodów:** Organizator tworzy nowe zawody, konfigurując podstawowe szczegóły: nazwę, datę i regulamin. Następnie **wybiera z biblioteki gotowe szablony klasyfikacji**, które będą obowiązywać w danym wydarzeniu (np. "Największa Ryba", "Suma Wag", "Top 5 Spinning").
 2.  **Udostępnienie Linku:** System generuje unikalny, publiczny link do strony zawodów. Organizator może go udostępnić na forach internetowych, w mediach społecznościowych lub wysłać bezpośrednio do zainteresowanych.
-3.  **Zapisy Uczestników:** Każdy, kto otrzyma link, może wejść na stronę zawodów i dołączyć do listy startowej. Jeśli zawody są płatne, system automatycznie przekieruje uczestnika do bramki płatności w celu uiszczenia opłaty.
-4.  **Zarządzanie Zgłoszeniami:** Organizator ma pełną kontrolę nad listą uczestników. Może akceptować lub odrzucać zgłoszenia, oraz na bieżąco monitorować status płatności każdego zawodnika.
-5.  **Wyznaczenie Sędziów:** Organizator może nadać uprawnienia sędziego wybranym użytkownikom. Sędziowie uzyskują dostęp do specjalnego panelu umożliwiającego rejestrację połowów.
-6.  **Rejestracja Połowów:** W trakcie zawodów, tylko organizator i wyznaczeni sędziowie mogą dodawać ryby do systemu. Robią to za pomocą prostego formularza na urządzeniu mobilnym, wybierając zawodnika z listy i wpisując wagę lub długość ryby.
-7.  **Wyniki na Żywo:** Wszystkie zarejestrowane połowy natychmiast aktualizują tabele wyników. Każdy (uczestnik, kibic, organizator) może śledzić rywalizację w czasie rzeczywistym na publicznej stronie wyników, przełączając się między zdefiniowanymi klasyfikacjami.
+3.  **Zapisy Uczestników:** Każdy, kto otrzyma link, może wejść na stronę zawodów i dołączyć do listy startowej. Jeśli zawody są płatne, system automatycznie przekieruje uczestnika do bramki płatności.
+4.  **Zarządzanie Zgłoszeniami:** Organizator ma pełną kontrolę nad listą uczestników. Może akceptować lub odrzucać zgłoszenia oraz na bieżąco monitorować status płatności.
+5.  **Wyznaczenie Sędziów:** Organizator może nadać uprawnienia sędziego wybranym użytkownikom, którzy uzyskują dostęp do panelu rejestracji połowów.
+6.  **Rejestracja Połowów:** W trakcie zawodów, tylko organizator i wyznaczeni sędziowie mogą dodawać ryby do systemu za pomocą prostego formularza na urządzeniu mobilnym.
+7.  **Wyniki na Żywo:** Wszystkie zarejestrowane połowy natychmiast aktualizują tabele wyników. Każdy może śledzić rywalizację w czasie rzeczywistym, przełączając się między aktywnymi klasyfikacjami.
 
-## ⚙️ Uniwersalny Kreator Klasyfikacji — Nieograniczone Możliwości
+## 🧮 Kreator Systemów Punktowych
 
-W Fishio zrewolucjonizowaliśmy sposób tworzenia klasyfikacji zawodów. Zamiast wybierać z ograniczonej listy predefiniowanych typów, dostajesz **uniwersalny kreator**, który pozwala tworzyć klasyfikacje z prostych, ale potężnych klocków kompozycyjnych.
+To fundament całego systemu klasyfikacji w Fishio. W tym module definiujesz **własne reguły punktacji za gatunki ryb**, które później możesz wykorzystywać w wielu różnych klasyfikacjach i zawodach.
 
-### 🧩 Jak działa kreator klasyfikacji?
+### ✨ Co możesz skonfigurować?
 
-Każda klasyfikacja powstaje z **czterech podstawowych elementów**, które możesz dowolnie kombinować:
+- **Punkty za wagę lub długość** — np. "karp → 5 pkt / 1 kg", "okoń → 2 pkt / 1 cm".
+- **Kary i bonusy** — np. "szczupak → −5 pkt / 1 kg".
+- **Elastyczne jednostki** — możesz zdecydować, czy punktacja liczona jest od wagi, długości, czy samego faktu złowienia ryby.
+
+### 📚 Biblioteka Systemów
+
+Każdy utworzony system punktowy trafia do Twojej biblioteki. Możesz go:
+
+- **wielokrotnie używać** w różnych zawodach i szablonach klasyfikacji,
+- **kopiować i modyfikować**, aby tworzyć warianty,
+- **dzielić się** nim z innymi organizatorami w ramach współpracy.
+
+### 🛠️ Przykład
+
+_System Punktowy: "Klasyk Karpiowy"_
+
+- karp → 5 pkt / 1 kg
+- karaś → 3 pkt / 1 kg
+- szczupak → −5 pkt / 1 kg
+
+Taki system można następnie przypisać do dowolnego szablonu klasyfikacji opartego na punktach.
+
+## ⚙️ Uniwersalny Kreator Szablonów Klasyfikacji
+
+W Fishio tworzenie klasyfikacji to nie jednorazowa czynność, a inwestycja. W dedykowanym kreatorze budujesz **reużywalne szablony klasyfikacji**, które tworzą Twoją osobistą bibliotekę.
+
+### 🧩 Jak działa kreator szablonów?
+
+Każdy szablon klasyfikacji powstaje z **czterech podstawowych elementów**, które możesz dowolnie kombinować:
 
 #### **1. 📊 Źródło Danych** — Co liczymy?
 
@@ -49,97 +99,31 @@ Każda klasyfikacja powstaje z **czterech podstawowych elementów**, które moż
 - **Płeć** — kobiety, mężczyźni
 - **Minimalna waga/długość** — tylko większe ryby
 
-#### 🧮 System punktowy — predefiniowany lub definiowany przez użytkownika
+#### **4. 🧮 System Punktowy — Wybór z biblioteki**
 
-System punktowy może być wybrany z gotowych szablonów albo w pełni skonfigurowany przez organizatora. W trybie własnym możesz zdefiniować przeliczniki punktów per jednostka (np. punkty/kg, punkty/cm lub punkty/sztuka) dla poszczególnych gatunków. Wspierane są także wartości ujemne.
+Klasyfikacje punktowe wykorzystują **reużywalne Systemy Punktowe**, które tworzysz i przechowujesz w osobnej bibliotece. Tutaj po prostu wybierasz odpowiedni z listy.
 
-Przykładowa konfiguracja własnego systemu punktowego (punkty za 1 kg):
+### 💡 Jak korzystać z kreatora szablonów? — Proste jak składanie klocków
 
-- karp → 5 pkt / 1 kg
-- karaś → 3 pkt / 1 kg
-- szczupak → −5 pkt / 1 kg
-
-Każdy połów jest automatycznie przeliczany na punkty zgodnie z regułami, a następnie agregowany zgodnie z wybraną metodą (np. suma, top X). Filtry i zasady rozstrzygania remisów działają identycznie jak w pozostałych klasyfikacjach.
-
-### 🎨 Przykłady w praktyce
-
-**🔥 Klasyka:**
-
-> Źródło: Waga → Agregacja: Suma → Filtry: brak → Zakres: Indywidualny  
-> **Rezultat:** "Suma wag wszystkich ryb"
-
-**🏅 Big 3 Karpi:**
-
-> Źródło: Waga → Agregacja: Top 3 → Filtry: Gatunek=Karp → Zakres: Indywidualny  
-> **Rezultat:** "Suma wag 3 największych karpi"
-
-**⭐ Panie Senior:**
-
-> Źródło: Waga → Agregacja: Suma → Filtry: Płeć=Kobieta + Wiek≥55 → Zakres: Indywidualny  
-> **Rezultat:** "Suma wag dla kobiet powyżej 55 lat"
-
-**🌅 Złota Godzina:**
-
-> Źródło: Waga → Agregacja: Maksimum → Filtry: Czas=12:00-13:00 → Zakres: Indywidualny  
-> **Rezultat:** "Największa ryba złowiona w południe"
-
-**🎣 Spinning Master:**
-
-> Źródło: Waga → Agregacja: Top 5 → Filtry: Metoda=Spinning + MinWaga=1000g → Zakres: Indywidualny  
-> **Rezultat:** "Top 5 ryb spinningiem, minimum 1kg każda"
-
-**🤝 Drużyna Szczupaków:**
-
-> Źródło: Waga → Agregacja: Suma → Filtry: Gatunek=Szczupak → Zakres: Drużynowy  
-> **Rezultat:** "Największa łączna waga szczupaków drużyny"
-
-### ✨ Nieograniczone kombinacje
-
-Kreator daje Ci **miliony możliwych kombinacji**! Chcesz stworzyć klasyfikację "Top 3 okonie złapane przez juniorów w sektorze A metodą float między 14:00-16:00"? **Żaden problem!** Po prostu ustaw:
-
-- Źródło: Długość
-- Agregacja: Top 3
-- Filtry: Gatunek=Okoń + Wiek≤18 + Sektor=A + Metoda=Float + Czas=14:00-16:00
-
-### 💡 Jak korzystać z kreatora? — Proste jak składanie klocków
-
-**Krok 1:** Wybierz **źródło danych** (waga, długość, liczba ryb...)  
-**Krok 2:** Ustaw **sposób agregacji** (suma, maksimum, top X...)  
-**Krok 3:** Dodaj **filtry** według potrzeb (gatunek, wiek...)
-**Krok 4:** Ustaw **reguły rozstrzygania remisów**
-
-System automatycznie generuje **opis klasyfikacji** i sprawdza **poprawność konfiguracji**. Widzisz na żywo, jak będzie wyglądała Twoja klasyfikacja!
-
-### 🎯 Szablony dla szybkiego startu
-
-Nie chcesz budować od zera? Fishio oferuje **gotowe szablony** najpopularniejszych klasyfikacji:
-
-- 🏆 **Klasyka** — suma wag wszystkich ryb
-- 🥇 **Największa Ryba** — pojedynczy największy okaz
-- 🔢 **Big 3/Big 5** — suma największych ryb
-- 👩 **Panie** — klasyfikacja tylko dla kobiet
-- 👦 **Juniorzy** — zawodnicy do 18 lat
-- 🎲 **Lucky Weight** — najbliższy określonej wadze
-
-**Po wybraniu szablonu możesz go dowolnie modyfikować** — to świetny punkt startowy!
+**Krok 1:** Wejdź do modułu "Moje Szablony Klasyfikacji" i kliknij "Stwórz nowy".
+**Krok 2:** Nazwij swój szablon (np. "Top 5 Drapieżników Spinning").
+**Krok 3:** Złóż go z klocków: wybierz **źródło danych**, **sposób agregacji** i dodaj **filtry**.
+**Krok 4:** Jeśli wybrałeś punkty jako źródło, wybierz z listy jeden z Twoich **systemów punktowych**.
+**Krok 5:** Zapisz. Od teraz ten szablon jest dostępny do użycia w każdych zawodach, które stworzysz!
 
 ### 🚀 Twoja wyobraźnia = jedyne ograniczenie
 
-Dzięki kreatorowi możesz:
+Dzięki kreatorowi szablonów możesz:
 
-- **Łączyć dowolnie filtry** — kombinuj wiek, płeć, gatunek, czas
-- **Tworzyć unikalne nagrody** — np. za najdłuższego karasia złowionego o poranku
-- **Dopasowywać do zawodów** — od prostych po bardzo zaawansowane
-- **Eksperymentować** — każda nowa kombinacja to nowa klasyfikacja
-- **Być kreatywnym** — stwórz klasyfikacje, o których nikt wcześniej nie pomyślał!
-- **Kopiować i modyfikować** — stwórz bazę, a potem rób warianty
+- **Stworzyć bibliotekę** idealnie dopasowaną do Twoich potrzeb.
+- **Kopiować i modyfikować** istniejące szablony, tworząc ich warianty.
+- **Eksperymentować** z nowymi, kreatywnymi klasyfikacjami, które zaskoczą uczestników.
 
 ### ⚖️ Rozstrzyganie Remisów — Precyzyjne Zasady Sprawiedliwości
 
-Co w sytuacji, gdy dwóch zawodników ma identyczny wynik? Fishio pozwala na zdefiniowanie **kaskadowego systemu rozstrzygania remisów** dla każdej klasyfikacji z osobna. Organizator może ustawić kolejność kryteriów, które będą sprawdzane jedno po drugim, aż do wyłonienia zwycięzcy.
+Co w sytuacji, gdy dwóch zawodników ma identyczny wynik? Fishio pozwala na zdefiniowanie **kaskadowego systemu rozstrzygania remisów** dla każdego **Szablonu Klasyfikacji** z osobna. Organizator może ustawić kolejność kryteriów, które będą sprawdzane jedno po drugim, aż do wyłonienia zwycięzcy.
 
-**Przykład konfiguracji dla klasyfikacji "Suma Wag":**
-
+**Przykład konfiguracji dla szablonu "Suma Wag":**
 Załóżmy, że dwóch zawodników, Jan i Piotr, uzyskało identyczną sumę wag: 15 kg. System automatycznie sprawdzi kolejne reguły:
 
 1.  **Reguła 1 (pierwszeństwo):** W przypadku remisu w sumie wag, wygrywa zawodnik, który złowił **największą pojedynczą rybę** (wagowo).
@@ -196,26 +180,27 @@ Wędkarstwo to także sport zespołowy. Fishio w pełni wspiera rywalizację dru
 
 ### **🌍 Funkcje Publiczne (Dla Każdego Odwiedzającego)**
 
-- **Kalendarz Zawodów i Lig:** Przeglądanie, wyszukiwanie i filtrowanie nadchodzących wydarzeń według dyscypliny, lokalizacji i daty.
-- **Szczegóły Zawodów:** Dostęp do pełnych informacji o zawodach: regulamin, harmonogram, zdefiniowane klasyfikacje, nagrody i sponsorzy.
-- **Wyniki na Żywo:** Publiczny dostęp (przez unikalny link) do strony wyników z aktualizacjami w czasie rzeczywistym.
-- **Zaawansowane Rankingi:** Automatyczne rozstrzyganie remisów, rankingi dla kategorii (kobiety, juniorzy) i filtrów gatunków.
-- **Profile Publiczne:** Strony-wizytówki dla organizatorów i łowisk, agregujące ich historię i nadchodzące wydarzenia.
+- **Kalendarz Zawodów i Lig:** Przeglądanie, wyszukiwanie i filtrowanie nadchodzących wydarzeń.
+- **Szczegóły Zawodów:** Dostęp do pełnych informacji o zawodach: regulamin, harmonogram, aktywne klasyfikacje, nagrody i sponsorzy.
+- **Wyniki na Żywo:** Publiczny dostęp do strony wyników z aktualizacjami w czasie rzeczywistym.
+- **Zaawansowane Rankingi:** Automatyczne rozstrzyganie remisów, rankingi dla kategorii i filtrów.
+- **Profile Publiczne:** Strony-wizytówki dla organizatorów i łowisk.
 
 ### **👤 Funkcje dla Zarejestrowanych Użytkowników (Wędkarzy)**
 
-- **Personalizowany Panel (Dashboard):** Centrum zarządzania aktywnością: nadchodzące starty, historia wyników, obserwowane ligi.
-- **Zapisy i Płatności Online:** Prosty proces dołączania do zawodów i bezpieczne płatności online przez zintegrowaną bramkę.
-- **Zarządzanie Profilem:** Edycja danych, które mogą być używane do automatycznej kategoryzacji w rankingach (np. wiek).
-- **System Powiadomień:** Automatyczne powiadomienia (e-mail + w aplikacji) o potwierdzeniu zapisu, płatności, zbliżających się zawodach czy publikacji wyników.
+- **Personalizowany Panel (Dashboard):** Centrum zarządzania aktywnością: nadchodzące starty, historia wyników.
+- **Zapisy i Płatności Online:** Prosty proces dołączania do zawodów i bezpieczne płatności.
+- **Zarządzanie Profilem:** Edycja danych (np. wiek) do automatycznej kategoryzacji.
+- **System Powiadomień:** Automatyczne powiadomienia o kluczowych zdarzeniach.
 
 ### **🛠️ Funkcje dla Organizatorów Zawodów**
 
-- **Tworzenie i Zarządzanie Zawodami:** Konfiguracja zawodów publicznych (widocznych w kalendarzu) lub prywatnych (tylko na zaproszenie przez link).
-- **Uniwersalny Kreator Klasyfikacji:** Tworzenie **nieograniczonej liczby niezależnych rankingów** z kompozycyjnych klocków (źródło danych + agregacja + filtry + zakres) — miliony możliwych kombinacji bez programowania.
-- **Zarządzanie Ligami i Cyklami:** Łączenie wielu zawodów w jeden cykl ze wspólną klasyfikacją generalną i zaawansowanymi zasadami punktacji (np. punkty za miejsca, odrzucanie najsłabszych wyników).
-- **Zaawansowane Zarządzanie Uczestnikami:** Pełna kontrola nad listą startową, w tym akceptowanie/odrzucanie zapisów, przypisywanie ról (np. Sędzia)
-- **Zarządzanie Nagrodami i Sponsorami:** Możliwość dodania opisu nagrody, jej wartości oraz powiązania jej z konkretnym sponsorem, którego logo będzie widoczne przy nagrodzie.
+- **Tworzenie i Zarządzanie Zawodami:** Prosty proces konfiguracji zawodów i dołączania do nich gotowych klasyfikacji z Twojej biblioteki szablonów.
+- **Zarządzanie Szablonami Klasyfikacji:** Dedykowany kreator do tworzenia i zarządzania reużywalnymi szablonami klasyfikacji. Budujesz je raz, a potem dodajesz do zawodów jednym kliknięciem.
+- **Zarządzanie Systemami Punktowymi:** Osobny moduł do definiowania własnych, reużywalnych systemów punktacji za gatunki, które można później wykorzystać w szablonach klasyfikacji.
+- **Zarządzanie Ligami i Cyklami:** Łączenie wielu zawodów w jeden cykl ze wspólną klasyfikacją generalną.
+- **Zaawansowane Zarządzanie Uczestnikami:** Pełna kontrola nad listą startową, akceptowanie/odrzucanie zapisów, przypisywanie ról.
+- **Zarządzanie Nagrodami i Sponsorami:** Możliwość powiązania nagród i sponsorów z konkretnymi klasyfikacjami.
 
 ## 🧑‍🤝‍🧑 Role użytkowników — elastyczny model ról
 
