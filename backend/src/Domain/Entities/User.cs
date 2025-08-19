@@ -1,6 +1,6 @@
 namespace Fishio.Domain.Entities;
 
-public class User : AuditableEntity<int>
+public class User : Entity<int>
 {
     public string ClerkId { get; private set; } = string.Empty;
     public string FirstName { get; private set; } = string.Empty;

@@ -31,10 +31,21 @@ public interface IAggregateRoot
 }
 
 /// <summary>
-/// Base aggregate root class providing domain events functionality
+/// Base aggregate root class providing domain events functionality and audit capabilities.
+/// Aggregate roots are the entry points to aggregates and ensure consistency boundaries.
 /// </summary>
 /// <typeparam name="TId">Type of the entity identifier</typeparam>
-public abstract class AggregateRoot<TId> : AuditableEntity<TId>, IAggregateRoot
+/// <remarks>
+/// Key characteristics of Aggregate Roots:
+/// - Entry point to an aggregate - external access only through aggregate root
+/// - Ensures consistency and business invariants within aggregate boundary
+/// - Manages domain events for the aggregate
+/// - Has global identity (unlike entities inside aggregate)
+/// - Controls access to internal entities
+/// 
+/// Examples: User (aggregate root), Competition (aggregate root), League (aggregate root)
+/// </remarks>
+public abstract class AggregateRoot<TId> : Entity<TId>, IAggregateRoot
 {
     /// <summary>
     /// Private collection storing domain events for this aggregate

@@ -1,6 +1,7 @@
-# Coding Rules for FishIO Project
+# Coding Rules for Fishio Project
 
 ## Language and Comments
+
 1. **Add comments for created and existing code in English** - All code comments should be written in English for consistency and maintainability.
 
 2. **Create enums with English names but include DisplayAttribute with Polish names** - Enums should have English identifiers but use DisplayAttribute to provide Polish display names for the user interface.
@@ -17,10 +18,10 @@ public enum FishStatus
 {
     [Display(Name = "Aktywny")]
     Active,
-    
+
     [Display(Name = "Nieaktywny")]
     Inactive,
-    
+
     [Display(Name = "Usunięty")]
     Deleted
 }
