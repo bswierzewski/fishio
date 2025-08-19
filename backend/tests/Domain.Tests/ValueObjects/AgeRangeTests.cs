@@ -166,9 +166,9 @@ public class AgeRangeTests
     }
 
     [Theory]
-    [InlineData(0, true)]
-    [InlineData(25, true)]
-    [InlineData(100, true)]
+    [InlineData(0)]
+    [InlineData(25)]
+    [InlineData(100)]
     public void Contains_WithAllAgesRange_ShouldReturnTrueForAnyAge(int age)
     {
         // Arrange
@@ -296,18 +296,44 @@ public class AgeRangeTests
         result.Should().Be(expected);
     }
 
-    [Theory]
-    [InlineData("Junior", AgeRange.Junior)]
-    [InlineData("Senior", AgeRange.Senior)]
-    [InlineData("Dorosły", AgeRange.Adult)]
-    [InlineData("Wszystkie", AgeRange.AllAges)]
-    public void GetShortName_WithCommonRanges_ShouldReturnCorrectName(string expected, AgeRange ageRange)
+    [Fact]
+    public void GetShortName_WithJuniorRange_ShouldReturnJunior()
     {
         // Act
-        var result = ageRange.GetShortName();
+        var result = AgeRange.Junior.GetShortName();
 
         // Assert
-        result.Should().Be(expected);
+        result.Should().Be("Junior");
+    }
+
+    [Fact]
+    public void GetShortName_WithSeniorRange_ShouldReturnSenior()
+    {
+        // Act
+        var result = AgeRange.Senior.GetShortName();
+
+        // Assert
+        result.Should().Be("Senior");
+    }
+
+    [Fact]
+    public void GetShortName_WithAdultRange_ShouldReturnDorosły()
+    {
+        // Act
+        var result = AgeRange.Adult.GetShortName();
+
+        // Assert
+        result.Should().Be("Dorosły");
+    }
+
+    [Fact]
+    public void GetShortName_WithAllAgesRange_ShouldReturnWszystkie()
+    {
+        // Act
+        var result = AgeRange.AllAges.GetShortName();
+
+        // Assert
+        result.Should().Be("Wszystkie");
     }
 
     [Fact]
