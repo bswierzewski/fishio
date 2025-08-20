@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" />
+  </ItemGroup>
+
+  <!-- References to all Api and Infrastructure projects -->
+  <ItemGroup>
+    <!-- IdentityAccess -->
+    <ProjectReference Include="..\Contexts\IdentityAccess\Fishio.IdentityAccess.Api\Fishio.IdentityAccess.Api.csproj" />
+    <ProjectReference Include="..\Contexts\IdentityAccess\Fishio.IdentityAccess.Infrastructure\Fishio.IdentityAccess.Infrastructure.csproj" />
+    
+    <!-- Competitions -->
+    <ProjectReference Include="..\Contexts\Competitions\Fishio.Competitions.Api\Fishio.Competitions.Api.csproj" />
+    <ProjectReference Include="..\Contexts\Competitions\Fishio.Competitions.Infrastructure\Fishio.Competitions.Infrastructure.csproj" />
+    
+    <!-- Scoring -->
+    <ProjectReference Include="..\Contexts\Scoring\Fishio.Scoring.Api\Fishio.Scoring.Api.csproj" />
+    <ProjectReference Include="..\Contexts\Scoring\Fishio.Scoring.Infrastructure\Fishio.Scoring.Infrastructure.csproj" />
+    
+    <!-- LiveEvent -->
+    <ProjectReference Include="..\Contexts\LiveEvent\Fishio.LiveEvent.Api\Fishio.LiveEvent.Api.csproj" />
+    <ProjectReference Include="..\Contexts\LiveEvent\Fishio.LiveEvent.Infrastructure\Fishio.LiveEvent.Infrastructure.csproj" />
+    
+    <!-- Venues -->
+    <ProjectReference Include="..\Contexts\Venues\Fishio.Venues.Api\Fishio.Venues.Api.csproj" />
+    <ProjectReference Include="..\Contexts\Venues\Fishio.Venues.Infrastructure\Fishio.Venues.Infrastructure.csproj" />
+    
+    <!-- Payments -->
+    <ProjectReference Include="..\Contexts\Payments\Fishio.Payments.Api\Fishio.Payments.Api.csproj" />
+    <ProjectReference Include="..\Contexts\Payments\Fishio.Payments.Infrastructure\Fishio.Payments.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

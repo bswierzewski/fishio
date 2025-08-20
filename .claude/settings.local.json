@@ -12,9 +12,24 @@
       "Bash(dotnet test:*)",
       "Bash(tree:*)",
       "Bash(dotnet build:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(for:*)",
+      "Bash(do mkdir -p \"$context/Fishio.$context.Domain\" \"$context/Fishio.$context.Application\" \"$context/Fishio.$context.Infrastructure\" \"$context/Fishio.$context.Api\")",
+      "Bash(done)",
+      "Bash(cp:*)",
+      "Bash(do cp IdentityAccess/Fishio.IdentityAccess.Domain/Fishio.IdentityAccess.Domain.csproj \"$context/Fishio.$context.Domain/Fishio.$context.Domain.csproj\")",
+      "Bash(do echo \"All Domain projects should have same relative path to SharedKernel\")",
+      "Bash(do sed -i 's|\\.\\.\\\\\\.\\.\\\\SharedKernel|\\.\\.\\\\\\.\\.\\\\\\.\\.\\\\SharedKernel|g' \"$context/Fishio.$context.Domain/Fishio.$context.Domain.csproj\")",
+      "Bash(do)",
+      "Bash(dotnet add reference:*)",
+      "Bash(dotnet sln add:*)",
+      "Bash(dotnet sln remove:*)",
+      "Bash(timeout:*)"
     ],
     "deny": [],
-    "ask": []
+    "ask": [],
+    "additionalDirectories": [
+      "D:\\d\\repos\\fishio"
+    ]
   }
 }
