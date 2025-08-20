@@ -1,5 +1,6 @@
 using Fishio.SharedKernel;
 using Fishio.IdentityAccess.Domain.Enums;
+using Fishio.IdentityAccess.Domain.Events;
 
 namespace Fishio.IdentityAccess.Domain.Aggregates.User;
 
@@ -13,68 +14,95 @@ public class User : AggregateRoot<int>
     public string FirstName { get; private set; } = string.Empty;
     public string LastName { get; private set; } = string.Empty;
     public string Email { get; private set; } = string.Empty;
-    public DateTime? BirthDate { get; private set; }
-    public Gender? Gender { get; private set; }
+    public DateTime BirthDate { get; private set; }
+    public Gender Gender { get; private set; }
 
-    public User(string clerkId, string email, string firstName, string lastName)
+    private User() { } // EF Core constructor
+
+    public User(string clerkId, string email, string firstName, string lastName, DateTime birthDate, Gender gender)
     {
-        ClerkId = clerkId ?? throw new ArgumentNullException(nameof(clerkId));
-        Email = email ?? throw new ArgumentNullException(nameof(email));
-        FirstName = firstName ?? throw new ArgumentNullException(nameof(firstName));
-        LastName = lastName ?? throw new ArgumentNullException(nameof(lastName));
+        if (string.IsNullOrWhiteSpace(clerkId))
+            throw new ArgumentException("ClerkId nie może być pusty", nameof(clerkId));
+        
+        if (string.IsNullOrWhiteSpace(email))
+            throw new ArgumentException("Email nie może być pusty", nameof(email));
+            
+        if (string.IsNullOrWhiteSpace(firstName))
+            throw new ArgumentException("Imię nie może być puste", nameof(firstName));
+            
+        if (string.IsNullOrWhiteSpace(lastName))
+            throw new ArgumentException("Nazwisko nie może być puste", nameof(lastName));
+
+        ValidateBirthDate(birthDate);
+
+        ClerkId = clerkId;
+        Email = email.ToLowerInvariant();
+        FirstName = firstName.Trim();
+        LastName = lastName.Trim();
+        BirthDate = birthDate.Date; // Only date part, no time
+        Gender = gender;
+
+        AddDomainEvent(new UserRegistered(Id, ClerkId, Email, GetFullName()));
     }
 
     public string GetFullName() => $"{FirstName} {LastName}";
 
     /// <summary>
-    /// Sets the user's birth date
+    /// Updates the user's profile information
     /// </summary>
-    /// <param name="birthDate">The birth date to set</param>
-    public void SetBirthDate(DateTime birthDate)
+    /// <param name="firstName">New first name</param>
+    /// <param name="lastName">New last name</param>
+    /// <param name="birthDate">New birth date</param>
+    /// <param name="gender">New gender</param>
+    public void UpdateProfile(string firstName, string lastName, DateTime birthDate, Gender gender)
     {
-        if (birthDate > DateTime.Today)
-            throw new ArgumentException("Data urodzenia nie może być z przyszłości", nameof(birthDate));
+        if (string.IsNullOrWhiteSpace(firstName))
+            throw new ArgumentException("Imię nie może być puste", nameof(firstName));
+            
+        if (string.IsNullOrWhiteSpace(lastName))
+            throw new ArgumentException("Nazwisko nie może być puste", nameof(lastName));
 
-        BirthDate = birthDate;
-    }
+        ValidateBirthDate(birthDate);
 
-    /// <summary>
-    /// Sets the user's gender
-    /// </summary>
-    /// <param name="gender">The gender to set</param>
-    public void SetGender(Gender gender)
-    {
+        var oldName = GetFullName();
+        var oldBirthDate = BirthDate;
+        var oldGender = Gender;
+
+        FirstName = firstName.Trim();
+        LastName = lastName.Trim();
+        BirthDate = birthDate.Date;
         Gender = gender;
+
+        AddDomainEvent(new UserProfileUpdated(Id, oldName, GetFullName(), oldBirthDate, BirthDate, oldGender, Gender));
     }
 
     /// <summary>
     /// Calculates the current age of the user based on their birth date
     /// </summary>
-    /// <returns>The current age in years, or null if birth date is not set</returns>
-    public int? GetAge()
-    {
-        if (!BirthDate.HasValue)
-            return null;
+    /// <returns>The current age in years</returns>
+    public int GetAge() => GetAgeAt(DateTime.Today);
 
-        var today = DateTime.Today;
-        var age = today.Year - BirthDate.Value.Year;
+    /// <summary>
+    /// Calculates the age of the user at a specific date
+    /// </summary>
+    /// <param name="atDate">Date to calculate age at</param>
+    /// <returns>Age in years at the specified date</returns>
+    public int GetAgeAt(DateTime atDate)
+    {
+        var age = atDate.Year - BirthDate.Year;
         
-        if (BirthDate.Value.Date > today.AddYears(-age))
+        if (BirthDate > atDate.AddYears(-age))
             age--;
             
         return age;
     }
 
-    /// <summary>
-    /// Checks if the user falls within a specific age range
-    /// </summary>
-    /// <param name="ageRange">The age range to check against</param>
-    /// <returns>True if the user's age falls within the range, false otherwise</returns>
-    public bool IsInAgeRange(AgeRange ageRange)
+    private static void ValidateBirthDate(DateTime birthDate)
     {
-        if (!BirthDate.HasValue)
-            return false;
+        if (birthDate > DateTime.Today)
+            throw new ArgumentException("Data urodzenia nie może być z przyszłości");
 
-        return ageRange.Contains(BirthDate.Value);
+        if (birthDate < DateTime.Today.AddYears(-120))
+            throw new ArgumentException("Data urodzenia jest zbyt odległa (maksymalnie 120 lat wstecz)");
     }
 }
