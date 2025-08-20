@@ -61,8 +61,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
 // TODO: Map endpoints from all contexts when they are implemented
 // app.MapIdentityAccessEndpoints()
 //    .MapCompetitionsEndpoints()
