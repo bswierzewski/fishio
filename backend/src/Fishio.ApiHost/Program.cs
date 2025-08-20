@@ -14,6 +14,25 @@
 
 var builder = WebApplication.CreateBuilder(args);
 
+// =============================================================================
+// MediatR Configuration using AssemblyReference pattern
+// =============================================================================
+
+// Collect references to all Application layer assemblies
+var applicationAssemblies = new[]
+{
+    typeof(Fishio.Competitions.Application.AssemblyReference).Assembly,
+    typeof(Fishio.Payments.Application.AssemblyReference).Assembly,
+    typeof(Fishio.Scoring.Application.AssemblyReference).Assembly,
+    typeof(Fishio.LiveEvent.Application.AssemblyReference).Assembly,
+    typeof(Fishio.Venues.Application.AssemblyReference).Assembly,
+    typeof(Fishio.IdentityAccess.Application.AssemblyReference).Assembly
+};
+
+// Register MediatR and tell it to scan ALL these assemblies
+// for commands, queries, events and their handlers.
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(applicationAssemblies));
+
 // Add services to the container
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
