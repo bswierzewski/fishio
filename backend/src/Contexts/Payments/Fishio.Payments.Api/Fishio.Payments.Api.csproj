@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Fishio.Payments.Application\Fishio.Payments.Application.csproj" />
     <ProjectReference Include="..\..\..\Fishio.SharedKernel\Fishio.SharedKernel.csproj" />
+    <ProjectReference Include="..\Fishio.Payments.Application\Fishio.Payments.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

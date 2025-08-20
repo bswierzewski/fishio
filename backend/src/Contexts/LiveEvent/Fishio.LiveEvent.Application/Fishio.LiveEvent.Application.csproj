@@ -7,8 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Fishio.LiveEvent.Domain\Fishio.LiveEvent.Domain.csproj" />
+    <ProjectReference Include="..\..\..\Fishio.IntegrationEvents\Fishio.IntegrationEvents.csproj" />
     <ProjectReference Include="..\..\..\Fishio.SharedKernel\Fishio.SharedKernel.csproj" />
+    <ProjectReference Include="..\Fishio.LiveEvent.Domain\Fishio.LiveEvent.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>
